@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BazarCuba | Encuentra lo que buscas cerca de ti</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+        header { background-color: #0056b3; padding: 15px; color: white; text-align: center; }
+        
+        /* Barra de búsqueda y categorías */
+        .search-container { margin-top: 10px; }
+        .search-container input { padding: 10px; width: 70%; border-radius: 5px; border: none; }
+        .search-container button { padding: 10px; border-radius: 5px; border: none; background-color: #ffcc00; cursor: pointer; font-weight: bold;}
+        
+        .categories { display: flex; justify-content: center; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
+        .categories span { background: white; color: #0056b3; padding: 5px 15px; border-radius: 15px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        
+        .gps-btn { display: block; width: 90%; margin: 10px auto; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+        
+        /* Mapa */
+        #mapa { height: 400px; width: 100%; z-index: 1; }
+        
+        /* Sección de Plantillas para el Vendedor */
+        .vendor-section { padding: 20px; background: white; margin-top: 10px; }
+        .vendor-section h2 { color: #333; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        
+        /* Vista previa de imágenes */
+        #preview { display: flex; gap: 10px; margin-top: 10px; overflow-x: auto; }
+        #preview img { height: 80px; border-radius: 5px; border: 1px solid #ddd; }
+        
+        .btn-guardar { background-color: #0056b3; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>BazarCuba</h1>
+        <div class="search-container">
+            <input type="text" placeholder="¿Qué estás buscando? (Ej. Zapatos, Arroz, Celulares)...">
+            <button>Buscar</button>
+        </div>
+        
+        <div class="categories">
+            <span>🍔 Comida</span>
+            <span>📱 Electrónica</span>
+            <span>👕 Ropa</span>
+            <span>🔧 Servicios</span>
+            <span>🏠 Hogar</span>
+        </div>
+    </header>
+
+    <button class="gps-btn" onclick="ubicarGPS()">📍 Encontrar tiendas cerca de mí</button>
+    <div id="mapa"></div>
+
+    <div class="vendor-section">
+        <h2>🛠️ Plantilla de Vendedor (Sube tus productos)</h2>
+        <form id="vendorForm">
+            <div class="form-group">
+                <label>Nombre de tu Tienda o Negocio:</label>
+                <input type="text" id="nombreTienda" placeholder="Ej. El Mercadito de Juan" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Selecciona tu Provincia:</label>
+                <select id="provincia" onchange="acercarProvincia()">
+                    <option value="">-- Elige una provincia --</option>
+                    <option value="22.41,-83.69">Pinar del Río</option>
+                    <option value="23.11,-82.36">La Habana</option>
+                    <option value="23.04,-81.57">Matanzas</option>
+                    <option value="22.14,-79.96">Villa Clara</option>
+                    <option value="21.38,-77.91">Camagüey</option>
+                    <option value="20.88,-76.25">Holguín</option>
+                    <option value="20.02,-75.82">Santiago de Cuba</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Sube fotos de tus productos (Almacenamiento interno):</label>
+                <input type="file" id="fotosProducto" accept="image/*" multiple onchange="mostrarVistaPrevia()">
+                <div id="preview"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Número de WhatsApp:</label>
+                <input type="tel" id="whatsapp" placeholder="+53 5XXXXXXX" required>
+            </div>
+
+            <button type="button" class="btn-guardar" onclick="guardarTienda()">Guardar y Publicar en el Mapa</button>
+        </form>
+    </div>
+
+    <script>
+        // 1. Inicializar el mapa centrado en Cuba
+        var map = L.map('mapa').setView([21.52, -79.32], 6); // Coordenadas centrales de Cuba
+
+        // Añadir las imágenes del mapa (Capa base de OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap | BazarCuba'
+        }).addTo(map);
+
+        // Variable para guardar el marcador temporal del vendedor
+        var marcadorVendedor;
+
+        // 2. Función para acercar el mapa cuando eligen una provincia
+        function acercarProvincia() {
+            var seleccion = document.getElementById("provincia").value;
+            if(seleccion) {
+                var coords = seleccion.split(",");
+                map.setView([coords[0], coords[1]], 10); // Nivel de zoom 10 para ver la provincia
+            }
+        }
+
+        // 3. Función del GPS (Botón "Cerca de mí")
+        function ubicarGPS() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var lat = position.coords.latitude;
+                    var lng = position.coords.longitude;
+                    
+                    map.setView([lat, lng], 14); // Zoom cercano
+                    L.marker([lat, lng]).addTo(map)
+                        .bindPopup("<b>¡Estás aquí!</b><br>Buscando tiendas a tu alrededor.")
+                        .openPopup();
+                }, function() {
+                    alert("No pudimos obtener tu ubicación. Verifica que el GPS esté encendido.");
+                });
+            } else {
+                alert("Tu navegador no soporta geolocalización.");
+            }
+        }
+
+        // 4. Mostrar vista previa de las fotos seleccionadas del móvil
+        function mostrarVistaPrevia() {
+            var archivos = document.getElementById('fotosProducto').files;
+            var previewContainer = document.getElementById('preview');
+            previewContainer.innerHTML = ''; // Limpiar anteriores
+
+            for (var i = 0; i < archivos.length; i++) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var img = document.createElement('img');
+                    img.src = e.target.result;
+                    previewContainer.appendChild(img);
+                }
+                reader.readAsDataURL(archivos[i]);
+            }
+        }
+
+        // 5. Simular el guardado de la tienda y colocar el puntero
+        function guardarTienda() {
+            var nombre = document.getElementById("nombreTienda").value;
+            var provincia = document.getElementById("provincia").value;
+            var whatsapp = document.getElementById("whatsapp").value;
+
+            if(!nombre || !provincia || !whatsapp) {
+                alert("Por favor, rellena el nombre, la provincia y el WhatsApp.");
+                return;
+            }
+
+            var coords = provincia.split(",");
+            
+            // Si ya había puesto un marcador antes, lo quito
+            if(marcadorVendedor) {
+                map.removeLayer(marcadorVendedor);
+            }
+
+            // Crear el nuevo puntero interactivo en el mapa
+            marcadorVendedor = L.marker([coords[0], coords[1]]).addTo(map);
+            marcadorVendedor.bindPopup(
+                "<b>🛒 " + nombre + "</b><br>" +
+                "Contacto: " + whatsapp + "<br>" +
+                "<button style='background:#25D366; color:white; border:none; padding:5px; margin-top:5px; cursor:pointer;'>Contactar Vendedor</button>"
+            ).openPopup();
+
+            map.setView([coords[0], coords[1]], 12);
+            alert("¡Tienda guardada localmente! (Aparece el puntero en tu mapa)");
+        }
+    </script>
+</body>
+</html>
