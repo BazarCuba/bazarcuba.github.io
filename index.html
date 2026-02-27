@@ -41,6 +41,21 @@
     </style>
 </head>
 <body>
+<div id="menu-dots" onclick="toggleMenu()" style="position: absolute; top: 20px; right: 20px; font-size: 30px; cursor: pointer; color: white; z-index: 1001;">
+    ⋮
+</div>
+
+<div id="side-menu" style="position: fixed; right: -300px; top: 0; width: 280px; height: 100%; background: white; transition: 0.3s; z-index: 1000; box-shadow: -5px 0 15px rgba(0,0,0,0.3); padding: 20px; box-sizing: border-box;">
+    <button onclick="toggleMenu()" style="background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; float: right;">Cerrar X</button>
+    
+    <h2 style="margin-top: 40px; color: #333;">Opciones</h2>
+    <hr>
+    <p style="color: #666; font-size: 14px;">Publica tu negocio o servicio para que otros lo vean:</p>
+    
+    <button onclick="mostrarFormulario()" style="width: 100%; padding: 15px; background: #0056b3; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;">
+        ➕ Publicar mi Negocio
+    </button>
+</div>
 
     <header>
         <h1>BazarCuba 🇨🇺</h1>
@@ -69,7 +84,7 @@
         <div id="mapa"></div>
     </div>
 
-    <div class="vendor-section">
+   <div id="formularioVendedor" class="vendor-section" style="display: none;">
         <h2>🛠️ Publicar mi Negocio</h2>
         <div class="form-group">
             <label>Nombre de tu Tienda o Negocio:</label>
@@ -234,6 +249,23 @@
                 alert("Hubo un problema al guardar. Intenta de nuevo.");
             }
         };
+// 1. Función para abrir/cerrar el menú blanco de la derecha
+window.toggleMenu = function() {
+    const menu = document.getElementById("side-menu");
+    if (menu.style.right === "0px") {
+        menu.style.right = "-300px";
+    } else {
+        menu.style.right = "0px";
+    }
+}
+
+// 2. Función para que aparezca el formulario amarillo
+window.mostrarFormulario = function() {
+    toggleMenu(); // Cerramos el menú primero
+    const form = document.getElementById("formularioVendedor");
+    form.style.display = "block"; // Quitamos la invisibilidad
+    form.scrollIntoView({ behavior: 'smooth' }); // Bajamos la pantalla hasta el formulario
+}
     </script>
 </body>
 </html>
