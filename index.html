@@ -12,39 +12,35 @@
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
         header { background-color: #0056b3; padding: 15px; color: white; text-align: center; }
         
-        /* Barra de búsqueda y categorías */
+        /* Buscador y Categorías */
         .search-container { margin-top: 10px; }
         .search-container input { padding: 10px; width: 70%; border-radius: 5px; border: none; }
         .search-container button { padding: 10px; border-radius: 5px; border: none; background-color: #ffcc00; cursor: pointer; font-weight: bold;}
-        
         .categories { display: flex; justify-content: center; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
         .categories span { background: white; color: #0056b3; padding: 5px 15px; border-radius: 15px; cursor: pointer; font-size: 14px; font-weight: bold; }
         
-        .gps-btn { display: block; width: 90%; margin: 10px auto; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+        /* Botón GPS */
+        .gps-btn { display: block; width: 90%; margin: 10px auto; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; }
         
         /* Mapa */
-        #mapa { height: 400px; width: 100%; z-index: 1; }
+        #mapa { height: 400px; width: 100%; z-index: 1; border-top: 3px solid #0056b3; border-bottom: 3px solid #0056b3; }
         
-        /* Sección de Plantillas para el Vendedor */
-        .vendor-section { padding: 20px; background: white; margin-top: 10px; }
-        .vendor-section h2 { color: #333; }
+        /* Formulario del Vendedor */
+        .vendor-section { padding: 20px; background: white; margin: 10px auto; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .vendor-section h2 { color: #333; margin-top: 0; }
         .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
         .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        
-        /* Vista previa de imágenes */
-        #preview { display: flex; gap: 10px; margin-top: 10px; overflow-x: auto; }
-        #preview img { height: 80px; border-radius: 5px; border: 1px solid #ddd; }
-        
-        .btn-guardar { background-color: #0056b3; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; }
+        .btn-guardar { background-color: #0056b3; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; }
+        .btn-guardar:hover { background-color: #004494; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>BazarCuba</h1>
+        <h1>BazarCuba 🇨🇺</h1>
         <div class="search-container">
-            <input type="text" placeholder="¿Qué estás buscando? (Ej. Zapatos, Arroz, Celulares)...">
+            <input type="text" placeholder="¿Qué estás buscando? (Ej. Zapatos, Arroz)...">
             <button>Buscar</button>
         </div>
         
@@ -58,131 +54,136 @@
     </header>
 
     <button class="gps-btn" onclick="ubicarGPS()">📍 Encontrar tiendas cerca de mí</button>
+    
     <div id="mapa"></div>
 
     <div class="vendor-section">
-        <h2>🛠️ Plantilla de Vendedor (Sube tus productos)</h2>
-        <form id="vendorForm">
-            <div class="form-group">
-                <label>Nombre de tu Tienda o Negocio:</label>
-                <input type="text" id="nombreTienda" placeholder="Ej. El Mercadito de Juan" required>
-            </div>
-            
-            <div class="form-group">
-                <label>Selecciona tu Provincia:</label>
-                <select id="provincia" onchange="acercarProvincia()">
-                    <option value="">-- Elige una provincia --</option>
-                    <option value="22.41,-83.69">Pinar del Río</option>
-                    <option value="23.11,-82.36">La Habana</option>
-                    <option value="23.04,-81.57">Matanzas</option>
-                    <option value="22.14,-79.96">Villa Clara</option>
-                    <option value="21.38,-77.91">Camagüey</option>
-                    <option value="20.88,-76.25">Holguín</option>
-                    <option value="20.02,-75.82">Santiago de Cuba</option>
-                </select>
-            </div>
+        <h2>🛠️ Publicar mi Negocio</h2>
+        <div class="form-group">
+            <label>Nombre de tu Tienda o Negocio:</label>
+            <input type="text" id="nombreTienda" placeholder="Ej. El Mercadito de Juan" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Selecciona tu Provincia:</label>
+            <select id="provincia">
+                <option value="">-- Elige una provincia --</option>
+                <option value="22.41,-83.69">Pinar del Río</option>
+                <option value="23.11,-82.36">La Habana</option>
+                <option value="23.04,-81.57">Matanzas</option>
+                <option value="22.14,-79.96">Villa Clara</option>
+                <option value="21.38,-77.91">Camagüey</option>
+                <option value="20.88,-76.25">Holguín</option>
+                <option value="20.02,-75.82">Santiago de Cuba</option>
+            </select>
+        </div>
 
-            <div class="form-group">
-                <label>Sube fotos de tus productos (Almacenamiento interno):</label>
-                <input type="file" id="fotosProducto" accept="image/*" multiple onchange="mostrarVistaPrevia()">
-                <div id="preview"></div>
-            </div>
+        <div class="form-group">
+            <label>Número de WhatsApp:</label>
+            <input type="tel" id="whatsapp" placeholder="Ej. +53 51234567" required>
+        </div>
 
-            <div class="form-group">
-                <label>Número de WhatsApp:</label>
-                <input type="tel" id="whatsapp" placeholder="+53 5XXXXXXX" required>
-            </div>
-
-            <button type="button" class="btn-guardar" onclick="guardarTienda()">Guardar y Publicar en el Mapa</button>
-        </form>
+        <button type="button" class="btn-guardar" onclick="guardarTienda()">Guardar y Publicar en el Mapa</button>
     </div>
 
-    <script>
-        // 1. Inicializar el mapa centrado en Cuba
-        var map = L.map('mapa').setView([21.52, -79.32], 6); // Coordenadas centrales de Cuba
+    <script type="module">
+        // 1. Importar herramientas de Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Añadir las imágenes del mapa (Capa base de OpenStreetMap)
+        // 2. Tus llaves de Google
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc",
+            authDomain: "bazarcuba.firebaseapp.com",
+            projectId: "bazarcuba",
+            storageBucket: "bazarcuba.firebasestorage.app",
+            messagingSenderId: "341288499673",
+            appId: "1:341288499673:web:ca566add302596869d01c8",
+            measurementId: "G-H5L46EMXJ0"
+        };
+
+        // 3. Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 4. Inicializar Mapa centrado en Cuba
+        var map = L.map('mapa').setView([21.52, -79.32], 6);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap | BazarCuba'
         }).addTo(map);
 
-        // Variable para guardar el marcador temporal del vendedor
-        var marcadorVendedor;
-
-        // 2. Función para acercar el mapa cuando eligen una provincia
-        function acercarProvincia() {
-            var seleccion = document.getElementById("provincia").value;
-            if(seleccion) {
-                var coords = seleccion.split(",");
-                map.setView([coords[0], coords[1]], 10); // Nivel de zoom 10 para ver la provincia
-            }
-        }
-
-        // 3. Función del GPS (Botón "Cerca de mí")
-        function ubicarGPS() {
+        // 5. Función del GPS (Global)
+        window.ubicarGPS = function() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     var lat = position.coords.latitude;
                     var lng = position.coords.longitude;
                     
-                    map.setView([lat, lng], 14); // Zoom cercano
+                    map.setView([lat, lng], 14); // Acercar cámara
                     L.marker([lat, lng]).addTo(map)
-                        .bindPopup("<b>¡Estás aquí!</b><br>Buscando tiendas a tu alrededor.")
+                        .bindPopup("<b>¡Estás aquí!</b>")
                         .openPopup();
                 }, function() {
-                    alert("No pudimos obtener tu ubicación. Verifica que el GPS esté encendido.");
+                    alert("No pudimos obtener tu ubicación. Verifica el GPS.");
                 });
             } else {
                 alert("Tu navegador no soporta geolocalización.");
             }
-        }
+        };
 
-        // 4. Mostrar vista previa de las fotos seleccionadas del móvil
-        function mostrarVistaPrevia() {
-            var archivos = document.getElementById('fotosProducto').files;
-            var previewContainer = document.getElementById('preview');
-            previewContainer.innerHTML = ''; // Limpiar anteriores
-
-            for (var i = 0; i < archivos.length; i++) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    var img = document.createElement('img');
-                    img.src = e.target.result;
-                    previewContainer.appendChild(img);
+        // 6. Leer la base de datos en tiempo real y dibujar tiendas
+        onSnapshot(collection(db, "tiendas"), (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const datos = change.doc.data();
+                    // Crear el globo con el nombre y un enlace directo a WhatsApp
+                    const mensajeWa = `Hola, te contacto desde BazarCuba`;
+                    const linkWa = `https://wa.me/${datos.tel.replace(/\+/g, '')}?text=${encodeURIComponent(mensajeWa)}`;
+                    
+                    L.marker([datos.lat, datos.lng]).addTo(map)
+                        .bindPopup(
+                            `<b>🛒 ${datos.nombre}</b><br>` +
+                            `<a href="${linkWa}" target="_blank" style="display:inline-block; margin-top:5px; background:#25D366; color:white; padding:5px 10px; border-radius:5px; text-decoration:none;">Contactar Vendedor</a>`
+                        );
                 }
-                reader.readAsDataURL(archivos[i]);
-            }
-        }
+            });
+        });
 
-        // 5. Simular el guardado de la tienda y colocar el puntero
-        function guardarTienda() {
-            var nombre = document.getElementById("nombreTienda").value;
-            var provincia = document.getElementById("provincia").value;
-            var whatsapp = document.getElementById("whatsapp").value;
+        // 7. Función para guardar la tienda en la nube (Global)
+        window.guardarTienda = async function() {
+            const nombre = document.getElementById("nombreTienda").value;
+            const provincia = document.getElementById("provincia").value;
+            const whatsapp = document.getElementById("whatsapp").value;
 
             if(!nombre || !provincia || !whatsapp) {
-                alert("Por favor, rellena el nombre, la provincia y el WhatsApp.");
+                alert("Por favor, rellena todos los campos antes de publicar.");
                 return;
             }
 
-            var coords = provincia.split(",");
-            
-            // Si ya había puesto un marcador antes, lo quito
-            if(marcadorVendedor) {
-                map.removeLayer(marcadorVendedor);
+            const coords = provincia.split(",");
+
+            try {
+                // Enviar a Firebase
+                await addDoc(collection(db, "tiendas"), {
+                    nombre: nombre,
+                    tel: whatsapp,
+                    lat: parseFloat(coords[0]),
+                    lng: parseFloat(coords[1]),
+                    fecha: new Date()
+                });
+                
+                alert("¡Tu tienda fue publicada con éxito en toda Cuba!");
+                
+                // Limpiar formulario después de enviar
+                document.getElementById("nombreTienda").value = "";
+                document.getElementById("whatsapp").value = "";
+                document.getElementById("provincia").value = "";
+                
+            } catch (error) {
+                console.error("Error completo: ", error);
+                alert("Hubo un error al guardar. Revisa que Firebase esté en Modo de Prueba.");
             }
-
-            // Crear el nuevo puntero interactivo en el mapa
-            marcadorVendedor = L.marker([coords[0], coords[1]]).addTo(map);
-            marcadorVendedor.bindPopup(
-                "<b>🛒 " + nombre + "</b><br>" +
-                "Contacto: " + whatsapp + "<br>" +
-                "<button style='background:#25D366; color:white; border:none; padding:5px; margin-top:5px; cursor:pointer;'>Contactar Vendedor</button>"
-            ).openPopup();
-
-            map.setView([coords[0], coords[1]], 12);
-            alert("¡Tienda guardada localmente! (Aparece el puntero en tu mapa)");
-        }
+        };
     </script>
 </body>
 </html>
