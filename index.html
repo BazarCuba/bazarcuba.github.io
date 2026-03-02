@@ -9,6 +9,32 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
+/* Añadir dentro de <style> */
+.card-img-container {
+    width: 100%;
+    height: 180px;
+    background-color: #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.card-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.precio-tag {
+    color: #d32f2f; /* Rojo llamativo para el precio */
+    font-size: 18px;
+    font-weight: bold;
+    margin: 5px 0;
+}
+
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
         header { background-color: #0056b3; padding: 15px; color: white; text-align: center; }
         
@@ -84,38 +110,78 @@
         <div id="mapa"></div>
     </div>
 
-   <div id="formularioVendedor" class="vendor-section" style="display: none;">
-        <h2>🛠️ Publicar mi Negocio</h2>
-        <div class="form-group">
-            <label>Nombre de tu Tienda o Negocio:</label>
-            <input type="text" id="nombreTienda" placeholder="Ej. El Mercadito de Juan" required>
-        </div>
-        
-        <div class="form-group">
-            <label>Selecciona tu Provincia:</label>
-            <select id="provincia">
-                <option value="">-- Elige una provincia --</option>
-                <option value="22.41,-83.69">Pinar del Río</option>
-                <option value="23.11,-82.36">La Habana</option>
-                <option value="23.04,-81.57">Matanzas</option>
-                <option value="22.14,-79.96">Villa Clara</option>
-                <option value="21.38,-77.91">Camagüey</option>
-                <option value="20.88,-76.25">Holguín</option>
-                <option value="20.02,-75.82">Santiago de Cuba</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>Número de WhatsApp:</label>
-            <input type="tel" id="whatsapp" placeholder="Ej. +53 51234567" required>
-        </div>
-
-        <button type="button" class="btn-guardar" onclick="guardarTienda()">Guardar y Publicar</button>
+<div id="formularioVendedor" class="vendor-section" style="display: none;">
+    <h2>🛠️ Publicar mi Negocio</h2>
+    
+    <div style="border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 15px; border-radius: 10px; cursor: pointer;" onclick="document.getElementById('fotoTienda').click()">
+        <p id="previewText">📸 Agregue una foto</p>
+        <img id="imgPreview" src="#" style="display:none; max-width: 100%; border-radius: 8px;">
+        <input type="file" id="fotoTienda" accept="image/*" style="display: none;" onchange="previsualizarImagen(event)">
     </div>
+<div class="form-group">
+    <label>Precio del Producto o Servicio:</label>
+    <input type="text" id="precioTienda" placeholder="Ej. $500 CUP o Negociable" required>
+</div>
+
+
+    <div class="form-group">
+        <label>Nombre del Negocio:</label>
+        <input type="text" id="nombreTienda" placeholder="Ej. El Mercadito de Juan">
+    </div>
+    
+<div class="form-group">
+    <label>Provincia:</label>
+    <select id="provincia">
+        <option value="">-- Elige una provincia --</option>
+        <option value="22.41,-83.69">Pinar del Río</option>
+        <option value="22.81,-82.76">Artemisa</option>
+        <option value="23.11,-82.36">La Habana</option>
+        <option value="22.94,-82.15">Mayabeque</option>
+        <option value="23.04,-81.57">Matanzas</option>
+        <option value="22.14,-80.44">Cienfuegos</option>
+        <option value="22.40,-79.96">Villa Clara</option>
+        <option value="21.93,-79.44">Sancti Spíritus</option>
+        <option value="21.88,-78.76">Ciego de Ávila</option>
+        <option value="21.38,-77.91">Camagüey</option>
+        <option value="20.96,-76.95">Las Tunas</option>
+        <option value="20.88,-76.25">Holguín</option>
+        <option value="20.37,-76.64">Granma</option>
+        <option value="20.02,-75.82">Santiago de Cuba</option>
+        <option value="20.14,-75.20">Guantánamo</option>
+        <option value="21.62,-82.80">Isla de la Juventud</option>
+    </select>
+</div>
+
+    </div>
+
+    <div class="form-group">
+        <label>WhatsApp:</label>
+        <input type="tel" id="whatsapp" placeholder="+53 51234567">
+    </div>
+
+    <button type="button" class="btn-guardar" onclick="guardarTienda()">Guardar y Publicar</button>
+</div>
+
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+// Función para abrir/cerrar el menú lateral
+window.toggleMenu = function() {
+    const menu = document.getElementById("side-menu");
+    if (menu.style.right === "0px") {
+        menu.style.right = "-300px";
+    } else {
+        menu.style.right = "0px";
+    }
+};
+
+// Función para mostrar el formulario y cerrar el menú
+window.mostrarFormulario = function() {
+    document.getElementById("formularioVendedor").style.display = "block";
+    window.toggleMenu(); // Cierra el menú lateral
+    document.getElementById("formularioVendedor").scrollIntoView({ behavior: 'smooth' });
+};
 
         const firebaseConfig = {
             apiKey: "AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc",
@@ -157,7 +223,11 @@
 
                 const card = `
                     <div class="card">
+ <div class="card-img-container">
+            <img src="${tienda.fotoUrl || 'https://via.placeholder.com/300x200?text=BazarCuba'}" alt="Foto del negocio">
+        </div>
                         <h3>${tienda.nombre}</h3>
+        <p class="precio-tag">${tienda.precio || 'Precio a consultar'}</p>
                         <p class="provincia">${tienda.provincia}</p>
                         <div class="card-buttons">
                             <button class="btn-mapa" onclick="verUbicacion(${tienda.lat}, ${tienda.lng}, '${tienda.nombre}')">📍 Ver Mapa</button>
@@ -211,61 +281,81 @@
             mapaContainer.scrollIntoView({ behavior: 'smooth' });
         };
 
-        // 5. Guardar nueva tienda en Firebase
-        window.guardarTienda = async function() {
-            const nombre = document.getElementById("nombreTienda").value;
-            const selectorProv = document.getElementById("provincia");
-            const coordsString = selectorProv.value;
-            const whatsapp = document.getElementById("whatsapp").value;
+// Función para mostrar la foto apenas el usuario la selecciona
+window.previsualizarImagen = function(event) {
+    const reader = new FileReader();
+    const imagenContenedor = document.getElementById('imgPreview');
+    const textoAyuda = document.getElementById('previewText');
 
-            if(!nombre || !coordsString || !whatsapp) {
-                alert("Por favor, rellena todos los campos.");
-                return;
-            }
-
-            // Extraer el texto de la provincia (Ej: "La Habana") y las coordenadas
-            const nombreProvincia = selectorProv.options[selectorProv.selectedIndex].text;
-            const coords = coordsString.split(",");
-
-            try {
-                await addDoc(collection(db, "tiendas"), {
-                    nombre: nombre,
-                    provincia: nombreProvincia, // Guardamos el nombre para el filtro
-                    tel: whatsapp,
-                    lat: parseFloat(coords[0]),
-                    lng: parseFloat(coords[1]),
-                    fecha: new Date()
-                });
-                
-                alert("¡Tu negocio ha sido publicado!");
-                
-                // Limpiar formulario
-                document.getElementById("nombreTienda").value = "";
-                document.getElementById("whatsapp").value = "";
-                document.getElementById("provincia").value = "";
-                
-            } catch (error) {
-                console.error("Error: ", error);
-                alert("Hubo un problema al guardar. Intenta de nuevo.");
-            }
-        };
-// 1. Función para abrir/cerrar el menú blanco de la derecha
-window.toggleMenu = function() {
-    const menu = document.getElementById("side-menu");
-    if (menu.style.right === "0px") {
-        menu.style.right = "-300px";
-    } else {
-        menu.style.right = "0px";
+    reader.onload = function() {
+        if (reader.readyState === 2) {
+            imagenContenedor.src = reader.result;
+            imagenContenedor.style.display = "block"; // Muestra la foto
+            textoAyuda.style.display = "none";      // Oculta el texto "Agregue una foto"
+        }
     }
-}
+    
+    if (event.target.files[0]) {
+        reader.readAsDataURL(event.target.files[0]);
+    }
+};
 
-// 2. Función para que aparezca el formulario amarillo
-window.mostrarFormulario = function() {
-    toggleMenu(); // Cerramos el menú primero
-    const form = document.getElementById("formularioVendedor");
-    form.style.display = "block"; // Quitamos la invisibilidad
-    form.scrollIntoView({ behavior: 'smooth' }); // Bajamos la pantalla hasta el formulario
-}
+window.guardarTienda = async function() {
+    const nombre = document.getElementById("nombreTienda").value;
+    const precio = document.getElementById("precioTienda").value;
+    const selectorProv = document.getElementById("provincia");
+    const whatsapp = document.getElementById("whatsapp").value;
+    const fotoInput = document.getElementById("fotoTienda"); // Asegúrate de que este ID coincide con tu HTML
+
+    // Validación: que no falte nada
+    if (!nombre || !precio || !fotoInput.files[0]) {
+        alert("Por favor, completa los datos y selecciona una foto.");
+        return;
+    }
+
+    try {
+        // --- PASO 1: Subir la foto a tu Cloudinary ---
+        const formData = new FormData();
+        formData.append('file', fotoInput.files[0]);
+        // Aquí usamos el nombre exacto que pusiste en Cloudinary
+        formData.append('upload_preset', 'bazar_present'); 
+
+        const res = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await res.json();
+        
+        if (!data.secure_url) {
+            throw new Error("No se pudo obtener la URL de la imagen. Revisa el preset.");
+        }
+
+        const fotoUrlFinal = data.secure_url; // Aquí está el link de la foto ya optimizada
+
+        // --- PASO 2: Guardar el anuncio en Firebase ---
+        const nombreProvincia = selectorProv.options[selectorProv.selectedIndex].text;
+        const coords = selectorProv.value.split(",");
+
+        await addDoc(collection(db, "tiendas"), {
+            nombre: nombre,
+            precio: precio,
+            fotoUrl: fotoUrlFinal, 
+            provincia: nombreProvincia,
+            tel: whatsapp,
+            lat: parseFloat(coords[0]),
+            lng: parseFloat(coords[1]),
+            fecha: new Date()
+        });
+
+        alert("¡Negocio publicado con éxito!");
+        location.reload();
+    } catch (error) {
+        console.error("Error completo:", error);
+        alert("Error al subir la foto a Cloudinary.");
+    }
+};
+   
     </script>
 </body>
 </html>
