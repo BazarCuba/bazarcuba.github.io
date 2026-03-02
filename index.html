@@ -9,40 +9,16 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
-/* Añadir dentro de <style> */
-.card-img-container {
-    width: 100%;
-    height: 180px;
-    background-color: #eee;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 10px;
-}
-
-.card-img-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.precio-tag {
-    color: #d32f2f; /* Rojo llamativo para el precio */
-    font-size: 18px;
-    font-weight: bold;
-    margin: 5px 0;
-}
-
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
         header { background-color: #0056b3; padding: 15px; color: white; text-align: center; }
         
-        /* Filtro de Provincias */
+        .card-img-container { width: 100%; height: 180px; background-color: #eee; display: flex; align-items: center; justify-content: center; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+        .card-img-container img { width: 100%; height: 100%; object-fit: cover; }
+        .precio-tag { color: #d32f2f; font-size: 18px; font-weight: bold; margin: 5px 0; }
+
         .filter-container { background: white; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .filter-container select { padding: 10px; width: 90%; max-width: 400px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; font-weight: bold; color: #333; }
 
-        /* Cuadrícula de Tiendas (Tarjetas) */
         .grid-tiendas { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; padding: 0 15px; max-width: 1200px; margin: 0 auto; }
         .card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .card h3 { margin: 0 0 5px 0; color: #333; font-size: 18px; }
@@ -52,11 +28,9 @@
         .btn-mapa { background-color: #0056b3; color: white; }
         .btn-wa { background-color: #25D366; color: white; }
 
-        /* Mapa */
         #mapa-container { display: none; margin: 20px auto; max-width: 1200px; padding: 0 15px; }
         #mapa { height: 400px; width: 100%; border: 3px solid #0056b3; border-radius: 8px; z-index: 1; }
         
-        /* Formulario del Vendedor */
         .vendor-section { padding: 20px; background: white; margin: 30px auto; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-top: 4px solid #ffcc00; }
         .vendor-section h2 { color: #333; margin-top: 0; text-align: center; }
         .form-group { margin-bottom: 15px; }
@@ -67,48 +41,75 @@
     </style>
 </head>
 <body>
+
 <div id="menu-dots" onclick="toggleMenu()" style="position: absolute; top: 20px; right: 20px; font-size: 30px; cursor: pointer; color: white; z-index: 1001;">
     ⋮
 </div>
 
-<div id="side-menu" style="position: fixed; right: -300px; top: 0; width: 280px; height: 100%; background: white; transition: 0.3s; z-index: 1000; box-shadow: -5px 0 15px rgba(0,0,0,0.3); padding: 20px; box-sizing: border-box;">
+<div id="side-menu" style="position: fixed; right: -300px; top: 0; width: 280px; height: 100%; background: white; transition: 0.3s; z-index: 2000; box-shadow: -5px 0 15px rgba(0,0,0,0.3); padding: 20px; box-sizing: border-box; overflow-y: auto;">
     <button onclick="toggleMenu()" style="background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; float: right;">Cerrar X</button>
     
     <h2 style="margin-top: 40px; color: #333;">Opciones</h2>
     <hr>
-    <p style="color: #666; font-size: 14px;">Publica tu negocio o servicio para que otros lo vean:</p>
-    
-    <button onclick="mostrarFormulario()" style="width: 100%; padding: 15px; background: #0056b3; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;">
-        ➕ Publicar mi Negocio
+
+    <button id="btn-add-negocio" onclick="mostrarOpcionesAuth()" style="width: 100%; padding: 15px; background: #0056b3; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;">
+        ➕ Añadir negocio
     </button>
+    
+    <button id="btn-cerrar-sesion" onclick="cerrarSesion()" style="display: none; width: 100%; padding: 10px; background: #ddd; color: #333; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;">
+        Cerrar Sesión
+    </button>
+
+    <div id="opciones-auth" style="display: none; margin-top: 20px; text-align: center;">
+        <button onclick="mostrarFormularioAuth('login')" style="width: 45%; padding: 10px; background: #eee; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; font-weight: bold;">Entrar</button>
+        <button onclick="mostrarFormularioAuth('registro')" style="width: 45%; padding: 10px; background: #eee; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; font-weight: bold;">Registrarse</button>
+    </div>
+
+    <div id="auth-container" style="display: none; margin-top: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+        <h3 id="auth-title" style="margin-top: 0; font-size: 16px; color: #0056b3;"></h3>
+        <div class="form-group">
+            <input type="email" id="email" placeholder="Correo electrónico" style="margin-bottom: 10px; width: 100%; padding: 8px;">
+            <input type="password" id="password" placeholder="Contraseña (mín 6 letras)" style="width: 100%; padding: 8px;">
+        </div>
+        <button id="btn-auth-accion" class="btn-guardar" style="margin-top: 10px; width: 100%;">Continuar</button>
+    </div>
 </div>
 
-    <header>
-        <h1>BazarCuba 🇨🇺</h1>
-        <p style="margin: 0; font-size: 14px;">Encuentra lo que buscas en tu provincia</p>
-    </header>
+<header>
+    <h1>BazarCuba 🇨🇺</h1>
+    <p style="margin: 0; font-size: 14px;">Encuentra lo que buscas en tu provincia</p>
+</header>
 
-    <div class="filter-container">
-        <select id="filtroProvincia" onchange="filtrarPorProvincia()">
-            <option value="todas">📍 Ver todas las provincias</option>
-            <option value="Pinar del Río">Pinar del Río</option>
-            <option value="La Habana">La Habana</option>
-            <option value="Matanzas">Matanzas</option>
-            <option value="Villa Clara">Villa Clara</option>
-            <option value="Camagüey">Camagüey</option>
-            <option value="Holguín">Holguín</option>
-            <option value="Santiago de Cuba">Santiago de Cuba</option>
-        </select>
-    </div>
-    
-    <div id="listaTiendas" class="grid-tiendas">
-        <p style="text-align: center; width: 100%; color: #666;">Cargando anuncios...</p>
-    </div>
+<div class="filter-container">
+    <select id="filtroProvincia" onchange="filtrarPorProvincia()">
+        <option value="todas">📍 Ver todas las provincias</option>
+        <option value="Pinar del Río">Pinar del Río</option>
+        <option value="Artemisa">Artemisa</option>
+        <option value="La Habana">La Habana</option>
+        <option value="Mayabeque">Mayabeque</option>
+        <option value="Matanzas">Matanzas</option>
+        <option value="Cienfuegos">Cienfuegos</option>
+        <option value="Villa Clara">Villa Clara</option>
+        <option value="Sancti Spíritus">Sancti Spíritus</option>
+        <option value="Ciego de Ávila">Ciego de Ávila</option>
+        <option value="Camagüey">Camagüey</option>
+        <option value="Las Tunas">Las Tunas</option>
+        <option value="Holguín">Holguín</option>
+        <option value="Granma">Granma</option>
+        <option value="Santiago de Cuba">Santiago de Cuba</option>
+        <option value="Guantánamo">Guantánamo</option>
+        <option value="Isla de la Juventud">Isla de la Juventud</option>
+    </select>
+</div>
 
-    <div id="mapa-container">
-        <h3 style="color: #0056b3; margin-bottom: 10px;">📍 Ubicación del negocio:</h3>
-        <div id="mapa"></div>
-    </div>
+<div id="listaTiendas" class="grid-tiendas">
+    <p style="text-align: center; width: 100%; color: #666;">Cargando anuncios...</p>
+</div>
+
+<div id="mapa-container">
+    <h3 style="color: #0056b3; margin-bottom: 10px;">📍 Ubicación del negocio:</h3>
+    <div id="mapa"></div>
+</div>
 
 <div id="formularioVendedor" class="vendor-section" style="display: none;">
     <h2>🛠️ Publicar mi Negocio</h2>
@@ -118,40 +119,38 @@
         <img id="imgPreview" src="#" style="display:none; max-width: 100%; border-radius: 8px;">
         <input type="file" id="fotoTienda" accept="image/*" style="display: none;" onchange="previsualizarImagen(event)">
     </div>
-<div class="form-group">
-    <label>Precio del Producto o Servicio:</label>
-    <input type="text" id="precioTienda" placeholder="Ej. $500 CUP o Negociable" required>
-</div>
-
 
     <div class="form-group">
         <label>Nombre del Negocio:</label>
         <input type="text" id="nombreTienda" placeholder="Ej. El Mercadito de Juan">
     </div>
-    
-<div class="form-group">
-    <label>Provincia:</label>
-    <select id="provincia">
-        <option value="">-- Elige una provincia --</option>
-        <option value="22.41,-83.69">Pinar del Río</option>
-        <option value="22.81,-82.76">Artemisa</option>
-        <option value="23.11,-82.36">La Habana</option>
-        <option value="22.94,-82.15">Mayabeque</option>
-        <option value="23.04,-81.57">Matanzas</option>
-        <option value="22.14,-80.44">Cienfuegos</option>
-        <option value="22.40,-79.96">Villa Clara</option>
-        <option value="21.93,-79.44">Sancti Spíritus</option>
-        <option value="21.88,-78.76">Ciego de Ávila</option>
-        <option value="21.38,-77.91">Camagüey</option>
-        <option value="20.96,-76.95">Las Tunas</option>
-        <option value="20.88,-76.25">Holguín</option>
-        <option value="20.37,-76.64">Granma</option>
-        <option value="20.02,-75.82">Santiago de Cuba</option>
-        <option value="20.14,-75.20">Guantánamo</option>
-        <option value="21.62,-82.80">Isla de la Juventud</option>
-    </select>
-</div>
 
+    <div class="form-group">
+        <label>Precio del Producto o Servicio:</label>
+        <input type="text" id="precioTienda" placeholder="Ej. $500 CUP o Negociable" required>
+    </div>
+    
+    <div class="form-group">
+        <label>Provincia:</label>
+        <select id="provincia">
+            <option value="">-- Elige una provincia --</option>
+            <option value="22.41,-83.69">Pinar del Río</option>
+            <option value="22.81,-82.76">Artemisa</option>
+            <option value="23.11,-82.36">La Habana</option>
+            <option value="22.94,-82.15">Mayabeque</option>
+            <option value="23.04,-81.57">Matanzas</option>
+            <option value="22.14,-80.44">Cienfuegos</option>
+            <option value="22.40,-79.96">Villa Clara</option>
+            <option value="21.93,-79.44">Sancti Spíritus</option>
+            <option value="21.88,-78.76">Ciego de Ávila</option>
+            <option value="21.38,-77.91">Camagüey</option>
+            <option value="20.96,-76.95">Las Tunas</option>
+            <option value="20.88,-76.25">Holguín</option>
+            <option value="20.37,-76.64">Granma</option>
+            <option value="20.02,-75.82">Santiago de Cuba</option>
+            <option value="20.14,-75.20">Guantánamo</option>
+            <option value="21.62,-82.80">Isla de la Juventud</option>
+        </select>
     </div>
 
     <div class="form-group">
@@ -162,200 +161,271 @@
     <button type="button" class="btn-guardar" onclick="guardarTienda()">Guardar y Publicar</button>
 </div>
 
+<script type="module">
+    // Importaciones de Firebase (Incluyendo Auth)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-// Función para abrir/cerrar el menú lateral
-window.toggleMenu = function() {
-    const menu = document.getElementById("side-menu");
-    if (menu.style.right === "0px") {
-        menu.style.right = "-300px";
-    } else {
-        menu.style.right = "0px";
-    }
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc",
+        authDomain: "bazarcuba.firebaseapp.com",
+        projectId: "bazarcuba",
+        storageBucket: "bazarcuba.firebasestorage.app",
+        messagingSenderId: "341288499673",
+        appId: "1:341288499673:web:ca566add302596869d01c8",
+        measurementId: "G-H5L46EMXJ0"
+    };
 
-// Función para mostrar el formulario y cerrar el menú
-window.mostrarFormulario = function() {
-    document.getElementById("formularioVendedor").style.display = "block";
-    window.toggleMenu(); // Cierra el menú lateral
-    document.getElementById("formularioVendedor").scrollIntoView({ behavior: 'smooth' });
-};
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc",
-            authDomain: "bazarcuba.firebaseapp.com",
-            projectId: "bazarcuba",
-            storageBucket: "bazarcuba.firebasestorage.app",
-            messagingSenderId: "341288499673",
-            appId: "1:341288499673:web:ca566add302596869d01c8",
-            measurementId: "G-H5L46EMXJ0"
-        };
+    // Variables globales
+    let tiendasData = [];
+    let map;
+    let marcadorActual;
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    // --- LÓGICA DE AUTENTICACIÓN Y MENÚ ---
 
-        // Variables globales
-        let tiendasData = [];
-        let map;
-        let marcadorActual;
+    window.toggleMenu = function() {
+        const menu = document.getElementById("side-menu");
+        menu.style.right = menu.style.right === "0px" ? "-300px" : "0px";
+    };
 
-        // 1. Leer datos de Firebase
-        onSnapshot(collection(db, "tiendas"), (snapshot) => {
-            tiendasData = snapshot.docs.map(doc => doc.data());
-            renderizarTiendas(tiendasData);
-        });
+    window.mostrarOpcionesAuth = function() {
+        const user = auth.currentUser;
+        if (user) {
+            // Si está logueado, abre el formulario directo
+            document.getElementById("formularioVendedor").style.display = "block";
+            window.toggleMenu();
+            document.getElementById("formularioVendedor").scrollIntoView({ behavior: 'smooth' });
+        } else {
+            // Si no, muestra opciones
+            document.getElementById("opciones-auth").style.display = "block";
+            document.getElementById("auth-container").style.display = "none";
+        }
+    };
 
-        // 2. Dibujar las tarjetas de las tiendas
-        window.renderizarTiendas = function(lista) {
-            const contenedor = document.getElementById("listaTiendas");
-            contenedor.innerHTML = ""; 
+    window.mostrarFormularioAuth = function(tipo) {
+        const container = document.getElementById("auth-container");
+        const titulo = document.getElementById("auth-title");
+        const boton = document.getElementById("btn-auth-accion");
 
-            if(lista.length === 0) {
-                contenedor.innerHTML = "<p style='text-align:center; width:100%;'>No hay tiendas en esta provincia todavía.</p>";
-                return;
-            }
+        container.style.display = "block";
 
-            lista.forEach(tienda => {
-                const mensajeWa = `Hola, te contacto desde BazarCuba`;
-                const linkWa = `https://wa.me/${tienda.tel.replace(/\+/g, '')}?text=${encodeURIComponent(mensajeWa)}`;
+        if (tipo === 'login') {
+            titulo.innerText = "Iniciar Sesión";
+            boton.innerText = "Entrar";
+            boton.onclick = window.login;
+        } else {
+            titulo.innerText = "Crear Cuenta Nueva";
+            boton.innerText = "Registrarse";
+            boton.onclick = window.registro;
+        }
+    };
 
-                const card = `
-                    <div class="card">
- <div class="card-img-container">
-            <img src="${tienda.fotoUrl || 'https://via.placeholder.com/300x200?text=BazarCuba'}" alt="Foto del negocio">
-        </div>
-                        <h3>${tienda.nombre}</h3>
-        <p class="precio-tag">${tienda.precio || 'Precio a consultar'}</p>
-                        <p class="provincia">${tienda.provincia}</p>
-                        <div class="card-buttons">
-                            <button class="btn-mapa" onclick="verUbicacion(${tienda.lat}, ${tienda.lng}, '${tienda.nombre}')">📍 Ver Mapa</button>
-                            <a href="${linkWa}" target="_blank" class="btn-wa">💬 WhatsApp</a>
-                        </div>
+    window.registro = async function() {
+        const email = document.getElementById("email").value;
+        const pass = document.getElementById("password").value;
+        try {
+            await createUserWithEmailAndPassword(auth, email, pass);
+            alert("✅ ¡Cuenta creada con éxito!");
+            document.getElementById("email").value = "";
+            document.getElementById("password").value = "";
+        } catch (error) {
+            alert("❌ Error: Verifica que el correo sea válido y la contraseña tenga 6 o más caracteres.");
+            console.error(error);
+        }
+    };
+
+    window.login = async function() {
+        const email = document.getElementById("email").value;
+        const pass = document.getElementById("password").value;
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+            alert("✅ Sesión iniciada.");
+            document.getElementById("email").value = "";
+            document.getElementById("password").value = "";
+        } catch (error) {
+            alert("❌ Correo o contraseña incorrectos.");
+        }
+    };
+
+    window.cerrarSesion = async function() {
+        try {
+            await signOut(auth);
+            alert("Sesión cerrada correctamente.");
+            document.getElementById("formularioVendedor").style.display = "none";
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    // Vigilar el estado de la sesión
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.getElementById("opciones-auth").style.display = "none";
+            document.getElementById("auth-container").style.display = "none";
+            document.getElementById("btn-add-negocio").innerText = "➕ Gestionar mi Negocio";
+            document.getElementById("btn-cerrar-sesion").style.display = "block";
+        } else {
+            document.getElementById("btn-add-negocio").innerText = "➕ Añadir negocio";
+            document.getElementById("btn-cerrar-sesion").style.display = "none";
+            document.getElementById("opciones-auth").style.display = "none";
+            document.getElementById("auth-container").style.display = "none";
+        }
+    });
+
+    // --- LÓGICA DE TIENDAS Y MAPA ---
+
+    onSnapshot(collection(db, "tiendas"), (snapshot) => {
+        tiendasData = snapshot.docs.map(doc => doc.data());
+        renderizarTiendas(tiendasData);
+    });
+
+    window.renderizarTiendas = function(lista) {
+        const contenedor = document.getElementById("listaTiendas");
+        contenedor.innerHTML = ""; 
+
+        if(lista.length === 0) {
+            contenedor.innerHTML = "<p style='text-align:center; width:100%;'>No hay anuncios en esta provincia todavía.</p>";
+            return;
+        }
+
+        lista.forEach(tienda => {
+            const mensajeWa = `Hola, te contacto desde BazarCuba por el anuncio: ${tienda.nombre}`;
+            const linkWa = `https://wa.me/${tienda.tel.replace(/\+/g, '')}?text=${encodeURIComponent(mensajeWa)}`;
+
+            const card = `
+                <div class="card">
+                    <div class="card-img-container">
+                        <img src="${tienda.fotoUrl || 'https://via.placeholder.com/300x200?text=BazarCuba'}" alt="Foto del negocio">
                     </div>
-                `;
-                contenedor.insertAdjacentHTML('beforeend', card);
+                    <h3>${tienda.nombre}</h3>
+                    <p class="precio-tag">${tienda.precio}</p>
+                    <p class="provincia">${tienda.provincia}</p>
+                    <div class="card-buttons">
+                        <button class="btn-mapa" onclick="verUbicacion(${tienda.lat}, ${tienda.lng}, '${tienda.nombre}')">📍 Ver Mapa</button>
+                        <a href="${linkWa}" target="_blank" class="btn-wa">💬 WhatsApp</a>
+                    </div>
+                </div>
+            `;
+            contenedor.insertAdjacentHTML('beforeend', card);
+        });
+    };
+
+    window.filtrarPorProvincia = function() {
+        const seleccionada = document.getElementById("filtroProvincia").value;
+        document.getElementById("mapa-container").style.display = "none";
+
+        if (seleccionada === "todas") {
+            renderizarTiendas(tiendasData);
+        } else {
+            const filtradas = tiendasData.filter(t => t.provincia === seleccionada);
+            renderizarTiendas(filtradas);
+        }
+    };
+
+    window.verUbicacion = function(lat, lng, nombre) {
+        const mapaContainer = document.getElementById("mapa-container");
+        mapaContainer.style.display = "block";
+
+        if (!map) {
+            map = L.map('mapa').setView([lat, lng], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap | BazarCuba'
+            }).addTo(map);
+        } else {
+            map.setView([lat, lng], 13);
+        }
+
+        if (marcadorActual) map.removeLayer(marcadorActual);
+        marcadorActual = L.marker([lat, lng]).addTo(map).bindPopup(`<b>${nombre}</b>`).openPopup();
+        mapaContainer.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // --- LÓGICA DE PUBLICACIÓN Y CLOUDINARY ---
+
+    window.previsualizarImagen = function(event) {
+        const reader = new FileReader();
+        const imagenContenedor = document.getElementById('imgPreview');
+        const textoAyuda = document.getElementById('previewText');
+
+        reader.onload = function() {
+            if (reader.readyState === 2) {
+                imagenContenedor.src = reader.result;
+                imagenContenedor.style.display = "block";
+                textoAyuda.style.display = "none";
+            }
+        }
+        if (event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
+    };
+
+    window.guardarTienda = async function() {
+        const nombre = document.getElementById("nombreTienda").value;
+        const precio = document.getElementById("precioTienda").value;
+        const selectorProv = document.getElementById("provincia");
+        const whatsapp = document.getElementById("whatsapp").value;
+        const fotoInput = document.getElementById("fotoTienda");
+        
+        // Evitamos que guarde si no está logueado por seguridad extra
+        if (!auth.currentUser) {
+            alert("⚠️ Debes iniciar sesión para publicar un anuncio.");
+            return;
+        }
+
+        if (!nombre || !precio || !selectorProv.value || !fotoInput.files[0]) {
+            alert("⚠️ Por favor, rellena todos los campos y selecciona una imagen.");
+            return;
+        }
+
+        // Desactivar botón mientras sube para evitar doble clic
+        const btn = document.querySelector(".btn-guardar");
+        btn.innerText = "Subiendo... ⏳";
+        btn.disabled = true;
+
+        try {
+            const formData = new FormData();
+            formData.append('file', fotoInput.files[0]);
+            formData.append('upload_preset', 'bazar_present'); 
+
+            const res = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', {
+                method: 'POST',
+                body: formData
             });
-        };
+            
+            const data = await res.json();
+            if (!data.secure_url) throw new Error("Error en Cloudinary");
 
-        // 3. Filtrar por provincia
-        window.filtrarPorProvincia = function() {
-            const seleccionada = document.getElementById("filtroProvincia").value;
-            // Ocultar el mapa si se cambia el filtro
-            document.getElementById("mapa-container").style.display = "none";
+            const nombreProvincia = selectorProv.options[selectorProv.selectedIndex].text;
+            const coordenadas = selectorProv.value.split(",");
 
-            if (seleccionada === "todas") {
-                renderizarTiendas(tiendasData);
-            } else {
-                const filtradas = tiendasData.filter(t => t.provincia === seleccionada);
-                renderizarTiendas(filtradas);
-            }
-        };
+            // Agregamos un ligero desvío aleatorio a las coordenadas para que los marcadores no se tapen entre sí
+            const lat = parseFloat(coordenadas[0]) + (Math.random() - 0.5) * 0.02;
+            const lng = parseFloat(coordenadas[1]) + (Math.random() - 0.5) * 0.02;
 
-        // 4. Mostrar mapa al hacer clic en "Ver Mapa"
-        window.verUbicacion = function(lat, lng, nombre) {
-            const mapaContainer = document.getElementById("mapa-container");
-            mapaContainer.style.display = "block"; // Mostrar el contenedor
+            await addDoc(collection(db, "tiendas"), {
+                uidVendedor: auth.currentUser.uid, // Guardamos quién lo publicó
+                nombre: nombre,
+                precio: precio,
+                fotoUrl: data.secure_url, 
+                provincia: nombreProvincia,
+                tel: whatsapp,
+                lat: lat,
+                lng: lng,
+                fecha: new Date()
+            });
 
-            // Inicializar el mapa solo la primera vez que se necesita
-            if (!map) {
-                map = L.map('mapa').setView([lat, lng], 15);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap | BazarCuba'
-                }).addTo(map);
-            } else {
-                // Si ya existe, solo cambiar la vista
-                map.setView([lat, lng], 15);
-            }
-
-            // Quitar marcador anterior si existe y poner el nuevo
-            if (marcadorActual) {
-                map.removeLayer(marcadorActual);
-            }
-            marcadorActual = L.marker([lat, lng]).addTo(map)
-                .bindPopup(`<b>${nombre}</b>`)
-                .openPopup();
-
-            // Hacer scroll suave hacia el mapa
-            mapaContainer.scrollIntoView({ behavior: 'smooth' });
-        };
-
-// Función para mostrar la foto apenas el usuario la selecciona
-window.previsualizarImagen = function(event) {
-    const reader = new FileReader();
-    const imagenContenedor = document.getElementById('imgPreview');
-    const textoAyuda = document.getElementById('previewText');
-
-    reader.onload = function() {
-        if (reader.readyState === 2) {
-            imagenContenedor.src = reader.result;
-            imagenContenedor.style.display = "block"; // Muestra la foto
-            textoAyuda.style.display = "none";      // Oculta el texto "Agregue una foto"
+            alert("✅ ¡Anuncio publicado con éxito!");
+            location.reload(); 
+        } catch (error) {
+            console.error(error);
+            alert("❌ Error al publicar. Revisa tu conexión.");
+            btn.innerText = "Guardar y Publicar";
+            btn.disabled = false;
         }
-    }
-    
-    if (event.target.files[0]) {
-        reader.readAsDataURL(event.target.files[0]);
-    }
-};
-
-window.guardarTienda = async function() {
-    const nombre = document.getElementById("nombreTienda").value;
-    const precio = document.getElementById("precioTienda").value;
-    const selectorProv = document.getElementById("provincia");
-    const whatsapp = document.getElementById("whatsapp").value;
-    const fotoInput = document.getElementById("fotoTienda"); // Asegúrate de que este ID coincide con tu HTML
-
-    // Validación: que no falte nada
-    if (!nombre || !precio || !fotoInput.files[0]) {
-        alert("Por favor, completa los datos y selecciona una foto.");
-        return;
-    }
-
-    try {
-        // --- PASO 1: Subir la foto a tu Cloudinary ---
-        const formData = new FormData();
-        formData.append('file', fotoInput.files[0]);
-        // Aquí usamos el nombre exacto que pusiste en Cloudinary
-        formData.append('upload_preset', 'bazar_present'); 
-
-        const res = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const data = await res.json();
-        
-        if (!data.secure_url) {
-            throw new Error("No se pudo obtener la URL de la imagen. Revisa el preset.");
-        }
-
-        const fotoUrlFinal = data.secure_url; // Aquí está el link de la foto ya optimizada
-
-        // --- PASO 2: Guardar el anuncio en Firebase ---
-        const nombreProvincia = selectorProv.options[selectorProv.selectedIndex].text;
-        const coords = selectorProv.value.split(",");
-
-        await addDoc(collection(db, "tiendas"), {
-            nombre: nombre,
-            precio: precio,
-            fotoUrl: fotoUrlFinal, 
-            provincia: nombreProvincia,
-            tel: whatsapp,
-            lat: parseFloat(coords[0]),
-            lng: parseFloat(coords[1]),
-            fecha: new Date()
-        });
-
-        alert("¡Negocio publicado con éxito!");
-        location.reload();
-    } catch (error) {
-        console.error("Error completo:", error);
-        alert("Error al subir la foto a Cloudinary.");
-    }
-};
-   
-    </script>
+    };
+</script>
 </body>
 </html>
