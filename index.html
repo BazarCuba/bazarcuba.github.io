@@ -134,22 +134,22 @@
         <label>Provincia:</label>
         <select id="provincia">
             <option value="">-- Elige una provincia --</option>
-            <option value="22.41,-83.69">Pinar del Río</option>
-            <option value="22.81,-82.76">Artemisa</option>
-            <option value="23.11,-82.36">La Habana</option>
-            <option value="22.94,-82.15">Mayabeque</option>
-            <option value="23.04,-81.57">Matanzas</option>
-            <option value="22.14,-80.44">Cienfuegos</option>
-            <option value="22.40,-79.96">Villa Clara</option>
-            <option value="21.93,-79.44">Sancti Spíritus</option>
-            <option value="21.88,-78.76">Ciego de Ávila</option>
-            <option value="21.38,-77.91">Camagüey</option>
-            <option value="20.96,-76.95">Las Tunas</option>
-            <option value="20.88,-76.25">Holguín</option>
-            <option value="20.37,-76.64">Granma</option>
-            <option value="20.02,-75.82">Santiago de Cuba</option>
-            <option value="20.14,-75.20">Guantánamo</option>
-            <option value="21.62,-82.80">Isla de la Juventud</option>
+            <option value="Pinar del Río">Pinar del Río</option>
+            <option value="Artemisa">Artemisa</option>
+            <option value="La Habana">La Habana</option>
+            <option value="Mayabeque">Mayabeque</option>
+            <option value="Matanzas">Matanzas</option>
+            <option value="Cienfuegos">Cienfuegos</option>
+            <option value="Villa Clara">Villa Clara</option>
+            <option value="Sancti Spíritus">Sancti Spíritus</option>
+            <option value="Ciego de Ávila">Ciego de Ávila</option>
+            <option value="Camagüey">Camagüey</option>
+            <option value="Las Tunas">Las Tunas</option>
+            <option value="Holguín">Holguín</option>
+            <option value="Granma">Granma</option>
+            <option value="Santiago de Cuba">Santiago de Cuba</option>
+            <option value="Guantánamo">Guantánamo</option>
+            <option value="Isla de la Juventud">Isla de la Juventud</option>
         </select>
     </div>
 
@@ -162,7 +162,7 @@
 </div>
 
 <script type="module">
-    // Importaciones de Firebase (Incluyendo Auth)
+    // Importaciones de Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -186,6 +186,26 @@
     let map;
     let marcadorActual;
 
+    // Diccionario de coordenadas para el mapa
+    const coordenadasCuba = {
+        "Pinar del Río": { lat: 22.41, lng: -83.69 },
+        "Artemisa": { lat: 22.81, lng: -82.76 },
+        "La Habana": { lat: 23.11, lng: -82.36 },
+        "Mayabeque": { lat: 22.94, lng: -82.15 },
+        "Matanzas": { lat: 23.04, lng: -81.57 },
+        "Cienfuegos": { lat: 22.14, lng: -80.44 },
+        "Villa Clara": { lat: 22.40, lng: -79.96 },
+        "Sancti Spíritus": { lat: 21.93, lng: -79.44 },
+        "Ciego de Ávila": { lat: 21.88, lng: -78.76 },
+        "Camagüey": { lat: 21.38, lng: -77.91 },
+        "Las Tunas": { lat: 20.96, lng: -76.95 },
+        "Holguín": { lat: 20.88, lng: -76.25 },
+        "Granma": { lat: 20.37, lng: -76.64 },
+        "Santiago de Cuba": { lat: 20.02, lng: -75.82 },
+        "Guantánamo": { lat: 20.14, lng: -75.20 },
+        "Isla de la Juventud": { lat: 21.62, lng: -82.80 }
+    };
+
     // --- LÓGICA DE AUTENTICACIÓN Y MENÚ ---
 
     window.toggleMenu = function() {
@@ -196,12 +216,10 @@
     window.mostrarOpcionesAuth = function() {
         const user = auth.currentUser;
         if (user) {
-            // Si está logueado, abre el formulario directo
             document.getElementById("formularioVendedor").style.display = "block";
             window.toggleMenu();
             document.getElementById("formularioVendedor").scrollIntoView({ behavior: 'smooth' });
         } else {
-            // Si no, muestra opciones
             document.getElementById("opciones-auth").style.display = "block";
             document.getElementById("auth-container").style.display = "none";
         }
@@ -262,7 +280,6 @@
         }
     };
 
-    // Vigilar el estado de la sesión
     onAuthStateChanged(auth, (user) => {
         if (user) {
             document.getElementById("opciones-auth").style.display = "none";
@@ -295,7 +312,7 @@
 
         lista.forEach(tienda => {
             const mensajeWa = `Hola, te contacto desde BazarCuba por el anuncio: ${tienda.nombre}`;
-            const linkWa = `https://wa.me/${tienda.tel.replace(/\+/g, '')}?text=${encodeURIComponent(mensajeWa)}`;
+            const linkWa = tienda.tel ? `https://wa.me/${tienda.tel.replace(/\+/g, '')}?text=${encodeURIComponent(mensajeWa)}` : '#';
 
             const card = `
                 <div class="card">
@@ -366,21 +383,20 @@
         const nombre = document.getElementById("nombreTienda").value;
         const precio = document.getElementById("precioTienda").value;
         const selectorProv = document.getElementById("provincia");
+        const nombreProvincia = selectorProv.value;
         const whatsapp = document.getElementById("whatsapp").value;
         const fotoInput = document.getElementById("fotoTienda");
         
-        // Evitamos que guarde si no está logueado por seguridad extra
         if (!auth.currentUser) {
             alert("⚠️ Debes iniciar sesión para publicar un anuncio.");
             return;
         }
 
-        if (!nombre || !precio || !selectorProv.value || !fotoInput.files[0]) {
+        if (!nombre || !precio || !nombreProvincia || !fotoInput.files[0]) {
             alert("⚠️ Por favor, rellena todos los campos y selecciona una imagen.");
             return;
         }
 
-        // Desactivar botón mientras sube para evitar doble clic
         const btn = document.querySelector(".btn-guardar");
         btn.innerText = "Subiendo... ⏳";
         btn.disabled = true;
@@ -398,19 +414,19 @@
             const data = await res.json();
             if (!data.secure_url) throw new Error("Error en Cloudinary");
 
-            const nombreProvincia = selectorProv.options[selectorProv.selectedIndex].text;
-            const coordenadas = selectorProv.value.split(",");
-
-            // Agregamos un ligero desvío aleatorio a las coordenadas para que los marcadores no se tapen entre sí
-            const lat = parseFloat(coordenadas[0]) + (Math.random() - 0.5) * 0.02;
-            const lng = parseFloat(coordenadas[1]) + (Math.random() - 0.5) * 0.02;
+            // Obtenemos las coordenadas del diccionario usando el nombre de la provincia
+            const coords = coordenadasCuba[nombreProvincia];
+            
+            // Agregamos un ligero desvío aleatorio a las coordenadas
+            const lat = coords.lat + (Math.random() - 0.5) * 0.02;
+            const lng = coords.lng + (Math.random() - 0.5) * 0.02;
 
             await addDoc(collection(db, "tiendas"), {
-                uidVendedor: auth.currentUser.uid, // Guardamos quién lo publicó
+                uidVendedor: auth.currentUser.uid, 
                 nombre: nombre,
                 precio: precio,
                 fotoUrl: data.secure_url, 
-                provincia: nombreProvincia,
+                provincia: nombreProvincia, // Guarda el nombre (Ej. "La Habana")
                 tel: whatsapp,
                 lat: lat,
                 lng: lng,
