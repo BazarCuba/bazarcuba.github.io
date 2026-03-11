@@ -423,6 +423,7 @@
 
             await addDoc(collection(db, "tiendas"), {
                 uidVendedor: auth.currentUser.uid, 
+correo: auth.currentUser.email,
                 nombre: nombre,
                 precio: precio,
                 fotoUrl: data.secure_url, 
