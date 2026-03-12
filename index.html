@@ -252,7 +252,7 @@
             document.getElementById("email").value = "";
             document.getElementById("password").value = "";
         } catch (error) {
-            alert("❌ Error: Verifica que el correo sea válido y la contraseña tenga 6 o más caracteres.");
+            alert("Error de Firebase: " + error.code");
             console.error(error);
         }
     };
