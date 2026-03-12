@@ -243,7 +243,7 @@
         }
     };
 
-        window.registro = async function() {
+    window.registro = async function() {
         const email = document.getElementById("email").value;
         const pass = document.getElementById("password").value;
         
@@ -257,11 +257,23 @@
             alert("✅ ¡Cuenta creada con éxito!");
             document.getElementById("email").value = "";
             document.getElementById("password").value = "";
-            // Opcional: cerrar el menú tras registrarse
             window.toggleMenu();
         } catch (error) {
-            alert("Error de Firebase: " + error.code);
-            console.error(error);
+            console.error("Error capturado:", error.code);
+            
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    alert("❌ Este correo ya está registrado.");
+                    break;
+                case 'auth/invalid-email':
+                    alert("❌ El formato del correo no es válido.");
+                    break;
+                case 'auth/weak-password':
+                    alert("❌ La contraseña es muy débil (mínimo 6 caracteres).");
+                    break;
+                default:
+                    alert("❌ Error: " + error.message);
+            }
         }
     };
 
@@ -281,26 +293,24 @@
             document.getElementById("password").value = "";
             window.toggleMenu();
         } catch (error) {
-            console.error(error);
-            if (error.code === 'auth/invalid-credential') {
-                alert("❌ Correo o contraseña incorrectos.");
-            } else {
-                alert("Error: " + error.code);
+            console.error("Error capturado:", error.code);
+
+            switch (error.code) {
+                case 'auth/user-not-found':
+                    alert("❌ No existe ningún usuario con este correo.");
+                    break;
+                case 'auth/wrong-password':
+                    alert("❌ La contraseña es incorrecta.");
+                    break;
+                case 'auth/invalid-credential':
+                    alert("❌ Credenciales incorrectas (correo o clave fallida).");
+                    break;
+                case 'auth/too-many-requests':
+                    alert("❌ Demasiados intentos fallidos. Intenta más tarde.");
+                    break;
+                default:
+                    alert("❌ Error: " + error.message);
             }
-        }
-    };
-
-
-    window.login = async function() {
-        const email = document.getElementById("email").value;
-        const pass = document.getElementById("password").value;
-        try {
-            await signInWithEmailAndPassword(auth, email, pass);
-            alert("✅ Sesión iniciada.");
-            document.getElementById("email").value = "";
-            document.getElementById("password").value = "";
-        } catch (error) {
-            alert("❌ Correo o contraseña incorrectos.");
         }
     };
 
@@ -457,11 +467,11 @@
 
             await addDoc(collection(db, "tiendas"), {
                 uidVendedor: auth.currentUser.uid, 
-correo: auth.currentUser.email,
+                correo: auth.currentUser.email,
                 nombre: nombre,
                 precio: precio,
                 fotoUrl: data.secure_url, 
-                provincia: nombreProvincia, // Guarda el nombre (Ej. "La Habana")
+                provincia: nombreProvincia,
                 tel: whatsapp,
                 lat: lat,
                 lng: lng,
