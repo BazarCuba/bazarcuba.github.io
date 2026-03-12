@@ -243,19 +243,53 @@
         }
     };
 
-    window.registro = async function() {
+        window.registro = async function() {
         const email = document.getElementById("email").value;
         const pass = document.getElementById("password").value;
+        
+        if (!email || !pass) {
+            alert("⚠️ Por favor, completa el correo y la contraseña.");
+            return;
+        }
+
         try {
             await createUserWithEmailAndPassword(auth, email, pass);
             alert("✅ ¡Cuenta creada con éxito!");
             document.getElementById("email").value = "";
             document.getElementById("password").value = "";
+            // Opcional: cerrar el menú tras registrarse
+            window.toggleMenu();
         } catch (error) {
-            alert("Error de Firebase: " + error.code");
+            alert("Error de Firebase: " + error.code);
             console.error(error);
         }
     };
+
+    window.login = async function() {
+        const email = document.getElementById("email").value;
+        const pass = document.getElementById("password").value;
+        
+        if (!email || !pass) {
+            alert("⚠️ Escribe tu correo y contraseña.");
+            return;
+        }
+
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+            alert("✅ Sesión iniciada.");
+            document.getElementById("email").value = "";
+            document.getElementById("password").value = "";
+            window.toggleMenu();
+        } catch (error) {
+            console.error(error);
+            if (error.code === 'auth/invalid-credential') {
+                alert("❌ Correo o contraseña incorrectos.");
+            } else {
+                alert("Error: " + error.code);
+            }
+        }
+    };
+
 
     window.login = async function() {
         const email = document.getElementById("email").value;
