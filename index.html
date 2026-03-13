@@ -465,18 +465,35 @@
             const lat = coords.lat + (Math.random() - 0.5) * 0.02;
             const lng = coords.lng + (Math.random() - 0.5) * 0.02;
 
-            await addDoc(collection(db, "tiendas"), {
-                uidVendedor: auth.currentUser.uid, 
-                correo: auth.currentUser.email,
-                nombre: nombre,
-                precio: precio,
-                fotoUrl: data.secure_url, 
-                provincia: nombreProvincia,
-                tel: whatsapp,
-                lat: lat,
-                lng: lng,
-                fecha: new Date()
-            });
+            // --- NUEVO CÓDIGO PARA SALTAR EL BLOQUEO ---
+const urlWorker = "https://api-bazar.norges763.workers.dev/v1/projects/bazarcuba/databases/(default)/documents/tiendas";
+
+const datosParaFirebase = {
+    fields: {
+        uidVendedor: { stringValue: auth.currentUser.uid },
+        correo: { stringValue: auth.currentUser.email },
+        nombre: { stringValue: nombre },
+        precio: { stringValue: precio },
+        fotoUrl: { stringValue: data.secure_url },
+        provincia: { stringValue: nombreProvincia },
+        tel: { stringValue: whatsapp },
+        lat: { doubleValue: lat },
+        lng: { doubleValue: lng },
+        fecha: { timestampValue: new Date().toISOString() }
+    }
+};
+
+const respuesta = await fetch(urlWorker, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(datosParaFirebase)
+});
+
+if (!respuesta.ok) {
+    throw new Error("Error al publicar a través del túnel");
+}
+// --- FIN DEL CAMBIO ---
+
 
             alert("✅ ¡Anuncio publicado con éxito!");
             location.reload(); 
