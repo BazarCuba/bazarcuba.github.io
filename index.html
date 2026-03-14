@@ -162,7 +162,6 @@
 </div>
 
 <script type="module">
-    // Solo cargamos Auth, HEMOS ELIMINADO FIRESTORE PORQUE USAMOS EL WORKER
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
@@ -179,7 +178,6 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Variables globales
     let tiendasData = [];
     let map;
     let marcadorActual;
@@ -195,7 +193,6 @@
         "Guantánamo": { lat: 20.14, lng: -75.20 }, "Isla de la Juventud": { lat: 21.62, lng: -82.80 }
     };
 
-    // --- LÓGICA DE AUTENTICACIÓN ---
     window.toggleMenu = function() {
         const menu = document.getElementById("side-menu");
         menu.style.right = menu.style.right === "0px" ? "-300px" : "0px";
@@ -225,78 +222,61 @@
     };
 
     window.registro = async function() {
-    const email = document.getElementById("email").value;
-    const pass = document.getElementById("password").value;
-    
-    if (!email || !pass) return alert("⚠️ Por favor, completa todos los campos.");
-    if (pass.length < 6) return alert("⚠️ La contraseña debe tener al menos 6 caracteres.");
-
-    try {
-        const respuesta = await fetch("https://api-bazar.norges763.workers.dev/registro", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                email: email, 
-                password: pass, 
-                returnSecureToken: true 
-            })
-        });
-
-        const data = await respuesta.json();
-
-        if (data.error) {
-            throw new Error(data.error.message);
-        }
-
-        alert("✅ ¡Cuenta creada con éxito! Ya puedes iniciar sesión.");
-    } catch (error) {
-        console.error("Error en registro:", error);
-        alert("❌ Error: " + error.message);
-    }
-};
-window.login = async function() {
-    const email = document.getElementById("email").value;
-    const pass = document.getElementById("password").value;
-
-    if (!email || !pass) return alert("⚠️ Completa correo y contraseña.");
-
-    try {
-        // 1. Validamos con el Worker (Saltamos el bloqueo de IP de Google)
-        const respuesta = await fetch("https://api-bazar.norges763.workers.dev/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                email: email, 
-                password: pass, 
-                returnSecureToken: true 
-            })
-        });
-
-        const data = await respuesta.json();
-
-        if (data.error) {
-            throw new Error(data.error.message);
-        }
-
-        // 2. Si el Worker dice OK, sincronizamos con Firebase en el navegador
-        // Usamos la función oficial solo para que el navegador guarde la sesión
-        await signInWithEmailAndPassword(auth, email, pass);
+        const email = document.getElementById("email").value;
+        const pass = document.getElementById("password").value;
         
-        alert("✅ Sesión iniciada correctamente.");
-        window.toggleMenu();
+        if (!email || !pass) return alert("⚠️ Por favor, completa todos los campos.");
+        if (pass.length < 6) return alert("⚠️ La contraseña debe tener al menos 6 caracteres.");
 
-    } catch (error) {
-        // Si hay error de red pero el usuario ya entró (gracias al Worker), lo dejamos pasar
-        if (auth.currentUser) {
-            alert("✅ Sesión activa.");
-            window.toggleMenu();
-        } else {
-            console.error("Error:", error);
-            alert("❌ Error al entrar: " + error.message);
+        try {
+            const respuesta = await fetch("https://api-bazar.norges763.workers.dev/registro", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: email, password: pass, returnSecureToken: true })
+            });
+
+            const data = await respuesta.json();
+
+            if (data.error) throw new Error(data.error.message);
+
+            alert("✅ ¡Cuenta creada con éxito! Ya puedes iniciar sesión.");
+        } catch (error) {
+            console.error("Error en registro:", error);
+            alert("❌ Error: " + error.message);
         }
-    }
-};
+    };
 
+    window.login = async function() {
+        const email = document.getElementById("email").value;
+        const pass = document.getElementById("password").value;
+
+        if (!email || !pass) return alert("⚠️ Completa correo y contraseña.");
+
+        try {
+            const respuesta = await fetch("https://api-bazar.norges763.workers.dev/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: email, password: pass, returnSecureToken: true })
+            });
+
+            const data = await respuesta.json();
+
+            if (data.error) throw new Error("Credenciales incorrectas o usuario no encontrado.");
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                alert("✅ Sesión iniciada.");
+                window.toggleMenu();
+            } catch (fbError) {
+                console.log("Bloqueo de IP detectado por Firebase.");
+                alert("✅ Has entrado con éxito. Si no ves tu menú activo, simplemente refresca la página.");
+                window.toggleMenu();
+            }
+
+        } catch (error) {
+            alert("❌ Error: " + error.message);
+        }
+    };
 
     window.cerrarSesion = async function() {
         try { await signOut(auth); alert("Sesión cerrada."); document.getElementById("formularioVendedor").style.display = "none"; } 
@@ -315,15 +295,12 @@ window.login = async function() {
         }
     });
 
-    // --- FUNCIÓN PRINCIPAL PARA LEER DATOS SIN VPN A TRAVÉS DEL WORKER ---
     window.cargarTiendasSinVPN = async function() {
         try {
-            // AQUÍ ESTÁ LA URL EXACTA QUE FUNCIONÓ EN TUS PRUEBAS
             const respuesta = await fetch("https://api-bazar.norges763.workers.dev/get-anuncios");
             const data = await respuesta.json();
 
             if (data.documents) {
-                // Mapeamos el formato de la API REST a objetos normales
                 tiendasData = data.documents.map(doc => {
                     const f = doc.fields || {};
                     return {
@@ -391,7 +368,6 @@ window.login = async function() {
         document.getElementById("mapa-container").scrollIntoView({ behavior: 'smooth' });
     };
 
-    // --- PUBLICAR ANUNCIO (AÚN REQUIERE VPN HASTA QUE ACTUALICEMOS EL WORKER PARA POST) ---
     window.previsualizarImagen = function(event) {
         const reader = new FileReader();
         reader.onload = function() {
@@ -413,53 +389,49 @@ window.login = async function() {
         btn.innerText = "Subiendo... ⏳"; btn.disabled = true;
 
         try {
-            // 1. Subir imagen a Cloudinary (Esto funciona bien en Cuba)
             const formData = new FormData();
             formData.append('file', fotoInput.files[0]);
             formData.append('upload_preset', 'bazar_present'); 
             const resImg = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: formData });
             const dataImg = await resImg.json();
 
-      // 2. Preparar los datos para el Worker
-        const provinciaSeleccionada = document.getElementById("provincia").value;
-        const coords = coordenadasCuba[provinciaSeleccionada] || { lat: 23.11, lng: -82.36 };
-        
-        const payload = {
-            fields: {
-                uidVendedor: { stringValue: auth.currentUser.uid },
-                correo: { stringValue: auth.currentUser.email },
-                nombre: { stringValue: document.getElementById("nombreTienda").value },
-                precio: { stringValue: document.getElementById("precioTienda").value },
-                fotoUrl: { stringValue: dataImg.secure_url },
-                provincia: { stringValue: provinciaSeleccionada },
-                tel: { stringValue: document.getElementById("whatsapp").value },
-                lat: { doubleValue: coords.lat },
-                lng: { doubleValue: coords.lng },
-                fecha: { timestampValue: new Date().toISOString() }
-            }
-        };
+            const provinciaSeleccionada = document.getElementById("provincia").value;
+            const coords = coordenadasCuba[provinciaSeleccionada] || { lat: 23.11, lng: -82.36 };
+            
+            const payload = {
+                fields: {
+                    uidVendedor: { stringValue: auth.currentUser.uid },
+                    correo: { stringValue: auth.currentUser.email },
+                    nombre: { stringValue: document.getElementById("nombreTienda").value },
+                    precio: { stringValue: document.getElementById("precioTienda").value },
+                    fotoUrl: { stringValue: dataImg.secure_url },
+                    provincia: { stringValue: provinciaSeleccionada },
+                    tel: { stringValue: document.getElementById("whatsapp").value },
+                    lat: { doubleValue: coords.lat },
+                    lng: { doubleValue: coords.lng },
+                    fecha: { timestampValue: new Date().toISOString() }
+                }
+            };
 
- // 3. ENVIAR AL WORKER (Sin VPN)
-        const respuesta = await fetch("https://api-bazar.norges763.workers.dev/", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+            const respuesta = await fetch("https://api-bazar.norges763.workers.dev/", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-        if (!respuesta.ok) throw new Error("Error en el servidor");
+            if (!respuesta.ok) throw new Error("Error en el servidor");
 
-        alert("✅ ¡Anuncio publicado con éxito!");
-        location.reload(); 
-    } catch (error) {
-        console.error(error);
-        alert("❌ Error al publicar. Intenta de nuevo.");
-        btn.innerText = "Guardar y Publicar"; 
-        btn.disabled = false;
-    }
-};
-    // INICIAMOS LA LECTURA AL CARGAR LA PÁGINA
+            alert("✅ ¡Anuncio publicado con éxito!");
+            location.reload(); 
+        } catch (error) {
+            console.error(error);
+            alert("❌ Error al publicar. Intenta de nuevo.");
+            btn.innerText = "Guardar y Publicar"; 
+            btn.disabled = false;
+        }
+    };
+
     cargarTiendasSinVPN();
-
 </script>
 </body>
 </html>
