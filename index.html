@@ -368,42 +368,43 @@
             const resImg = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: formData });
             const dataImg = await resImg.json();
 
-            // 2. Preparar datos para Firestore
-            const coords = coordenadasCuba[document.getElementById("provincia").value];
-            
-            const payload = {
-                fields: {
-                    uidVendedor: { stringValue: auth.currentUser.uid },
-                    correo: { stringValue: auth.currentUser.email },
-                    nombre: { stringValue: document.getElementById("nombreTienda").value },
-                    precio: { stringValue: document.getElementById("precioTienda").value },
-                    fotoUrl: { stringValue: dataImg.secure_url },
-                    provincia: { stringValue: document.getElementById("provincia").value },
-                    tel: { stringValue: document.getElementById("whatsapp").value },
-                    lat: { doubleValue: coords.lat },
-                    lng: { doubleValue: coords.lng },
-                    fecha: { timestampValue: new Date().toISOString() }
-                }
-            };
+      // 2. Preparar los datos para el Worker
+        const provinciaSeleccionada = document.getElementById("provincia").value;
+        const coords = coordenadasCuba[provinciaSeleccionada] || { lat: 23.11, lng: -82.36 };
+        
+        const payload = {
+            fields: {
+                uidVendedor: { stringValue: auth.currentUser.uid },
+                correo: { stringValue: auth.currentUser.email },
+                nombre: { stringValue: document.getElementById("nombreTienda").value },
+                precio: { stringValue: document.getElementById("precioTienda").value },
+                fotoUrl: { stringValue: dataImg.secure_url },
+                provincia: { stringValue: provinciaSeleccionada },
+                tel: { stringValue: document.getElementById("whatsapp").value },
+                lat: { doubleValue: coords.lat },
+                lng: { doubleValue: coords.lng },
+                fecha: { timestampValue: new Date().toISOString() }
+            }
+        };
 
-            // 3. Enviar directo a Google (Por ahora. Luego lo pasaremos por el Worker)
-            const urlGuardar = "https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas";
-            const respuesta = await fetch(urlGuardar, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+ // 3. ENVIAR AL WORKER (Sin VPN)
+        const respuesta = await fetch("https://api-bazar.norges763.workers.dev/", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
 
-            if (!respuesta.ok) throw new Error("Fallo al guardar");
-            alert("✅ ¡Anuncio publicado!");
-            location.reload(); 
-        } catch (error) {
-            console.error(error);
-            alert("❌ Error al publicar.");
-            btn.innerText = "Guardar y Publicar"; btn.disabled = false;
-        }
-    };
+        if (!respuesta.ok) throw new Error("Error en el servidor");
 
+        alert("✅ ¡Anuncio publicado con éxito!");
+        location.reload(); 
+    } catch (error) {
+        console.error(error);
+        alert("❌ Error al publicar. Intenta de nuevo.");
+        btn.innerText = "Guardar y Publicar"; 
+        btn.disabled = false;
+    }
+};
     // INICIAMOS LA LECTURA AL CARGAR LA PÁGINA
     cargarTiendasSinVPN();
 
