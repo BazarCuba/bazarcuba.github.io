@@ -103,7 +103,7 @@
 </div>
 
 <div id="listaTiendas" class="grid-tiendas">
-    <p style="text-align: center; width: 100%; color: #666;">Cargando anuncios...</p>
+    <p style="text-align: center; width: 100%; color: #666;">Cargando anuncios de forma segura...</p>
 </div>
 
 <div id="mapa-container">
@@ -162,9 +162,8 @@
 </div>
 
 <script type="module">
-    // Importaciones de Firebase
+    // Solo dejamos Auth. Hemos quitado Firestore porque ahora usamos el Worker
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
@@ -178,7 +177,6 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
     const auth = getAuth(app);
 
     // Variables globales
@@ -186,7 +184,6 @@
     let map;
     let marcadorActual;
 
-    // Diccionario de coordenadas para el mapa
     const coordenadasCuba = {
         "Pinar del Río": { lat: 22.41, lng: -83.69 },
         "Artemisa": { lat: 22.81, lng: -82.76 },
@@ -206,8 +203,7 @@
         "Isla de la Juventud": { lat: 21.62, lng: -82.80 }
     };
 
-    // --- LÓGICA DE AUTENTICACIÓN Y MENÚ ---
-
+    // --- LÓGICA DE AUTENTICACIÓN ---
     window.toggleMenu = function() {
         const menu = document.getElementById("side-menu");
         menu.style.right = menu.style.right === "0px" ? "-300px" : "0px";
@@ -229,7 +225,6 @@
         const container = document.getElementById("auth-container");
         const titulo = document.getElementById("auth-title");
         const boton = document.getElementById("btn-auth-accion");
-
         container.style.display = "block";
 
         if (tipo === 'login') {
@@ -246,11 +241,7 @@
     window.registro = async function() {
         const email = document.getElementById("email").value;
         const pass = document.getElementById("password").value;
-        
-        if (!email || !pass) {
-            alert("⚠️ Por favor, completa el correo y la contraseña.");
-            return;
-        }
+        if (!email || !pass) return alert("⚠️ Por favor, completa el correo y la contraseña.");
 
         try {
             await createUserWithEmailAndPassword(auth, email, pass);
@@ -259,32 +250,14 @@
             document.getElementById("password").value = "";
             window.toggleMenu();
         } catch (error) {
-            console.error("Error capturado:", error.code);
-            
-            switch (error.code) {
-                case 'auth/email-already-in-use':
-                    alert("❌ Este correo ya está registrado.");
-                    break;
-                case 'auth/invalid-email':
-                    alert("❌ El formato del correo no es válido.");
-                    break;
-                case 'auth/weak-password':
-                    alert("❌ La contraseña es muy débil (mínimo 6 caracteres).");
-                    break;
-                default:
-                    alert("❌ Error: " + error.message);
-            }
+            alert("❌ Error: " + error.message);
         }
     };
 
     window.login = async function() {
         const email = document.getElementById("email").value;
         const pass = document.getElementById("password").value;
-        
-        if (!email || !pass) {
-            alert("⚠️ Escribe tu correo y contraseña.");
-            return;
-        }
+        if (!email || !pass) return alert("⚠️ Escribe tu correo y contraseña.");
 
         try {
             await signInWithEmailAndPassword(auth, email, pass);
@@ -293,24 +266,7 @@
             document.getElementById("password").value = "";
             window.toggleMenu();
         } catch (error) {
-            console.error("Error capturado:", error.code);
-
-            switch (error.code) {
-                case 'auth/user-not-found':
-                    alert("❌ No existe ningún usuario con este correo.");
-                    break;
-                case 'auth/wrong-password':
-                    alert("❌ La contraseña es incorrecta.");
-                    break;
-                case 'auth/invalid-credential':
-                    alert("❌ Credenciales incorrectas (correo o clave fallida).");
-                    break;
-                case 'auth/too-many-requests':
-                    alert("❌ Demasiados intentos fallidos. Intenta más tarde.");
-                    break;
-                default:
-                    alert("❌ Error: " + error.message);
-            }
+            alert("❌ Error: " + error.message);
         }
     };
 
@@ -338,12 +294,39 @@
         }
     });
 
-    // --- LÓGICA DE TIENDAS Y MAPA ---
+    // --- LÓGICA DE TIENDAS Y MAPA (CON WORKER, SIN VPN) ---
 
-    onSnapshot(collection(db, "tiendas"), (snapshot) => {
-        tiendasData = snapshot.docs.map(doc => doc.data());
-        renderizarTiendas(tiendasData);
-    });
+    // Nueva función para obtener datos desde tu túnel en Cloudflare
+    window.cargarTiendasSinVPN = async function() {
+        try {
+            // Aquí usamos tu Worker comprobado
+            const respuesta = await fetch("https://r.norges763.workers.dev/get-anuncios");
+            const data = await respuesta.json();
+
+            if (data.documents) {
+                // Mapeamos el JSON raro de Google a objetos fáciles de usar
+                tiendasData = data.documents.map(doc => {
+                    const f = doc.fields;
+                    return {
+                        id: doc.name.split('/').pop(),
+                        nombre: f.nombre?.stringValue || "Sin nombre",
+                        precio: f.precio?.stringValue || "Negociable",
+                        provincia: f.provincia?.stringValue || "Desconocida",
+                        fotoUrl: f.fotoUrl?.stringValue || "https://via.placeholder.com/300x200?text=BazarCuba",
+                        tel: f.tel?.stringValue || "",
+                        lat: f.lat?.doubleValue || f.lat?.integerValue || 0,
+                        lng: f.lng?.doubleValue || f.lng?.integerValue || 0
+                    };
+                });
+                renderizarTiendas(tiendasData);
+            } else {
+                renderizarTiendas([]);
+            }
+        } catch (error) {
+            console.error("Error al cargar tiendas desde el Worker:", error);
+            document.getElementById("listaTiendas").innerHTML = "<p style='text-align:center;'>No se pudieron cargar los anuncios. Verifica tu conexión.</p>";
+        }
+    };
 
     window.renderizarTiendas = function(lista) {
         const contenedor = document.getElementById("listaTiendas");
@@ -361,7 +344,7 @@
             const card = `
                 <div class="card">
                     <div class="card-img-container">
-                        <img src="${tienda.fotoUrl || 'https://via.placeholder.com/300x200?text=BazarCuba'}" alt="Foto del negocio">
+                        <img src="${tienda.fotoUrl}" alt="Foto del negocio">
                     </div>
                     <h3>${tienda.nombre}</h3>
                     <p class="precio-tag">${tienda.precio}</p>
@@ -407,7 +390,6 @@
     };
 
     // --- LÓGICA DE PUBLICACIÓN Y CLOUDINARY ---
-
     window.previsualizarImagen = function(event) {
         const reader = new FileReader();
         const imagenContenedor = document.getElementById('imgPreview');
@@ -431,15 +413,8 @@
         const whatsapp = document.getElementById("whatsapp").value;
         const fotoInput = document.getElementById("fotoTienda");
         
-        if (!auth.currentUser) {
-            alert("⚠️ Debes iniciar sesión para publicar un anuncio.");
-            return;
-        }
-
-        if (!nombre || !precio || !nombreProvincia || !fotoInput.files[0]) {
-            alert("⚠️ Por favor, rellena todos los campos y selecciona una imagen.");
-            return;
-        }
+        if (!auth.currentUser) return alert("⚠️ Debes iniciar sesión para publicar un anuncio.");
+        if (!nombre || !precio || !nombreProvincia || !fotoInput.files[0]) return alert("⚠️ Por favor, rellena todos los campos y selecciona una imagen.");
 
         const btn = document.querySelector(".btn-guardar");
         btn.innerText = "Subiendo... ⏳";
@@ -458,42 +433,35 @@
             const data = await res.json();
             if (!data.secure_url) throw new Error("Error en Cloudinary");
 
-            // Obtenemos las coordenadas del diccionario usando el nombre de la provincia
             const coords = coordenadasCuba[nombreProvincia];
-            
-            // Agregamos un ligero desvío aleatorio a las coordenadas
             const lat = coords.lat + (Math.random() - 0.5) * 0.02;
             const lng = coords.lng + (Math.random() - 0.5) * 0.02;
 
-            // --- NUEVO CÓDIGO PARA SALTAR EL BLOQUEO ---
-const urlWorker = "https://api-bazar.norges763.workers.dev/v1/projects/bazarcuba/databases/(default)/documents/tiendas";
+            // Mantengo tu URL original para el POST
+            const urlWorker = "https://api-bazar.norges763.workers.dev/v1/projects/bazarcuba/databases/(default)/documents/tiendas";
 
-const datosParaFirebase = {
-    fields: {
-        uidVendedor: { stringValue: auth.currentUser.uid },
-        correo: { stringValue: auth.currentUser.email },
-        nombre: { stringValue: nombre },
-        precio: { stringValue: precio },
-        fotoUrl: { stringValue: data.secure_url },
-        provincia: { stringValue: nombreProvincia },
-        tel: { stringValue: whatsapp },
-        lat: { doubleValue: lat },
-        lng: { doubleValue: lng },
-        fecha: { timestampValue: new Date().toISOString() }
-    }
-};
+            const datosParaFirebase = {
+                fields: {
+                    uidVendedor: { stringValue: auth.currentUser.uid },
+                    correo: { stringValue: auth.currentUser.email },
+                    nombre: { stringValue: nombre },
+                    precio: { stringValue: precio },
+                    fotoUrl: { stringValue: data.secure_url },
+                    provincia: { stringValue: nombreProvincia },
+                    tel: { stringValue: whatsapp },
+                    lat: { doubleValue: lat },
+                    lng: { doubleValue: lng },
+                    fecha: { timestampValue: new Date().toISOString() }
+                }
+            };
 
-const respuesta = await fetch(urlWorker, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(datosParaFirebase)
-});
+            const respuesta = await fetch(urlWorker, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datosParaFirebase)
+            });
 
-if (!respuesta.ok) {
-    throw new Error("Error al publicar a través del túnel");
-}
-// --- FIN DEL CAMBIO ---
-
+            if (!respuesta.ok) throw new Error("Error al publicar a través del túnel");
 
             alert("✅ ¡Anuncio publicado con éxito!");
             location.reload(); 
@@ -504,6 +472,9 @@ if (!respuesta.ok) {
             btn.disabled = false;
         }
     };
+
+    // Llamamos a la función al iniciar la página
+    cargarTiendasSinVPN();
 </script>
 </body>
 </html>
