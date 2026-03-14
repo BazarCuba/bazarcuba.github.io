@@ -225,26 +225,78 @@
     };
 
     window.registro = async function() {
-        const email = document.getElementById("email").value;
-        const pass = document.getElementById("password").value;
-        if (!email || !pass) return alert("⚠️ Completa correo y contraseña.");
-        try {
-            await createUserWithEmailAndPassword(auth, email, pass);
-            alert("✅ ¡Cuenta creada!");
-            window.toggleMenu();
-        } catch (error) { alert("❌ Error: " + error.message); }
-    };
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
+    
+    if (!email || !pass) return alert("⚠️ Por favor, completa todos los campos.");
+    if (pass.length < 6) return alert("⚠️ La contraseña debe tener al menos 6 caracteres.");
 
-    window.login = async function() {
-        const email = document.getElementById("email").value;
-        const pass = document.getElementById("password").value;
-        if (!email || !pass) return alert("⚠️ Completa correo y contraseña.");
-        try {
-            await signInWithEmailAndPassword(auth, email, pass);
-            alert("✅ Sesión iniciada.");
+    try {
+        const respuesta = await fetch("https://api-bazar.norges763.workers.dev/registro", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                email: email, 
+                password: pass, 
+                returnSecureToken: true 
+            })
+        });
+
+        const data = await respuesta.json();
+
+        if (data.error) {
+            throw new Error(data.error.message);
+        }
+
+        alert("✅ ¡Cuenta creada con éxito! Ya puedes iniciar sesión.");
+    } catch (error) {
+        console.error("Error en registro:", error);
+        alert("❌ Error: " + error.message);
+    }
+};
+window.login = async function() {
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
+
+    if (!email || !pass) return alert("⚠️ Completa correo y contraseña.");
+
+    try {
+        // 1. Validamos con el Worker (Saltamos el bloqueo de IP de Google)
+        const respuesta = await fetch("https://api-bazar.norges763.workers.dev/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                email: email, 
+                password: pass, 
+                returnSecureToken: true 
+            })
+        });
+
+        const data = await respuesta.json();
+
+        if (data.error) {
+            throw new Error(data.error.message);
+        }
+
+        // 2. Si el Worker dice OK, sincronizamos con Firebase en el navegador
+        // Usamos la función oficial solo para que el navegador guarde la sesión
+        await signInWithEmailAndPassword(auth, email, pass);
+        
+        alert("✅ Sesión iniciada correctamente.");
+        window.toggleMenu();
+
+    } catch (error) {
+        // Si hay error de red pero el usuario ya entró (gracias al Worker), lo dejamos pasar
+        if (auth.currentUser) {
+            alert("✅ Sesión activa.");
             window.toggleMenu();
-        } catch (error) { alert("❌ Error: " + error.message); }
-    };
+        } else {
+            console.error("Error:", error);
+            alert("❌ Error al entrar: " + error.message);
+        }
+    }
+};
+
 
     window.cerrarSesion = async function() {
         try { await signOut(auth); alert("Sesión cerrada."); document.getElementById("formularioVendedor").style.display = "none"; } 
