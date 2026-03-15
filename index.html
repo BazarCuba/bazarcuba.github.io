@@ -21,18 +21,16 @@
         .btn-wa { background-color: #25D366; color: white; }
         .precio-tag { color: #d32f2f; font-size: 18px; font-weight: bold; margin: 5px 10px; }
 
-        /* Estilos del carrusel y opciones de producto */
+        /* Carrusel y opciones */
         .carousel-container { position: relative; width: 100%; height: 180px; background-color: #eee; overflow: hidden; }
         .carousel-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 0.5s; }
         .carousel-img.active { opacity: 1; }
         
-        /* Flechas del carrusel */
         .prev, .next { cursor: pointer; position: absolute; top: 50%; width: auto; padding: 10px; margin-top: -22px; color: white; font-weight: bold; font-size: 18px; transition: 0.6s ease; border-radius: 0 3px 3px 0; user-select: none; background-color: rgba(0,0,0,0.4); border: none; z-index: 5; }
         .next { right: 0; border-radius: 3px 0 0 3px; }
         .prev:hover, .next:hover { background-color: rgba(0,0,0,0.8); }
 
-        /* Indicador de agotado */
-        .badge-agotado { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; z-index: 6; text-transform: uppercase; }
+        .badge-agotado { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 16px; z-index: 6; text-transform: uppercase; letter-spacing: 1px;}
 
         /* Menú de los 3 punticos */
         .options-dots { position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.9); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
@@ -41,7 +39,7 @@
         .options-menu button:last-child { border-bottom: none; }
         .options-menu button:hover { background: #f5f5f5; }
 
-        /* Resto de estilos existentes */
+        /* Diseño general */
         .filter-container { background: white; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .filter-container select { padding: 10px; width: 90%; max-width: 400px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; font-weight: bold; color: #333; }
         .grid-tiendas { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; padding: 0 15px; max-width: 1200px; margin: 0 auto; }
@@ -62,7 +60,6 @@
 
 <div id="side-menu" style="position: fixed; right: -300px; top: 0; width: 280px; height: 100%; background: white; transition: 0.3s; z-index: 2000; box-shadow: -5px 0 15px rgba(0,0,0,0.3); padding: 20px; box-sizing: border-box; overflow-y: auto;">
     <button onclick="toggleMenu()" style="background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; float: right;">Cerrar X</button>
-    
     <h2 style="margin-top: 40px; color: #333;">Opciones</h2>
     <hr>
     <button id="btn-add-negocio" onclick="mostrarOpcionesAuth()" style="width: 100%; padding: 15px; background: #0056b3; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;">➕ Añadir negocio</button>
@@ -108,13 +105,11 @@
 
 <div id="formularioVendedor" class="vendor-section" style="display: none;">
     <h2>🛠️ Publicar mi Negocio</h2>
-    
     <div style="border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 15px; border-radius: 10px; cursor: pointer;" onclick="document.getElementById('fotosTienda').click()">
         <p id="previewText">📸 Agregue fotos (seleccione múltiples)</p>
         <div id="imgPreviewContainer" style="display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; margin-top: 10px;"></div>
         <input type="file" id="fotosTienda" accept="image/*" multiple style="display: none;" onchange="previsualizarImagenes(event)">
     </div>
-
     <div class="form-group"><label>Nombre del Negocio:</label><input type="text" id="nombreTienda" placeholder="Ej. El Mercadito de Juan"></div>
     <div class="form-group"><label>Precio del Producto o Servicio:</label><input type="text" id="precioTienda" placeholder="Ej. $500 CUP o Negociable" required></div>
     <div class="form-group">
@@ -146,8 +141,9 @@
     let tiendasData = [];
     let map;
     let marcadorActual;
+    const workerURL = "https://api-bazar.norges763.workers.dev"; // Tu worker actualizado
 
-    // ... (Funciones auxiliares: toggleMenu, mostrarFormularioAuth, etc. se mantienen) ...
+    // --- FUNCIONES DE INTERFAZ Y SESIÓN ---
 
     window.toggleMenu = function() {
         const menu = document.getElementById("side-menu");
@@ -171,7 +167,7 @@
         const boton = document.getElementById("btn-auth-accion");
         titulo.innerText = tipo === 'login' ? "Iniciar Sesión" : "Crear Cuenta Nueva";
         boton.innerText = tipo === 'login' ? "Entrar" : "Registrarse";
-        boton.onclick = tipo === 'login' ? window.login : window.registro;
+        boton.onclick = tipo === 'login' ? window.login : window.registro; // Asumimos que la func registro existe igual que login
     };
 
     window.cerrarSesion = async function() {
@@ -183,16 +179,14 @@
         document.getElementById("btn-cerrar-sesion").style.display = user ? "block" : "none";
         document.getElementById("opciones-auth").style.display = "none";
         document.getElementById("auth-container").style.display = "none";
-        renderizarTiendas(tiendasData); // Re-renderizar para mostrar/ocultar puntos
+        renderizarTiendas(tiendasData); 
     });
 
-    // Lógica para el proxy hacia el Worker (login y registro)
     window.login = async function() {
-        // ... (Tu código de login fetch hacia el Worker actual) ...
         const email = document.getElementById("email").value;
         const pass = document.getElementById("password").value;
         try {
-            const respuesta = await fetch("https://api-bazar.norges763.workers.dev/login", {
+            const respuesta = await fetch(`${workerURL}/login`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: email, password: pass, returnSecureToken: true })
             });
@@ -204,24 +198,23 @@
         } catch (error) { alert("❌ Error: " + error.message); }
     };
 
-    // Función principal para cargar anuncios (vía Worker)
+    // --- CARGA Y RENDERIZADO DE ANUNCIOS ---
+
     window.cargarTiendasSinVPN = async function() {
         try {
-            const respuesta = await fetch("https://api-bazar.norges763.workers.dev/get-anuncios");
+            const respuesta = await fetch(`${workerURL}/get-anuncios`);
             const data = await respuesta.json();
             if (data.documents) {
                 tiendasData = data.documents.map(doc => {
                     const f = doc.fields || {};
-                    // Adaptación para soportar múltiples fotos y estado
                     return {
                         id: doc.name.split('/').pop(),
                         uidVendedor: f.uidVendedor?.stringValue || "",
                         nombre: f.nombre?.stringValue || "Sin nombre",
                         precio: f.precio?.stringValue || "N/A",
                         provincia: f.provincia?.stringValue || "N/A",
-                        // Si hay array de fotos, úsalo; si no, usa la fotoUrl única vieja
                         fotos: f.fotos?.arrayValue?.values?.map(v => v.stringValue) || [f.fotoUrl?.stringValue || "https://via.placeholder.com/300"],
-                        estado: f.estado?.stringValue || "disponible", // 'disponible' o 'agotado'
+                        estado: f.estado?.stringValue || "disponible",
                         tel: f.tel?.stringValue || "",
                         lat: f.lat?.doubleValue || 23.11,
                         lng: f.lng?.doubleValue || -82.36
@@ -232,7 +225,6 @@
         } catch (error) { console.error("Error cargando anuncios:", error); }
     };
 
-    // Función principal para dibujar las tarjetas con CARRUSEL y MENÚ
     window.renderizarTiendas = function(lista) {
         const contenedor = document.getElementById("listaTiendas");
         contenedor.innerHTML = ""; 
@@ -241,7 +233,6 @@
         lista.forEach(tienda => {
             const esMio = tienda.uidVendedor === usuarioActual;
             
-            // Lógica del Carrusel HTML
             let fotosHtml = "";
             tienda.fotos.forEach((foto, index) => {
                 fotosHtml += `<img src="${foto}" class="carousel-img ${index === 0 ? 'active' : ''}" data-index="${index}">`;
@@ -254,13 +245,12 @@
 
             const badgeAgotado = tienda.estado === "agotado" ? `<div class="badge-agotado">AGOTADO</div>` : "";
 
-            // Menú de 3 puntos (Solo visible si soy el dueño)
             const menuPuntos = esMio ? `
                 <div class="options-dots" onclick="toggleOptionsMenu('${tienda.id}')">⋮</div>
                 <div id="menu-${tienda.id}" class="options-menu">
                     <button onclick="marcarAgotado('${tienda.id}')">🚫 Marcar agotado</button>
-                    <button onclick="gestionarFoto('${tienda.id}', 'cambiar')">🔄 Cargar foto</button>
-                    <button onclick="gestionarFoto('${tienda.id}', 'agregar')">➕ Agregar foto</button>
+                    <button onclick="gestionarFoto('${tienda.id}', 'cambiar')">🔄 Cargar foto nueva</button>
+                    <button onclick="gestionarFoto('${tienda.id}', 'agregar')">➕ Agregar foto extra</button>
                     <button onclick="borrarAnuncio('${tienda.id}')" style="color:red; font-weight:bold;">🗑️ Eliminar anuncio</button>
                 </div>
             ` : "";
@@ -285,9 +275,8 @@
         });
     };
 
-    // --- FUNCIONES DE INTERACCIÓN (Carrusel y Menú) ---
+    // --- LÓGICA DE INTERACCIÓN REAL (WORKER PATCH/DELETE) ---
 
-    // Cambiar foto del carrusel
     window.cambiarFoto = function(id, direccion) {
         const contenedor = document.querySelector(`#card-${id} .carousel-container`);
         const imagenes = contenedor.querySelectorAll('.carousel-img');
@@ -302,9 +291,7 @@
         imagenes[indexActivo].classList.add('active');
     };
 
-    // Mostrar/ocultar menú de opciones
     window.toggleOptionsMenu = function(id) {
-        // Cerrar otros menús abiertos
         document.querySelectorAll('.options-menu').forEach(menu => {
             if (menu.id !== `menu-${id}`) menu.style.display = 'none';
         });
@@ -312,23 +299,69 @@
         menu.style.display = menu.style.display === "block" ? "none" : "block";
     };
 
-    // Funciones placeholders para el menú (Requieren Worker update para PATCH)
-    window.marcarAgotado = (id) => alert("Próximamente: Implementar actualización en el Worker (PATCH) para cambiar estado a 'agotado' del anuncio " + id);
-    window.gestionarFoto = (id, accion) => alert(`Próximamente: Implementar lógica de subida y actualización (PATCH) para ${accion} foto en el anuncio ${id}`);
-    
-    // Eliminar anuncio (vía Worker DELETE)
+    window.marcarAgotado = async function(id) {
+        if (!confirm("¿Deseas marcar este producto como AGOTADO?")) return;
+        const payload = { fields: { estado: { stringValue: "agotado" } } };
+        try {
+            const res = await fetch(`${workerURL}/?id=${id}&updateMask=estado`, {
+                method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) { alert("✅ Producto marcado como agotado."); location.reload(); }
+            else { throw new Error("Fallo en servidor"); }
+        } catch (e) { alert("❌ Error al actualizar."); }
+    };
+
+    window.gestionarFoto = async function(id, accion) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            alert("Subiendo imagen... por favor espera. ⏳");
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', 'bazar_present'); 
+                
+                const resImg = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: formData });
+                const dataImg = await resImg.json();
+                const nuevaUrl = dataImg.secure_url;
+
+                const anuncio = tiendasData.find(t => t.id === id);
+                let fotosActuales = anuncio.fotos ? [...anuncio.fotos] : [];
+
+                if (accion === 'cambiar') { fotosActuales = [nuevaUrl]; } 
+                else { fotosActuales.push(nuevaUrl); }
+
+                const payload = {
+                    fields: { fotos: { arrayValue: { values: fotosActuales.map(url => ({ stringValue: url })) } } }
+                };
+
+                const res = await fetch(`${workerURL}/?id=${id}&updateMask=fotos`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) { alert("✅ Foto actualizada con éxito."); location.reload(); }
+            } catch (err) { alert("❌ Error al procesar la foto: " + err.message); }
+        };
+        input.click();
+    };
+
     window.borrarAnuncio = async function(id) {
         if (!confirm("¿Seguro que quieres eliminar este anuncio para siempre?")) return;
         try {
-            await fetch(`https://api-bazar.norges763.workers.dev/?id=${id}`, { method: 'DELETE' });
-            alert("Anuncio eliminado.");
-            location.reload();
+            const res = await fetch(`${workerURL}/?id=${id}`, { method: 'DELETE' });
+            if(res.ok) { alert("Anuncio eliminado."); location.reload(); }
         } catch (e) { alert("Error al borrar."); }
     };
 
-    // --- PREVISUALIZACIÓN Y GUARDADO ---
+    // --- PREVISUALIZACIÓN Y GUARDADO DE NUEVOS ANUNCIOS ---
 
-    // Previsualizar MÚLTIPLES imágenes
     window.previsualizarImagenes = function(event) {
         const container = document.getElementById('imgPreviewContainer');
         container.innerHTML = "";
@@ -346,7 +379,6 @@
         }
     };
 
-    // Guardar tienda con múltiples fotos a Cloudinary
     window.guardarTienda = async function() {
         if (!auth.currentUser) return alert("⚠️ Inicia sesión con VPN para publicar.");
         const fotosInput = document.getElementById("fotosTienda");
@@ -356,7 +388,6 @@
         btn.innerText = "Subiendo fotos...⏳"; btn.disabled = true;
 
         try {
-            // 1. Subir TODAS las fotos a Cloudinary
             const urlsFotos = [];
             for (let i = 0; i < fotosInput.files.length; i++) {
                 const formData = new FormData();
@@ -367,34 +398,53 @@
                 urlsFotos.push(dataImg.secure_url);
             }
 
-            // 2. Preparar payload con array de fotos (estructura Firestore)
             const payload = {
                 fields: {
                     uidVendedor: { stringValue: auth.currentUser.uid },
                     correo: { stringValue: auth.currentUser.email },
                     nombre: { stringValue: document.getElementById("nombreTienda").value },
                     precio: { stringValue: document.getElementById("precioTienda").value },
-                    // Estructura arrayValue para Firestore
                     fotos: { arrayValue: { values: urlsFotos.map(url => ({ stringValue: url })) } },
-                    estado: { stringValue: "disponible" }, // Por defecto disponible
+                    estado: { stringValue: "disponible" },
                     provincia: { stringValue: document.getElementById("provincia").value },
                     tel: { stringValue: document.getElementById("whatsapp").value },
-                    lat: { doubleValue: 23.11 }, lng: { doubleValue: -82.36 }, // Coordenadas fijas por ahora
+                    lat: { doubleValue: 23.11 }, lng: { doubleValue: -82.36 },
                     fecha: { timestampValue: new Date().toISOString() }
                 }
             };
 
-            const respuesta = await fetch("https://api-bazar.norges763.workers.dev/", {
+            const respuesta = await fetch(`${workerURL}/`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
+            
             if (!respuesta.ok) throw new Error("Error en servidor");
-            alert("✅ ¡Anuncio publicado con carrusel!");
+            alert("✅ ¡Anuncio publicado!");
             location.reload(); 
         } catch (error) {
             console.error(error); alert("❌ Error al publicar.");
             btn.innerText = "Guardar y Publicar"; btn.disabled = false;
         }
+    };
+
+    window.filtrarPorProvincia = function() {
+        const filtro = document.getElementById("filtroProvincia").value;
+        const filtradas = filtro === "todas" ? tiendasData : tiendasData.filter(t => t.provincia === filtro);
+        renderizarTiendas(filtradas);
+    };
+
+    // Map functionalities (placeholder for existing Leaflet logic)
+    window.verUbicacion = function(lat, lng, nombre) {
+        document.getElementById("mapa-container").style.display = "block";
+        if (!map) {
+            map = L.map('mapa').setView([lat, lng], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        } else {
+            map.setView([lat, lng], 13);
+        }
+        if (marcadorActual) map.removeLayer(marcadorActual);
+        marcadorActual = L.marker([lat, lng]).addTo(map).bindPopup(nombre).openPopup();
+        document.getElementById("mapa-container").scrollIntoView({ behavior: 'smooth' });
     };
 
     cargarTiendasSinVPN();
