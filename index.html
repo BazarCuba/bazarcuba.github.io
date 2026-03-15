@@ -246,14 +246,15 @@
             const badgeAgotado = tienda.estado === "agotado" ? `<div class="badge-agotado">AGOTADO</div>` : "";
 
             const menuPuntos = esMio ? `
-                <div class="options-dots" onclick="toggleOptionsMenu('${tienda.id}')">⋮</div>
-                <div id="menu-${tienda.id}" class="options-menu">
-                    <button onclick="marcarAgotado('${tienda.id}')">🚫 Marcar agotado</button>
-                    <button onclick="gestionarFoto('${tienda.id}', 'cambiar')">🔄 Cargar foto nueva</button>
-                    <button onclick="gestionarFoto('${tienda.id}', 'agregar')">➕ Agregar foto extra</button>
-                    <button onclick="borrarAnuncio('${tienda.id}')" style="color:red; font-weight:bold;">🗑️ Eliminar anuncio</button>
-                </div>
-            ` : "";
+    <div class="options-dots" onclick="event.stopPropagation(); toggleOptionsMenu('${tienda.id}')">⋮</div>
+    <div id="menu-${tienda.id}" class="options-menu">
+        <button onclick="event.stopPropagation(); marcarAgotado('${tienda.id}')">🚫 Marcar agotado</button>
+        <button onclick="event.stopPropagation(); gestionarFoto('${tienda.id}', 'cambiar')">🔄 Cargar foto nueva</button>
+        <button onclick="event.stopPropagation(); gestionarFoto('${tienda.id}', 'agregar')">➕ Agregar foto extra</button>
+        <button onclick="event.stopPropagation(); borrarAnuncio('${tienda.id}')" style="color:red; font-weight:bold;">🗑️ Eliminar anuncio</button>
+    </div>
+` : "";
+
 
             const cardHtml = `
                 <div class="card" id="card-${tienda.id}" style="opacity: ${tienda.estado === 'agotado' ? '0.6' : '1'}">
