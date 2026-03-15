@@ -367,7 +367,7 @@
                 const nuevaUrl = dataImg.secure_url;
 
                 const anuncio = tiendasData.find(t => t.id === id);
-                let fotosActuales = anuncio.fotos ? [...anuncio.fotos] : [];
+                let fotosActuales = Array.isArray(anuncio.fotos) ? [...anuncio.fotos] : [];
 
                 if (accion === 'cambiar') fotosActuales = [nuevaUrl];
                 else fotosActuales.push(nuevaUrl);
