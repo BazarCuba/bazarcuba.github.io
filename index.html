@@ -141,10 +141,9 @@
     let tiendasData = [];
     let map;
     let marcadorActual;
-    const workerURL = "https://api-bazar.norges763.workers.dev"; // Tu worker actualizado
+    const workerURL = "https://api-bazar.norges763.workers.dev";
 
     // --- FUNCIONES DE INTERFAZ Y SESIÓN ---
-
     window.toggleMenu = function() {
         const menu = document.getElementById("side-menu");
         menu.style.right = menu.style.right === "0px" ? "-300px" : "0px";
@@ -167,7 +166,7 @@
         const boton = document.getElementById("btn-auth-accion");
         titulo.innerText = tipo === 'login' ? "Iniciar Sesión" : "Crear Cuenta Nueva";
         boton.innerText = tipo === 'login' ? "Entrar" : "Registrarse";
-        boton.onclick = tipo === 'login' ? window.login : window.registro; // Asumimos que la func registro existe igual que login
+        boton.onclick = window.login; // Simplificado para login
     };
 
     window.cerrarSesion = async function() {
@@ -186,20 +185,13 @@
         const email = document.getElementById("email").value;
         const pass = document.getElementById("password").value;
         try {
-            const respuesta = await fetch(`${workerURL}/login`, {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: email, password: pass, returnSecureToken: true })
-            });
-            const data = await respuesta.json();
-            if (data.error) throw new Error("Credenciales incorrectas.");
             await signInWithEmailAndPassword(auth, email, pass);
             alert("✅ Sesión iniciada.");
             window.toggleMenu();
-        } catch (error) { alert("❌ Error: " + error.message); }
+        } catch (error) { alert("❌ Error: Verifica tus datos y asegúrate de tener VPN activado para loguearte."); }
     };
 
-    // --- CARGA Y RENDERIZADO DE ANUNCIOS ---
-
+    // --- LECTURA DE DATOS (SIN VPN, POR WORKER) ---
     window.cargarTiendasSinVPN = async function() {
         try {
             const respuesta = await fetch(`${workerURL}/get-anuncios`);
@@ -221,6 +213,8 @@
                     };
                 });
                 renderizarTiendas(tiendasData);
+            } else {
+                document.getElementById("listaTiendas").innerHTML = "<p style='text-align:center;'>No hay anuncios disponibles.</p>";
             }
         } catch (error) { console.error("Error cargando anuncios:", error); }
     };
@@ -245,16 +239,16 @@
 
             const badgeAgotado = tienda.estado === "agotado" ? `<div class="badge-agotado">AGOTADO</div>` : "";
 
+            // OJO AQUÍ: Eventos fijos para que el click no se pierda
             const menuPuntos = esMio ? `
-    <div class="options-dots" onclick="event.stopPropagation(); toggleOptionsMenu('${tienda.id}')">⋮</div>
-    <div id="menu-${tienda.id}" class="options-menu">
-        <button onclick="event.stopPropagation(); marcarAgotado('${tienda.id}')">🚫 Marcar agotado</button>
-        <button onclick="event.stopPropagation(); gestionarFoto('${tienda.id}', 'cambiar')">🔄 Cargar foto nueva</button>
-        <button onclick="event.stopPropagation(); gestionarFoto('${tienda.id}', 'agregar')">➕ Agregar foto extra</button>
-        <button onclick="event.stopPropagation(); borrarAnuncio('${tienda.id}')" style="color:red; font-weight:bold;">🗑️ Eliminar anuncio</button>
-    </div>
-` : "";
-
+                <div class="options-dots" onclick="event.preventDefault(); event.stopPropagation(); toggleOptionsMenu('${tienda.id}')" style="z-index:100;">⋮</div>
+                <div id="menu-${tienda.id}" class="options-menu" style="z-index:101;">
+                    <button onclick="event.preventDefault(); event.stopPropagation(); marcarAgotado('${tienda.id}')">🚫 Marcar agotado</button>
+                    <button onclick="event.preventDefault(); event.stopPropagation(); gestionarFoto('${tienda.id}', 'cambiar')">🔄 Cargar foto nueva</button>
+                    <button onclick="event.preventDefault(); event.stopPropagation(); gestionarFoto('${tienda.id}', 'agregar')">➕ Agregar foto extra</button>
+                    <button onclick="event.preventDefault(); event.stopPropagation(); borrarAnuncio('${tienda.id}')" style="color:red; font-weight:bold;">🗑️ Eliminar anuncio</button>
+                </div>
+            ` : "";
 
             const cardHtml = `
                 <div class="card" id="card-${tienda.id}" style="opacity: ${tienda.estado === 'agotado' ? '0.6' : '1'}">
@@ -275,8 +269,6 @@
             contenedor.insertAdjacentHTML('beforeend', cardHtml);
         });
     };
-
-    // --- LÓGICA DE INTERACCIÓN REAL (WORKER PATCH/DELETE) ---
 
     window.cambiarFoto = function(id, direccion) {
         const contenedor = document.querySelector(`#card-${id} .carousel-container`);
@@ -300,20 +292,62 @@
         menu.style.display = menu.style.display === "block" ? "none" : "block";
     };
 
-    window.marcarAgotado = async function(id) {
-        if (!confirm("¿Deseas marcar este producto como AGOTADO?")) return;
-        const payload = { fields: { estado: { stringValue: "agotado" } } };
+    // --- ACCIONES DIRECTAS A FIREBASE (CON VPN Y SESIÓN ACTIVA) ---
+
+    window.borrarAnuncio = async function(id) {
+        if (!auth.currentUser) return alert("⚠️ Inicia sesión y activa el VPN para borrar.");
+        if (!confirm("¿Seguro que quieres eliminar este anuncio para siempre?")) return;
+        
         try {
-            const res = await fetch(`${workerURL}/?id=${id}&updateMask=estado`, {
-                method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            // Conseguir el Token de seguridad del usuario logueado
+            const token = await auth.currentUser.getIdToken();
+            const urlDirecta = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas/${id}?key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
+
+            const res = await fetch(urlDirecta, { 
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if(res.ok) { 
+                alert("✅ Anuncio eliminado."); 
+                location.reload(); 
+            } else {
+                alert("❌ Error: Asegúrate de tener el VPN activado.");
+            }
+        } catch (e) { alert("❌ Error al borrar. Revisa tu VPN."); }
+    };
+
+    window.marcarAgotado = async function(id) {
+        if (!auth.currentUser) return alert("⚠️ Inicia sesión y activa el VPN.");
+        if (!confirm("¿Deseas marcar este producto como AGOTADO?")) return;
+        
+        const payload = { fields: { estado: { stringValue: "agotado" } } };
+        
+        try {
+            const token = await auth.currentUser.getIdToken();
+            const urlDirecta = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas/${id}?updateMask=estado&key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
+            
+            const res = await fetch(urlDirecta, {
+                method: 'PATCH', 
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(payload)
             });
-            if (res.ok) { alert("✅ Producto marcado como agotado."); location.reload(); }
-            else { throw new Error("Fallo en servidor"); }
-        } catch (e) { alert("❌ Error al actualizar."); }
+            
+            if (res.ok) { 
+                alert("✅ Producto marcado como agotado."); 
+                location.reload(); 
+            } else { 
+                alert("❌ Error de permisos o VPN desactivado."); 
+            }
+        } catch (e) { alert("❌ Error de red."); }
     };
 
     window.gestionarFoto = async function(id, accion) {
+        if (!auth.currentUser) return alert("⚠️ Inicia sesión y activa el VPN.");
+        
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
@@ -321,7 +355,7 @@
         input.onchange = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            alert("Subiendo imagen... por favor espera. ⏳");
+            alert("Subiendo imagen a Cloudinary... ⏳");
 
             try {
                 const formData = new FormData();
@@ -335,34 +369,31 @@
                 const anuncio = tiendasData.find(t => t.id === id);
                 let fotosActuales = anuncio.fotos ? [...anuncio.fotos] : [];
 
-                if (accion === 'cambiar') { fotosActuales = [nuevaUrl]; } 
-                else { fotosActuales.push(nuevaUrl); }
+                if (accion === 'cambiar') fotosActuales = [nuevaUrl];
+                else fotosActuales.push(nuevaUrl);
 
-                const payload = {
-                    fields: { fotos: { arrayValue: { values: fotosActuales.map(url => ({ stringValue: url })) } } }
-                };
+                const payload = { fields: { fotos: { arrayValue: { values: fotosActuales.map(url => ({ stringValue: url })) } } } };
+                
+                const token = await auth.currentUser.getIdToken();
+                const urlDirecta = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas/${id}?updateMask=fotos&key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
 
-                const res = await fetch(`${workerURL}/?id=${id}&updateMask=fotos`, {
-                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                const res = await fetch(urlDirecta, {
+                    method: 'PATCH', 
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: JSON.stringify(payload)
                 });
 
-                if (res.ok) { alert("✅ Foto actualizada con éxito."); location.reload(); }
-            } catch (err) { alert("❌ Error al procesar la foto: " + err.message); }
+                if (res.ok) { alert("✅ Foto actualizada."); location.reload(); }
+                else { alert("❌ Error de permisos o VPN."); }
+            } catch (err) { alert("❌ Error en el proceso: " + err.message); }
         };
         input.click();
     };
 
-    window.borrarAnuncio = async function(id) {
-        if (!confirm("¿Seguro que quieres eliminar este anuncio para siempre?")) return;
-        try {
-            const res = await fetch(`${workerURL}/?id=${id}`, { method: 'DELETE' });
-            if(res.ok) { alert("Anuncio eliminado."); location.reload(); }
-        } catch (e) { alert("Error al borrar."); }
-    };
-
-    // --- PREVISUALIZACIÓN Y GUARDADO DE NUEVOS ANUNCIOS ---
-
+    // --- PREVISUALIZACIÓN Y GUARDADO ---
     window.previsualizarImagenes = function(event) {
         const container = document.getElementById('imgPreviewContainer');
         container.innerHTML = "";
@@ -414,16 +445,23 @@
                 }
             };
 
-            const respuesta = await fetch(`${workerURL}/`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
+            const token = await auth.currentUser.getIdToken();
+            const urlDirecta = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas?key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
+
+            const respuesta = await fetch(urlDirecta, {
+                method: 'POST', 
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(payload)
             });
             
-            if (!respuesta.ok) throw new Error("Error en servidor");
+            if (!respuesta.ok) throw new Error("Error en servidor Google");
             alert("✅ ¡Anuncio publicado!");
             location.reload(); 
         } catch (error) {
-            console.error(error); alert("❌ Error al publicar.");
+            console.error(error); alert("❌ Error al publicar. Revisa tu VPN.");
             btn.innerText = "Guardar y Publicar"; btn.disabled = false;
         }
     };
@@ -434,7 +472,6 @@
         renderizarTiendas(filtradas);
     };
 
-    // Map functionalities (placeholder for existing Leaflet logic)
     window.verUbicacion = function(lat, lng, nombre) {
         document.getElementById("mapa-container").style.display = "block";
         if (!map) {
