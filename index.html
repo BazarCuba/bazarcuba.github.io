@@ -21,27 +21,46 @@
         header h1 { margin: 0; font-size: 26px; letter-spacing: 1px; }
         header p { margin: 4px 0 0; font-size: 13px; opacity: 0.85; }
 
+        /* BARRA DE FILTROS */
         .filter-container {
             background: white;
-            padding: 12px 15px;
-            text-align: center;
+            padding: 10px 12px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.08);
             margin-bottom: 15px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
         }
         .filter-container select {
-            padding: 10px 14px;
-            width: 95%;
-            max-width: 450px;
+            flex: 1;
+            padding: 9px 12px;
             border-radius: 25px;
             border: 2px solid #0056b3;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             color: #0056b3;
             background: white;
             outline: none;
             cursor: pointer;
         }
+        #btn-vista-toggle {
+            padding: 9px 13px;
+            border-radius: 25px;
+            border: 2px solid #0056b3;
+            background: white;
+            color: #0056b3;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        #btn-vista-toggle.activo {
+            background: #0056b3;
+            color: white;
+        }
 
+        /* GRID */
         .grid-tiendas {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -51,6 +70,7 @@
             margin: 0 auto;
         }
 
+        /* CARD */
         .card {
             background: white;
             border-radius: 14px;
@@ -60,170 +80,124 @@
         }
         .card h3 { margin: 8px 8px 2px; color: #222; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card p.provincia { margin: 0 8px 4px; color: #888; font-size: 11px; font-weight: bold; }
-
-        .precio-row {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin: 0 8px 6px;
-            flex-wrap: wrap;
-        }
+        .precio-row { display: flex; align-items: center; gap: 5px; margin: 0 8px 6px; flex-wrap: wrap; }
         .precio-tag { color: #d32f2f; font-size: 15px; font-weight: bold; }
         .moneda-tag { color: #0056b3; font-size: 12px; font-weight: bold; background: #e8f4fd; padding: 2px 6px; border-radius: 10px; }
-        .btn-descripcion {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 2px;
-            display: flex;
-            align-items: center;
-            title: "Ver descripción";
-        }
+        .btn-descripcion { background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; }
         .btn-descripcion svg { width: 18px; height: 18px; }
 
         .card-buttons { display: flex; gap: 6px; padding: 6px 8px 10px; justify-content: center; }
         .card-buttons a, .card-buttons button {
-            flex: 1;
-            padding: 8px 4px;
-            text-align: center;
-            border-radius: 12px;
-            cursor: pointer;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            flex: 1; padding: 8px 4px; text-align: center;
+            border-radius: 12px; cursor: pointer; border: none;
+            display: flex; align-items: center; justify-content: center;
         }
         .btn-llamar { background-color: #e8f5e9; }
         .btn-wa { background-color: #e8fdf0; }
-        .btn-mapa { background-color: #fff3e0; }
-        .btn-llamar svg, .btn-wa svg, .btn-mapa svg { width: 26px; height: 26px; }
+        .btn-mapa-card { background-color: #fff3e0; }
+        .btn-llamar svg, .btn-wa svg, .btn-mapa-card svg { width: 26px; height: 26px; }
 
         /* CARRUSEL */
         .carousel-container { position: relative; width: 100%; height: 130px; background-color: #e8edf2; overflow: hidden; }
-        .carousel-img {
-            width: 100%; height: 100%; object-fit: cover;
-            position: absolute; top: 0; left: 0;
-            opacity: 0; transition: opacity 0.5s;
-            cursor: pointer;
-            z-index: 1;
-            pointer-events: none;
-        }
+        .carousel-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 0.5s; cursor: pointer; z-index: 1; pointer-events: none; }
         .carousel-img.active { opacity: 1; z-index: 2; pointer-events: auto; }
-        .prev, .next {
-            cursor: pointer; position: absolute; top: 50%; width: auto;
-            padding: 5px 9px; margin-top: -16px; color: white; font-weight: bold;
-            font-size: 13px; border-radius: 0 3px 3px 0; user-select: none;
-            background-color: rgba(0,0,0,0.45); border: none; z-index: 5;
-        }
+        .prev, .next { cursor: pointer; position: absolute; top: 50%; width: auto; padding: 5px 9px; margin-top: -16px; color: white; font-weight: bold; font-size: 13px; border-radius: 0 3px 3px 0; user-select: none; background-color: rgba(0,0,0,0.45); border: none; z-index: 5; }
         .next { right: 0; border-radius: 3px 0 0 3px; }
+        .badge-agotado { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.75); color: white; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 12px; z-index: 6; text-transform: uppercase; letter-spacing: 1px; }
 
-        .badge-agotado {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.75); color: white;
-            padding: 6px 14px; border-radius: 20px;
-            font-weight: bold; font-size: 12px; z-index: 6;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
+        /* 3 PUNTOS */
+        .options-dots { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.92); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 16px; }
 
-        /* MENÚ 3 PUNTOS */
-        .options-dots {
-            position: absolute; top: 8px; right: 8px;
-            background: rgba(255,255,255,0.92);
-            border-radius: 50%; width: 28px; height: 28px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-weight: bold; z-index: 10;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 16px;
-        }
-
-        /* MENÚ GLOBAL FLOTANTE */
-        #global-options-menu {
-            display: none;
-            position: absolute;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 6px 24px rgba(0,0,0,0.2);
-            z-index: 9000;
-            width: 190px;
-            overflow: hidden;
-        }
-        #global-options-menu button {
-            width: 100%; padding: 12px 16px;
-            text-align: left; background: none;
-            border: none; border-bottom: 1px solid #f0f0f0;
-            cursor: pointer; font-size: 13px; color: #333;
-        }
+        #global-options-menu { display: none; position: absolute; background: white; border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,0.2); z-index: 9000; width: 190px; overflow: hidden; }
+        #global-options-menu button { width: 100%; padding: 12px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #f0f0f0; cursor: pointer; font-size: 13px; color: #333; }
         #global-options-menu button:last-child { border-bottom: none; }
         #global-options-menu button:hover { background: #f5f7ff; }
 
-        /* MAPA */
+        /* MAPA PRINCIPAL (vista mapa) */
+        #vista-mapa { display: none; padding: 10px; }
+        #mapa-principal { height: 70vh; width: 100%; border: 3px solid #0056b3; border-radius: 12px; }
+
+        /* MAPA DETALLE (botón GPS de tarjeta) */
         #mapa-container { display: none; margin: 15px auto; max-width: 1200px; padding: 0 10px; }
-        #mapa { height: 380px; width: 100%; border: 3px solid #0056b3; border-radius: 12px; z-index: 1; }
+        #mapa { height: 350px; width: 100%; border: 3px solid #0056b3; border-radius: 12px; z-index: 1; }
+
+        /* BANNER TIENDA VISITADA */
+        #banner-tienda {
+            display: none;
+            background: linear-gradient(135deg, #0056b3, #003d82);
+            color: white;
+            padding: 14px 16px;
+            margin: 0 10px 12px;
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(0,86,179,0.3);
+        }
+        #banner-tienda h2 { margin: 0 0 4px; font-size: 18px; }
+        #banner-tienda p { margin: 0; font-size: 13px; opacity: 0.85; }
+        #btn-volver-catalogo { margin-top: 10px; background: white; color: #0056b3; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; }
 
         /* LIGHTBOX */
-        #lightbox {
-            display: none;
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.94);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-        }
+        #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.94); z-index: 9999; align-items: center; justify-content: center; }
         #lightbox.active { display: flex; }
         #lightbox-img { max-width: 95vw; max-height: 85vh; object-fit: contain; border-radius: 8px; display: block; }
-        #lightbox-close { position: fixed; top: 16px; right: 20px; color: white; font-size: 38px; cursor: pointer; font-weight: bold; line-height: 1; z-index: 10000; text-shadow: 0 2px 6px rgba(0,0,0,0.5); }
+        #lightbox-close { position: fixed; top: 16px; right: 20px; color: white; font-size: 38px; cursor: pointer; font-weight: bold; line-height: 1; z-index: 10000; }
         #lightbox-prev, #lightbox-next { position: fixed; top: 50%; transform: translateY(-50%); color: white; font-size: 28px; cursor: pointer; background: rgba(255,255,255,0.18); border: none; padding: 12px 16px; border-radius: 10px; z-index: 10000; }
         #lightbox-prev { left: 10px; }
         #lightbox-next { right: 10px; }
 
         /* MODAL DESCRIPCIÓN */
-        #modal-descripcion {
-            display: none;
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 8000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+        #modal-descripcion { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 8000; align-items: center; justify-content: center; padding: 20px; }
         #modal-descripcion.active { display: flex; }
-        #modal-desc-content {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
+        #modal-desc-content { background: white; border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; }
         #modal-desc-content h3 { margin: 0 0 12px; color: #0056b3; font-size: 16px; }
         #modal-desc-content p { margin: 0; color: #333; font-size: 15px; line-height: 1.6; }
-        #modal-desc-close {
-            margin-top: 18px;
-            width: 100%; padding: 10px;
-            background: #0056b3; color: white;
-            border: none; border-radius: 8px;
-            font-size: 15px; font-weight: bold;
-            cursor: pointer;
-        }
+        #modal-desc-close { margin-top: 18px; width: 100%; padding: 10px; background: #0056b3; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
 
         /* MENÚ LATERAL */
         #side-menu { position: fixed; right: -300px; top: 0; width: 280px; height: 100%; background: white; transition: 0.3s; z-index: 3000; box-shadow: -5px 0 20px rgba(0,0,0,0.2); padding: 20px; overflow-y: auto; }
 
-        /* FORMULARIO */
-        .vendor-section { padding: 20px; background: white; margin: 20px auto; max-width: 600px; border-radius: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); border-top: 5px solid #ffcc00; }
-        .vendor-section h2 { color: #333; margin-top: 0; text-align: center; font-size: 20px; }
-        .form-group { margin-bottom: 14px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #444; font-size: 14px; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 11px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; transition: border 0.2s; font-family: inherit; }
+        /* PANEL GESTIONAR NEGOCIO */
+        .vendor-panel { padding: 0 10px 30px; max-width: 600px; margin: 0 auto; }
+
+        .seccion-card {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            padding: 18px;
+            margin-bottom: 16px;
+        }
+        .seccion-card h3 { margin: 0 0 14px; color: #0056b3; font-size: 16px; border-bottom: 2px solid #e8f4fd; padding-bottom: 8px; }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: bold; color: #444; font-size: 13px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; transition: border 0.2s; font-family: inherit; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #0056b3; }
         .form-row { display: flex; gap: 10px; }
         .form-row .form-group { flex: 1; }
-        .btn-guardar { background: linear-gradient(135deg, #ffcc00, #ffaa00); color: #333; padding: 13px 20px; border: none; border-radius: 10px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; box-shadow: 0 3px 8px rgba(255,170,0,0.4); }
-        .btn-guardar:hover { background: linear-gradient(135deg, #ffaa00, #ff8800); }
-        #mapa-selector { height: 250px; width: 100%; border-radius: 10px; border: 2px solid #0056b3; margin-top: 8px; }
-        #coords-display { font-size: 12px; color: #666; margin-top: 5px; text-align: center; }
+
+        .btn-guardar { background: linear-gradient(135deg, #ffcc00, #ffaa00); color: #333; padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; width: 100%; font-size: 15px; font-weight: bold; }
+        .btn-secundario { background: #f0f4f8; color: #0056b3; padding: 10px 20px; border: 2px solid #0056b3; border-radius: 10px; cursor: pointer; width: 100%; font-size: 14px; font-weight: bold; margin-bottom: 10px; }
+
+        #mapa-selector { height: 220px; width: 100%; border-radius: 10px; border: 2px solid #0056b3; margin-top: 6px; }
+        #coords-display { font-size: 11px; color: #666; margin-top: 4px; text-align: center; }
+
+        /* PRODUCTO DEL VENDEDOR (en panel gestionar) */
+        .producto-vendedor {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+        .producto-vendedor img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; }
+        .producto-vendedor-info { flex: 1; }
+        .producto-vendedor-info strong { font-size: 13px; color: #222; display: block; }
+        .producto-vendedor-info span { font-size: 12px; color: #d32f2f; font-weight: bold; }
+
+        /* FORMULARIO NUEVO PRODUCTO */
+        #form-nuevo-producto { display: none; margin-top: 12px; border-top: 2px dashed #ddd; padding-top: 14px; }
+
         #menu-dots { position: absolute; top: 18px; right: 18px; font-size: 28px; cursor: pointer; color: white; z-index: 1001; }
     </style>
 </head>
@@ -255,7 +229,7 @@
     <button onclick="toggleMenu()" style="background:#ff4444;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;float:right;font-weight:bold;">✕ Cerrar</button>
     <h2 style="margin-top:45px;color:#0056b3;">BazarCuba 🇨🇺</h2>
     <hr style="border-color:#eee;">
-    <button id="btn-add-negocio" onclick="mostrarOpcionesAuth()" style="width:100%;padding:14px;background:linear-gradient(135deg,#0056b3,#003d82);color:white;border:none;border-radius:10px;font-weight:bold;cursor:pointer;margin-top:10px;font-size:15px;">➕ Añadir negocio</button>
+    <button id="btn-add-negocio" onclick="mostrarPanelVendedor()" style="width:100%;padding:14px;background:linear-gradient(135deg,#0056b3,#003d82);color:white;border:none;border-radius:10px;font-weight:bold;cursor:pointer;margin-top:10px;font-size:15px;">➕ Añadir negocio</button>
     <button id="btn-cerrar-sesion" onclick="cerrarSesion()" style="display:none;width:100%;padding:10px;background:#f0f0f0;color:#333;border:none;border-radius:10px;font-weight:bold;cursor:pointer;margin-top:10px;">🚪 Cerrar Sesión</button>
     <div id="opciones-auth" style="display:none;margin-top:20px;text-align:center;">
         <button onclick="mostrarFormularioAuth('login')" style="width:47%;padding:10px;background:#e8f4fd;border:2px solid #0056b3;border-radius:8px;cursor:pointer;font-weight:bold;color:#0056b3;">Entrar</button>
@@ -276,7 +250,7 @@
 
 <div class="filter-container">
     <select id="filtroProvincia" onchange="filtrarPorProvincia()">
-        <option value="todas">📍 Ver todas las provincias</option>
+        <option value="todas">📍 Todas las provincias</option>
         <option value="Pinar del Río">Pinar del Río</option>
         <option value="Artemisa">Artemisa</option>
         <option value="La Habana">La Habana</option>
@@ -294,74 +268,101 @@
         <option value="Guantánamo">Guantánamo</option>
         <option value="Isla de la Juventud">Isla de la Juventud</option>
     </select>
+    <button id="btn-vista-toggle" onclick="toggleVista()">🗺️ Mapa</button>
 </div>
 
+<!-- VISTA MAPA -->
+<div id="vista-mapa">
+    <div id="mapa-principal"></div>
+</div>
+
+<!-- BANNER DE TIENDA VISITADA -->
+<div id="banner-tienda">
+    <h2 id="banner-nombre-tienda">Nombre Tienda</h2>
+    <p id="banner-info-tienda"></p>
+    <button id="btn-volver-catalogo" onclick="volverAlCatalogo()">← Volver al catálogo</button>
+</div>
+
+<!-- GRID DE PRODUCTOS -->
 <div id="listaTiendas" class="grid-tiendas">
     <p style="text-align:center;width:100%;color:#888;grid-column:1/-1;">Conectando con BazarCuba...</p>
 </div>
 
+<!-- MAPA DETALLE (desde botón GPS de tarjeta) -->
 <div id="mapa-container">
-    <h3 style="color:#0056b3;margin:0 0 8px 5px;">📍 Ubicación del negocio:</h3>
+    <h3 style="color:#0056b3;margin:0 0 8px 10px;">📍 Ubicación:</h3>
     <div id="mapa"></div>
 </div>
 
-<div id="formularioVendedor" class="vendor-section" style="display:none;">
-    <h2>🛠️ Publicar mi Negocio</h2>
-    <div style="border:2px dashed #ccc;padding:18px;text-align:center;margin-bottom:14px;border-radius:10px;cursor:pointer;background:#fafafa;" onclick="document.getElementById('fotosTienda').click()">
-        <p id="previewText" style="margin:0;color:#888;">📸 Toca para agregar fotos</p>
-        <div id="imgPreviewContainer" style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:10px;"></div>
-        <input type="file" id="fotosTienda" accept="image/*" multiple style="display:none;" onchange="previsualizarImagenes(event)">
-    </div>
-    <div class="form-group"><label>Nombre del Negocio:</label><input type="text" id="nombreTienda" placeholder="Ej. El Mercadito de Juan"></div>
+<!-- PANEL GESTIONAR NEGOCIO -->
+<div id="panelVendedor" style="display:none;">
+    <div class="vendor-panel">
 
-    <div class="form-row">
-        <div class="form-group">
-            <label>Precio:</label>
-            <input type="text" id="precioTienda" placeholder="Ej. 500">
+        <!-- SECCIÓN INFO DE TIENDA -->
+        <div class="seccion-card" id="seccion-info-tienda">
+            <h3>🏪 Información de tu Tienda</h3>
+            <div class="form-group"><label>Nombre de la Tienda:</label><input type="text" id="nombreTienda" placeholder="Ej. Tienda de Ropa de María"></div>
+            <div class="form-group"><label>Teléfono / WhatsApp:</label><input type="tel" id="telTienda" placeholder="+53 51234567"></div>
+            <div class="form-group"><label>Dirección:</label><input type="text" id="direccionTienda" placeholder="Ej. Calle 23 #456, Vedado, La Habana"></div>
+            <div class="form-group">
+                <label>Provincia:</label>
+                <select id="provinciaTienda">
+                    <option value="">-- Elige una provincia --</option>
+                    <option value="Pinar del Río">Pinar del Río</option>
+                    <option value="Artemisa">Artemisa</option>
+                    <option value="La Habana">La Habana</option>
+                    <option value="Mayabeque">Mayabeque</option>
+                    <option value="Matanzas">Matanzas</option>
+                    <option value="Cienfuegos">Cienfuegos</option>
+                    <option value="Villa Clara">Villa Clara</option>
+                    <option value="Sancti Spíritus">Sancti Spíritus</option>
+                    <option value="Ciego de Ávila">Ciego de Ávila</option>
+                    <option value="Camagüey">Camagüey</option>
+                    <option value="Las Tunas">Las Tunas</option>
+                    <option value="Holguín">Holguín</option>
+                    <option value="Granma">Granma</option>
+                    <option value="Santiago de Cuba">Santiago de Cuba</option>
+                    <option value="Guantánamo">Guantánamo</option>
+                    <option value="Isla de la Juventud">Isla de la Juventud</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>📍 Ubicación en el mapa:</label>
+                <div id="mapa-selector"></div>
+                <p id="coords-display">Toca el mapa para marcar tu ubicación</p>
+            </div>
+            <button class="btn-guardar" onclick="guardarInfoTienda()">💾 Guardar Info de Tienda</button>
         </div>
-        <div class="form-group">
-            <label>Moneda:</label>
-            <select id="monedaTienda">
-                <option value="CUP">CUP</option>
-                <option value="USD">USD</option>
-            </select>
+
+        <!-- SECCIÓN MIS PRODUCTOS -->
+        <div class="seccion-card" id="seccion-mis-productos">
+            <h3>📦 Mis Productos</h3>
+            <div id="lista-mis-productos">
+                <p style="color:#888;text-align:center;font-size:13px;">Cargando tus productos...</p>
+            </div>
+            <button class="btn-secundario" onclick="toggleFormNuevoProducto()">➕ Agregar nuevo producto</button>
+
+            <!-- FORMULARIO NUEVO PRODUCTO -->
+            <div id="form-nuevo-producto">
+                <div style="border:2px dashed #ccc;padding:14px;text-align:center;margin-bottom:12px;border-radius:10px;cursor:pointer;background:#fafafa;" onclick="document.getElementById('fotosTienda').click()">
+                    <p id="previewText" style="margin:0;color:#888;font-size:13px;">📸 Toca para agregar fotos</p>
+                    <div id="imgPreviewContainer" style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:8px;"></div>
+                    <input type="file" id="fotosTienda" accept="image/*" multiple style="display:none;" onchange="previsualizarImagenes(event)">
+                </div>
+                <div class="form-group"><label>Nombre del Producto:</label><input type="text" id="nombreProducto" placeholder="Ej. Vestido de verano"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Precio:</label><input type="text" id="precioProducto" placeholder="Ej. 500"></div>
+                    <div class="form-group"><label>Moneda:</label><select id="monedaProducto"><option value="CUP">CUP</option><option value="USD">USD</option></select></div>
+                </div>
+                <div class="form-group">
+                    <label>Descripción <span style="color:#aaa;font-weight:normal;">(opcional)</span>:</label>
+                    <textarea id="descripcionProducto" rows="2" placeholder="Describe el producto..."></textarea>
+                </div>
+                <button class="btn-guardar" onclick="publicarProducto()">📤 Publicar Producto</button>
+            </div>
         </div>
-    </div>
 
-    <div class="form-group">
-        <label>Descripción del producto <span style="color:#aaa;font-weight:normal;">(opcional)</span>:</label>
-        <textarea id="descripcionTienda" rows="3" placeholder="Describe tu producto o servicio..."></textarea>
     </div>
-
-    <div class="form-group">
-        <label>Provincia:</label>
-        <select id="provincia">
-            <option value="">-- Elige una provincia --</option>
-            <option value="Pinar del Río">Pinar del Río</option>
-            <option value="Artemisa">Artemisa</option>
-            <option value="La Habana">La Habana</option>
-            <option value="Mayabeque">Mayabeque</option>
-            <option value="Matanzas">Matanzas</option>
-            <option value="Cienfuegos">Cienfuegos</option>
-            <option value="Villa Clara">Villa Clara</option>
-            <option value="Sancti Spíritus">Sancti Spíritus</option>
-            <option value="Ciego de Ávila">Ciego de Ávila</option>
-            <option value="Camagüey">Camagüey</option>
-            <option value="Las Tunas">Las Tunas</option>
-            <option value="Holguín">Holguín</option>
-            <option value="Granma">Granma</option>
-            <option value="Santiago de Cuba">Santiago de Cuba</option>
-            <option value="Guantánamo">Guantánamo</option>
-            <option value="Isla de la Juventud">Isla de la Juventud</option>
-        </select>
-    </div>
-    <div class="form-group"><label>Teléfono / WhatsApp:</label><input type="tel" id="whatsapp" placeholder="+53 51234567"></div>
-    <div class="form-group">
-        <label>📍 Selecciona tu ubicación en el mapa:</label>
-        <div id="mapa-selector"></div>
-        <p id="coords-display">Toca el mapa para marcar tu ubicación</p>
-    </div>
-    <button type="button" class="btn-guardar" onclick="guardarTienda()">Guardar y Publicar</button>
 </div>
 
 <script type="module">
@@ -379,16 +380,19 @@
     const auth = getAuth(app);
 
     let tiendasData = [];
-    let map, mapSelector;
+    let map, mapPrincipal, mapSelector;
     let marcadorActual, marcadorSelector;
     let latSeleccionada = 23.11, lngSeleccionada = -82.36;
+    let vistaActual = 'tiendas'; // 'tiendas' o 'mapa'
+    let tiendaActivaUid = null; // uid del vendedor cuya tienda se está viendo
     const workerURL = "https://api-bazar.norges763.workers.dev";
+    const API_KEY = "AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc";
+    const FS_BASE = "https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents";
 
     // =====================
     // LIGHTBOX
     // =====================
-    let lightboxFotos = [];
-    let lightboxIndex = 0;
+    let lightboxFotos = [], lightboxIndex = 0;
 
     window.abrirLightbox = function(fotosJson, index) {
         lightboxFotos = JSON.parse(decodeURIComponent(fotosJson));
@@ -398,23 +402,12 @@
         document.getElementById('lightbox-prev').style.display = lightboxFotos.length > 1 ? 'block' : 'none';
         document.getElementById('lightbox-next').style.display = lightboxFotos.length > 1 ? 'block' : 'none';
     };
-
-    window.cerrarLightbox = function() {
-        document.getElementById('lightbox').classList.remove('active');
-    };
-
-    window.lightboxClickFuera = function(e) {
-        if (e.target === document.getElementById('lightbox')) cerrarLightbox();
-    };
-
+    window.cerrarLightbox = function() { document.getElementById('lightbox').classList.remove('active'); };
+    window.lightboxClickFuera = function(e) { if (e.target === document.getElementById('lightbox')) cerrarLightbox(); };
     window.lightboxNavegar = function(dir) {
-        lightboxIndex += dir;
-        if (lightboxIndex >= lightboxFotos.length) lightboxIndex = 0;
-        if (lightboxIndex < 0) lightboxIndex = lightboxFotos.length - 1;
+        lightboxIndex = (lightboxIndex + dir + lightboxFotos.length) % lightboxFotos.length;
         document.getElementById('lightbox-img').src = lightboxFotos[lightboxIndex];
     };
-
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarLightbox(); cerrarModalDesc(); } });
 
     // =====================
     // MODAL DESCRIPCIÓN
@@ -424,68 +417,162 @@
         document.getElementById('modal-desc-texto').innerText = descripcion;
         document.getElementById('modal-descripcion').classList.add('active');
     };
-
     window.cerrarModalDesc = function(e) {
-        if (!e || e.target === document.getElementById('modal-descripcion') || e.target === document.getElementById('modal-desc-close')) {
+        if (!e || e.target === document.getElementById('modal-descripcion') || e.target === document.getElementById('modal-desc-close'))
             document.getElementById('modal-descripcion').classList.remove('active');
+    };
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarLightbox(); cerrarModalDesc(); } });
+
+    // =====================
+    // TOGGLE VISTA (Tiendas / Mapa)
+    // =====================
+    window.toggleVista = function() {
+        const btn = document.getElementById('btn-vista-toggle');
+        if (vistaActual === 'tiendas') {
+            vistaActual = 'mapa';
+            btn.textContent = '🏪 Tiendas';
+            btn.classList.add('activo');
+            document.getElementById('listaTiendas').style.display = 'none';
+            document.getElementById('banner-tienda').style.display = 'none';
+            document.getElementById('mapa-container').style.display = 'none';
+            document.getElementById('vista-mapa').style.display = 'block';
+            iniciarMapaPrincipal();
+        } else {
+            vistaActual = 'tiendas';
+            btn.textContent = '🗺️ Mapa';
+            btn.classList.remove('activo');
+            document.getElementById('vista-mapa').style.display = 'none';
+            document.getElementById('listaTiendas').style.display = 'grid';
         }
     };
 
     // =====================
+    // MAPA PRINCIPAL (vista mapa con todas las tiendas)
+    // =====================
+    function iniciarMapaPrincipal() {
+        if (!mapPrincipal) {
+            mapPrincipal = L.map('mapa-principal').setView([22.0, -79.5], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapPrincipal);
+        }
+        // Limpiar marcadores anteriores
+        mapPrincipal.eachLayer(layer => { if (layer instanceof L.Marker) mapPrincipal.removeLayer(layer); });
+
+        // Agrupar por vendedor (un pin por vendedor)
+        const vendedoresVistos = {};
+        tiendasData.forEach(t => {
+            if (!vendedoresVistos[t.uidVendedor] && t.lat && t.lng) {
+                vendedoresVistos[t.uidVendedor] = t;
+            }
+        });
+
+        // Icono GPS rojo estilo Google Maps
+        const gpsIcon = L.divIcon({
+            html: `<svg width="32" height="40" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 0C9.37 0 4 5.37 4 12c0 9 12 24 12 24S28 21 28 12C28 5.37 22.63 0 16 0z" fill="#EA4335"/>
+                <circle cx="16" cy="12" r="5" fill="white"/>
+            </svg>`,
+            className: '',
+            iconSize: [32, 40],
+            iconAnchor: [16, 40],
+            popupAnchor: [0, -40]
+        });
+
+        Object.values(vendedoresVistos).forEach(t => {
+            const nombreT = t.nombreTienda || t.nombre || "Tienda";
+            const marker = L.marker([t.lat, t.lng], { icon: gpsIcon }).addTo(mapPrincipal);
+            marker.bindPopup(`
+                <div style="text-align:center;min-width:130px;">
+                    <strong style="font-size:14px;">${nombreT}</strong><br>
+                    <small style="color:#666;">${t.provincia || ''}</small><br>
+                    <button onclick="visitarTienda('${t.uidVendedor}')"
+                        style="margin-top:8px;background:#0056b3;color:white;border:none;padding:7px 14px;border-radius:20px;font-weight:bold;cursor:pointer;font-size:13px;">
+                        Visitar tienda
+                    </button>
+                </div>
+            `);
+        });
+    }
+
+    // =====================
+    // VISITAR TIENDA
+    // =====================
+    window.visitarTienda = function(uid) {
+        tiendaActivaUid = uid;
+
+        // Cerrar mapa y volver a vista tiendas
+        vistaActual = 'tiendas';
+        document.getElementById('btn-vista-toggle').textContent = '🗺️ Mapa';
+        document.getElementById('btn-vista-toggle').classList.remove('activo');
+        document.getElementById('vista-mapa').style.display = 'none';
+        document.getElementById('listaTiendas').style.display = 'grid';
+
+        // Filtrar productos de esta tienda
+        const productosT = tiendasData.filter(t => t.uidVendedor === uid);
+        const infoT = productosT[0] || {};
+
+        // Mostrar banner
+        const banner = document.getElementById('banner-tienda');
+        banner.style.display = 'block';
+        document.getElementById('banner-nombre-tienda').textContent = infoT.nombreTienda || 'Tienda';
+        const infoParts = [];
+        if (infoT.tel) infoParts.push('📞 ' + infoT.tel);
+        if (infoT.direccion) infoParts.push('📍 ' + infoT.direccion);
+        if (infoT.provincia) infoParts.push(infoT.provincia);
+        document.getElementById('banner-info-tienda').textContent = infoParts.join('  ·  ');
+
+        renderizarTiendas(productosT);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.volverAlCatalogo = function() {
+        tiendaActivaUid = null;
+        document.getElementById('banner-tienda').style.display = 'none';
+        filtrarPorProvincia();
+    };
+
+    // =====================
     // MENÚ FLOTANTE GLOBAL
-    // Cierra al hacer scroll para evitar desfase
     // =====================
     let menuActivoId = null;
 
     window.toggleOptionsMenu = function(id, dotEl) {
         const menu = document.getElementById('global-options-menu');
         if (menuActivoId === id && menu.style.display === 'block') {
-            menu.style.display = 'none';
-            menuActivoId = null;
-            return;
+            menu.style.display = 'none'; menuActivoId = null; return;
         }
         menuActivoId = id;
         const tienda = tiendasData.find(t => t.id === id);
         const esAgotado = tienda && tienda.estado === 'agotado';
-
         menu.innerHTML = `
             ${esAgotado
                 ? `<button onclick="habilitarProducto('${id}')">✅ Habilitar producto</button>`
-                : `<button onclick="marcarAgotado('${id}')">🚫 Marcar agotado</button>`
-            }
+                : `<button onclick="marcarAgotado('${id}')">🚫 Marcar agotado</button>`}
             <button onclick="gestionarFoto('${id}', 'cambiar')">🔄 Cargar foto nueva</button>
             <button onclick="gestionarFoto('${id}', 'agregar')">➕ Agregar foto extra</button>
             <button onclick="borrarAnuncio('${id}')" style="color:red;font-weight:bold;">🗑️ Eliminar anuncio</button>
         `;
-
         const rect = dotEl.getBoundingClientRect();
-        // Usamos position:absolute relativo al documento
         const scrollY = window.scrollY || window.pageYOffset;
         const scrollX = window.scrollX || window.pageXOffset;
         let top = rect.bottom + scrollY + 4;
         let left = rect.right - 190 + scrollX;
         if (left < 8) left = 8;
-
         menu.style.position = 'absolute';
         menu.style.top = top + 'px';
         menu.style.left = left + 'px';
         menu.style.display = 'block';
     };
 
-    // Cierra el menú al hacer scroll (evita desfase)
-    window.addEventListener('scroll', function() {
+    window.addEventListener('scroll', () => {
         const menu = document.getElementById('global-options-menu');
-        if (menu && menu.style.display === 'block') {
-            menu.style.display = 'none';
-            menuActivoId = null;
-        }
+        if (menu && menu.style.display === 'block') { menu.style.display = 'none'; menuActivoId = null; }
     }, { passive: true });
 
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', e => {
         const menu = document.getElementById('global-options-menu');
         if (!e.target.closest('.options-dots') && !e.target.closest('#global-options-menu')) {
-            if (menu) menu.style.display = 'none';
-            menuActivoId = null;
+            if (menu) menu.style.display = 'none'; menuActivoId = null;
         }
     });
 
@@ -497,18 +584,77 @@
         menu.style.right = menu.style.right === "0px" ? "-300px" : "0px";
     };
 
-    window.mostrarOpcionesAuth = function() {
-        if (auth.currentUser) {
-            document.getElementById("formularioVendedor").style.display = "block";
-            window.toggleMenu();
-            setTimeout(() => {
-                document.getElementById("formularioVendedor").scrollIntoView({ behavior: 'smooth' });
-                iniciarMapaSelector();
-            }, 300);
-        } else {
+    window.mostrarPanelVendedor = function() {
+        if (!auth.currentUser) {
             document.getElementById("opciones-auth").style.display = "block";
             document.getElementById("auth-container").style.display = "none";
+            return;
         }
+        window.toggleMenu();
+        document.getElementById('panelVendedor').style.display = 'block';
+        document.getElementById('listaTiendas').style.display = 'none';
+        document.getElementById('mapa-container').style.display = 'none';
+        document.getElementById('banner-tienda').style.display = 'none';
+
+        // Precargar info de tienda desde los productos del vendedor
+        const misProductos = tiendasData.filter(t => t.uidVendedor === auth.currentUser.uid);
+        if (misProductos.length > 0) {
+            const info = misProductos[0];
+            document.getElementById('nombreTienda').value = info.nombreTienda || '';
+            document.getElementById('telTienda').value = info.tel || '';
+            document.getElementById('direccionTienda').value = info.direccion || '';
+            document.getElementById('provinciaTienda').value = info.provincia || '';
+            if (info.lat && info.lng) {
+                latSeleccionada = info.lat;
+                lngSeleccionada = info.lng;
+                document.getElementById('coords-display').innerText = `📍 Lat: ${info.lat.toFixed(5)}, Lng: ${info.lng.toFixed(5)}`;
+            }
+        }
+
+        // Mostrar mis productos
+        renderizarMisProductos(misProductos);
+
+        // Iniciar mapa selector
+        setTimeout(() => {
+            iniciarMapaSelector();
+            // Auto-scroll a la sección de productos
+            document.getElementById('seccion-mis-productos').scrollIntoView({ behavior: 'smooth' });
+        }, 300);
+    };
+
+    function renderizarMisProductos(lista) {
+        const cont = document.getElementById('lista-mis-productos');
+        if (lista.length === 0) {
+            cont.innerHTML = '<p style="color:#888;text-align:center;font-size:13px;">Aún no tienes productos publicados.</p>';
+            return;
+        }
+        cont.innerHTML = '';
+        lista.forEach(t => {
+            const foto = t.fotos && t.fotos.length > 0 ? t.fotos[0] : 'https://via.placeholder.com/60';
+            const esAgotado = t.estado === 'agotado';
+            cont.innerHTML += `
+                <div class="producto-vendedor">
+                    <img src="${foto}" alt="">
+                    <div class="producto-vendedor-info">
+                        <strong>${t.nombre || 'Sin nombre'}</strong>
+                        <span>${t.precio || ''} ${t.moneda || ''}</span>
+                        ${esAgotado ? '<br><small style="color:#e65100;">AGOTADO</small>' : ''}
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:4px;">
+                        ${esAgotado
+                            ? `<button onclick="habilitarProducto('${t.id}')" style="font-size:11px;padding:4px 8px;border:none;border-radius:6px;background:#e8f5e9;color:#2e7d32;cursor:pointer;">✅ Habilitar</button>`
+                            : `<button onclick="marcarAgotado('${t.id}')" style="font-size:11px;padding:4px 8px;border:none;border-radius:6px;background:#fff3e0;color:#e65100;cursor:pointer;">🚫 Agotado</button>`
+                        }
+                        <button onclick="borrarAnuncio('${t.id}')" style="font-size:11px;padding:4px 8px;border:none;border-radius:6px;background:#fde8e8;color:red;cursor:pointer;">🗑️ Borrar</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    window.toggleFormNuevoProducto = function() {
+        const f = document.getElementById('form-nuevo-producto');
+        f.style.display = f.style.display === 'block' ? 'none' : 'block';
+        if (f.style.display === 'block') f.scrollIntoView({ behavior: 'smooth' });
     };
 
     window.mostrarFormularioAuth = function(tipo) {
@@ -523,7 +669,7 @@
     };
 
     onAuthStateChanged(auth, (user) => {
-        document.getElementById("btn-add-negocio").innerText = user ? "➕ Gestionar mi Negocio" : "➕ Añadir negocio";
+        document.getElementById("btn-add-negocio").innerText = user ? "🏪 Gestionar mi Negocio" : "➕ Añadir negocio";
         document.getElementById("btn-cerrar-sesion").style.display = user ? "block" : "none";
         document.getElementById("opciones-auth").style.display = "none";
         document.getElementById("auth-container").style.display = "none";
@@ -541,14 +687,17 @@
     };
 
     function iniciarMapaSelector() {
-        if (mapSelector) return;
-        mapSelector = L.map('mapa-selector').setView([22.0, -79.5], 6);
+        if (mapSelector) { mapSelector.invalidateSize(); return; }
+        mapSelector = L.map('mapa-selector').setView([latSeleccionada, lngSeleccionada], 7);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapSelector);
+        if (latSeleccionada !== 23.11 || lngSeleccionada !== -82.36) {
+            marcadorSelector = L.marker([latSeleccionada, lngSeleccionada]).addTo(mapSelector).bindPopup("Tu tienda").openPopup();
+        }
         mapSelector.on('click', function(e) {
             latSeleccionada = e.latlng.lat;
             lngSeleccionada = e.latlng.lng;
             if (marcadorSelector) mapSelector.removeLayer(marcadorSelector);
-            marcadorSelector = L.marker([latSeleccionada, lngSeleccionada]).addTo(mapSelector).bindPopup("Tu negocio").openPopup();
+            marcadorSelector = L.marker([latSeleccionada, lngSeleccionada]).addTo(mapSelector).bindPopup("Tu tienda").openPopup();
             document.getElementById('coords-display').innerText = `📍 Lat: ${latSeleccionada.toFixed(5)}, Lng: ${lngSeleccionada.toFixed(5)}`;
         });
     }
@@ -567,9 +716,11 @@
                         id: doc.name.split('/').pop(),
                         uidVendedor: f.uidVendedor?.stringValue || "",
                         nombre: f.nombre?.stringValue || "Sin nombre",
+                        nombreTienda: f.nombreTienda?.stringValue || "",
                         precio: f.precio?.stringValue || "N/A",
                         moneda: f.moneda?.stringValue || "",
                         descripcion: f.descripcion?.stringValue || "",
+                        direccion: f.direccion?.stringValue || "",
                         provincia: f.provincia?.stringValue || "N/A",
                         fotos: f.fotos?.arrayValue?.values?.map(v => v.stringValue) || [f.fotoUrl?.stringValue || "https://via.placeholder.com/300"],
                         estado: f.estado?.stringValue || "disponible",
@@ -599,12 +750,17 @@
         contenedor.innerHTML = "";
         const usuarioActual = auth.currentUser ? auth.currentUser.uid : null;
 
+        if (lista.length === 0) {
+            contenedor.innerHTML = "<p style='text-align:center;width:100%;color:#888;grid-column:1/-1;'>No hay productos disponibles.</p>";
+            return;
+        }
+
         lista.forEach(tienda => {
             const esMio = tienda.uidVendedor === usuarioActual;
             const esAgotado = tienda.estado === "agotado";
             const fotosEncoded = encodeURIComponent(JSON.stringify(tienda.fotos));
-            const nombreSafe = tienda.nombre.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-            const descSafe = tienda.descripcion ? tienda.descripcion.replace(/'/g, "\\'").replace(/"/g, '&quot;') : '';
+            const nombreSafe = (tienda.nombre || "Sin nombre").replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const descSafe = (tienda.descripcion || "").replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
             let fotosHtml = "";
             tienda.fotos.forEach((foto, index) => {
@@ -618,13 +774,8 @@
 
             const badgeAgotado = esAgotado ? `<div class="badge-agotado">AGOTADO</div>` : "";
             const menuPuntos = esMio ? `<div class="options-dots" onclick="event.stopPropagation();toggleOptionsMenu('${tienda.id}', this)">⋮</div>` : "";
-
             const monedaHtml = tienda.moneda ? `<span class="moneda-tag">${tienda.moneda}</span>` : "";
-            const descIconHtml = tienda.descripcion ? `
-                <button class="btn-descripcion" onclick="abrirModalDesc('${nombreSafe}', '${descSafe}')" title="Ver descripción">
-                    ${svgDescripcion}
-                </button>` : "";
-
+            const descIconHtml = tienda.descripcion ? `<button class="btn-descripcion" onclick="abrirModalDesc('${nombreSafe}', '${descSafe}')" title="Ver descripción">${svgDescripcion}</button>` : "";
             const telLimpio = tienda.tel.replace(/\D/g, '');
 
             const cardHtml = `
@@ -635,7 +786,7 @@
                         ${controlesCarrusel}
                         ${badgeAgotado}
                     </div>
-                    <h3>${tienda.nombre}</h3>
+                    <h3>${tienda.nombre || 'Sin nombre'}</h3>
                     <div class="precio-row">
                         <span class="precio-tag">${tienda.precio}</span>
                         ${monedaHtml}
@@ -645,7 +796,7 @@
                     <div class="card-buttons">
                         <a href="tel:${tienda.tel}" class="btn-llamar" title="Llamar">${svgLlamar}</a>
                         <a href="https://wa.me/${telLimpio}" target="_blank" class="btn-wa" title="WhatsApp">${svgWhatsApp}</a>
-                        <button class="btn-mapa" onclick="verUbicacion(${tienda.lat}, ${tienda.lng}, '${nombreSafe}')" title="Ver en mapa">${svgMaps}</button>
+                        <button class="btn-mapa-card" onclick="verUbicacion(${tienda.lat}, ${tienda.lng}, '${nombreSafe}')" title="Ver en mapa">${svgMaps}</button>
                     </div>
                 </div>`;
             contenedor.insertAdjacentHTML('beforeend', cardHtml);
@@ -657,10 +808,51 @@
         const imgs = cont.querySelectorAll('.carousel-img');
         let idx = Array.from(imgs).findIndex(i => i.classList.contains('active'));
         imgs[idx].classList.remove('active');
-        idx += dir;
-        if (idx >= imgs.length) idx = 0;
-        if (idx < 0) idx = imgs.length - 1;
+        idx = (idx + dir + imgs.length) % imgs.length;
         imgs[idx].classList.add('active');
+    };
+
+    // =====================
+    // GUARDAR INFO TIENDA (actualiza todos sus productos)
+    // =====================
+    window.guardarInfoTienda = async function() {
+        if (!auth.currentUser) return alert("⚠️ Inicia sesión y activa el VPN.");
+        const misProductos = tiendasData.filter(t => t.uidVendedor === auth.currentUser.uid);
+        if (misProductos.length === 0) return alert("⚠️ Primero publica al menos un producto.");
+
+        const btn = document.querySelector('#seccion-info-tienda .btn-guardar');
+        btn.innerText = "Guardando... ⏳"; btn.disabled = true;
+
+        const campos = {
+            nombreTienda: document.getElementById('nombreTienda').value,
+            tel: document.getElementById('telTienda').value,
+            direccion: document.getElementById('direccionTienda').value,
+            provincia: document.getElementById('provinciaTienda').value,
+        };
+
+        try {
+            const token = await auth.currentUser.getIdToken();
+            const masks = Object.keys(campos).map(k => `updateMask.fieldPaths=${k}`).join('&') + `&updateMask.fieldPaths=lat&updateMask.fieldPaths=lng`;
+
+            const promises = misProductos.map(p => {
+                const payload = { fields: {} };
+                Object.entries(campos).forEach(([k,v]) => { payload.fields[k] = { stringValue: v }; });
+                payload.fields.lat = { doubleValue: latSeleccionada };
+                payload.fields.lng = { doubleValue: lngSeleccionada };
+                return fetch(`${FS_BASE}/tiendas/${p.id}?${masks}&key=${API_KEY}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(payload)
+                });
+            });
+
+            await Promise.all(promises);
+            alert("✅ Información de tienda guardada.");
+            location.reload();
+        } catch (e) {
+            alert("❌ Error: " + e.message);
+            btn.innerText = "💾 Guardar Info de Tienda"; btn.disabled = false;
+        }
     };
 
     // =====================
@@ -669,12 +861,11 @@
     window.borrarAnuncio = async function(id) {
         document.getElementById('global-options-menu').style.display = 'none';
         if (!auth.currentUser) return alert("⚠️ Inicia sesión y activa el VPN.");
-        if (!confirm("¿Seguro que quieres eliminar este anuncio?")) return;
+        if (!confirm("¿Seguro que quieres eliminar este producto?")) return;
         try {
             const token = await auth.currentUser.getIdToken();
-            const url = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas/${id}?key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
-            const res = await fetch(url, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-            if (res.ok) { alert("✅ Anuncio eliminado."); location.reload(); }
+            const res = await fetch(`${FS_BASE}/tiendas/${id}?key=${API_KEY}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) { alert("✅ Producto eliminado."); location.reload(); }
             else { alert("❌ Falló: " + await res.text()); }
         } catch (e) { alert("❌ Error: " + e.message); }
     };
@@ -683,11 +874,12 @@
         document.getElementById('global-options-menu').style.display = 'none';
         if (!auth.currentUser) return alert("⚠️ Inicia sesión y activa el VPN.");
         if (!confirm("¿Marcar como AGOTADO?")) return;
-        const payload = { fields: { estado: { stringValue: "agotado" } } };
         try {
             const token = await auth.currentUser.getIdToken();
-            const url = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas/${id}?updateMask.fieldPaths=estado&key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
-            const res = await fetch(url, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
+            const res = await fetch(`${FS_BASE}/tiendas/${id}?updateMask.fieldPaths=estado&key=${API_KEY}`, {
+                method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ fields: { estado: { stringValue: "agotado" } } })
+            });
             if (res.ok) { alert("✅ Marcado como agotado."); location.reload(); }
             else { alert("❌ Error: " + await res.text()); }
         } catch (e) { alert("❌ Error: " + e.message); }
@@ -697,11 +889,12 @@
         document.getElementById('global-options-menu').style.display = 'none';
         if (!auth.currentUser) return alert("⚠️ Inicia sesión y activa el VPN.");
         if (!confirm("¿Habilitar este producto?")) return;
-        const payload = { fields: { estado: { stringValue: "disponible" } } };
         try {
             const token = await auth.currentUser.getIdToken();
-            const url = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas/${id}?updateMask.fieldPaths=estado&key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
-            const res = await fetch(url, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
+            const res = await fetch(`${FS_BASE}/tiendas/${id}?updateMask.fieldPaths=estado&key=${API_KEY}`, {
+                method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ fields: { estado: { stringValue: "disponible" } } })
+            });
             if (res.ok) { alert("✅ Producto habilitado."); location.reload(); }
             else { alert("❌ Error: " + await res.text()); }
         } catch (e) { alert("❌ Error: " + e.message); }
@@ -713,24 +906,22 @@
         const input = document.createElement('input');
         input.type = 'file'; input.accept = 'image/*';
         input.onchange = async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+            const file = e.target.files[0]; if (!file) return;
             alert("Subiendo imagen... ⏳");
             try {
                 const formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', 'bazar_present');
+                formData.append('file', file); formData.append('upload_preset', 'bazar_present');
                 const resImg = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: formData });
                 const dataImg = await resImg.json();
-                const nuevaUrl = dataImg.secure_url;
                 const anuncio = tiendasData.find(t => t.id === id);
-                let fotos = Array.isArray(anuncio.fotos) ? [...anuncio.fotos] : [];
-                if (accion === 'cambiar') fotos = [nuevaUrl];
-                else fotos.push(nuevaUrl);
-                const payload = { fields: { fotos: { arrayValue: { values: fotos.map(u => ({ stringValue: u })) } } } };
+                let fotos = [...(anuncio.fotos || [])];
+                if (accion === 'cambiar') fotos = [dataImg.secure_url];
+                else fotos.push(dataImg.secure_url);
                 const token = await auth.currentUser.getIdToken();
-                const url = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas/${id}?updateMask.fieldPaths=fotos&key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
-                const res = await fetch(url, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
+                const res = await fetch(`${FS_BASE}/tiendas/${id}?updateMask.fieldPaths=fotos&key=${API_KEY}`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ fields: { fotos: { arrayValue: { values: fotos.map(u => ({ stringValue: u })) } } } })
+                });
                 if (res.ok) { alert("✅ Foto actualizada."); location.reload(); }
                 else { alert("❌ Error: " + await res.text()); }
             } catch (err) { alert("❌ Error: " + err.message); }
@@ -745,29 +936,28 @@
         const container = document.getElementById('imgPreviewContainer');
         container.innerHTML = "";
         document.getElementById('previewText').style.display = "none";
-        const files = event.target.files;
-        for (let i = 0; i < files.length; i++) {
+        Array.from(event.target.files).forEach(file => {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = e => {
                 const img = document.createElement('img');
                 img.src = e.target.result;
-                img.style.cssText = "width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid #0056b3;";
+                img.style.cssText = "width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #0056b3;";
                 container.appendChild(img);
-            }
-            reader.readAsDataURL(files[i]);
-        }
+            };
+            reader.readAsDataURL(file);
+        });
     };
 
     // =====================
-    // GUARDAR TIENDA
+    // PUBLICAR PRODUCTO
     // =====================
-    window.guardarTienda = async function() {
+    window.publicarProducto = async function() {
         if (!auth.currentUser) return alert("⚠️ Inicia sesión con VPN para publicar.");
         const fotosInput = document.getElementById("fotosTienda");
         if (fotosInput.files.length === 0) return alert("⚠️ Selecciona al menos una foto.");
 
-        const btn = document.querySelector(".btn-guardar");
-        btn.innerText = "Subiendo fotos... ⏳"; btn.disabled = true;
+        const btn = document.querySelector('#form-nuevo-producto .btn-guardar');
+        btn.innerText = "Subiendo... ⏳"; btn.disabled = true;
 
         try {
             const urlsFotos = [];
@@ -780,41 +970,45 @@
                 urlsFotos.push(dataImg.secure_url);
             }
 
-            const descripcion = document.getElementById("descripcionTienda").value.trim();
+            // Heredar info de tienda del vendedor si ya existe
+            const misProductos = tiendasData.filter(t => t.uidVendedor === auth.currentUser.uid);
+            const infoTienda = misProductos.length > 0 ? misProductos[0] : {};
 
             const payload = {
                 fields: {
                     uidVendedor: { stringValue: auth.currentUser.uid },
                     correo: { stringValue: auth.currentUser.email },
-                    nombre: { stringValue: document.getElementById("nombreTienda").value },
-                    precio: { stringValue: document.getElementById("precioTienda").value },
-                    moneda: { stringValue: document.getElementById("monedaTienda").value },
-                    descripcion: { stringValue: descripcion },
+                    nombre: { stringValue: document.getElementById("nombreProducto").value },
+                    precio: { stringValue: document.getElementById("precioProducto").value },
+                    moneda: { stringValue: document.getElementById("monedaProducto").value },
+                    descripcion: { stringValue: document.getElementById("descripcionProducto").value.trim() },
                     fotos: { arrayValue: { values: urlsFotos.map(u => ({ stringValue: u })) } },
                     estado: { stringValue: "disponible" },
-                    provincia: { stringValue: document.getElementById("provincia").value },
-                    tel: { stringValue: document.getElementById("whatsapp").value },
-                    lat: { doubleValue: latSeleccionada },
-                    lng: { doubleValue: lngSeleccionada },
+                    // Heredar info de la tienda
+                    nombreTienda: { stringValue: infoTienda.nombreTienda || document.getElementById('nombreTienda').value || "" },
+                    tel: { stringValue: infoTienda.tel || document.getElementById('telTienda').value || "" },
+                    direccion: { stringValue: infoTienda.direccion || document.getElementById('direccionTienda').value || "" },
+                    provincia: { stringValue: infoTienda.provincia || document.getElementById('provinciaTienda').value || "" },
+                    lat: { doubleValue: infoTienda.lat || latSeleccionada },
+                    lng: { doubleValue: infoTienda.lng || lngSeleccionada },
                     fecha: { timestampValue: new Date().toISOString() }
                 }
             };
 
             const token = await auth.currentUser.getIdToken();
-            const url = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas?key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
-            const respuesta = await fetch(url, {
+            const res = await fetch(`${FS_BASE}/tiendas?key=${API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(payload)
             });
 
-            if (!respuesta.ok) { const err = await respuesta.text(); throw new Error(err); }
-            alert("✅ ¡Anuncio publicado!");
+            if (!res.ok) { throw new Error(await res.text()); }
+            alert("✅ ¡Producto publicado!");
             location.reload();
         } catch (error) {
             console.error(error);
-            alert("❌ Falló la publicación: " + error.message);
-            btn.innerText = "Guardar y Publicar"; btn.disabled = false;
+            alert("❌ Falló: " + error.message);
+            btn.innerText = "📤 Publicar Producto"; btn.disabled = false;
         }
     };
 
@@ -823,7 +1017,8 @@
     // =====================
     window.filtrarPorProvincia = function() {
         const filtro = document.getElementById("filtroProvincia").value;
-        const filtradas = filtro === "todas" ? tiendasData : tiendasData.filter(t => t.provincia === filtro);
+        let filtradas = filtro === "todas" ? tiendasData : tiendasData.filter(t => t.provincia === filtro);
+        if (tiendaActivaUid) filtradas = filtradas.filter(t => t.uidVendedor === tiendaActivaUid);
         renderizarTiendas(filtradas);
     };
 
@@ -832,9 +1027,7 @@
         if (!map) {
             map = L.map('mapa').setView([lat, lng], 14);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        } else {
-            map.setView([lat, lng], 14);
-        }
+        } else { map.setView([lat, lng], 14); }
         if (marcadorActual) map.removeLayer(marcadorActual);
         marcadorActual = L.marker([lat, lng]).addTo(map).bindPopup(`<b>${nombre}</b>`).openPopup();
         document.getElementById("mapa-container").scrollIntoView({ behavior: 'smooth' });
