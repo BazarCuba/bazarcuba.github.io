@@ -328,7 +328,7 @@
         
         try {
             const token = await auth.currentUser.getIdToken();
-            const urlDirecta = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas/${id}?updateMask=estado&key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
+            const urlDirecta = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas/${id}?updateMask.fieldPaths=estado&key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
             
             const res = await fetch(urlDirecta, {
                 method: 'PATCH', 
@@ -380,7 +380,7 @@
                 const payload = { fields: { fotos: { arrayValue: { values: fotosActuales.map(url => ({ stringValue: url })) } } } };
                 
                 const token = await auth.currentUser.getIdToken();
-                const urlDirecta = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas/${id}?updateMask=fotos&key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
+                const urlDirecta = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas/${id}?updateMask.fieldPaths=fotos&key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
 
                 const res = await fetch(urlDirecta, {
                     method: 'PATCH', 
