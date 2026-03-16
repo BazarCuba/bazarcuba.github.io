@@ -294,12 +294,13 @@
 
     // --- ACCIONES DIRECTAS A FIREBASE (CON VPN Y SESIÓN ACTIVA) ---
 
+        // --- ACCIONES DIRECTAS A FIREBASE (CON VPN Y SESIÓN ACTIVA) ---
+
     window.borrarAnuncio = async function(id) {
         if (!auth.currentUser) return alert("⚠️ Inicia sesión y activa el VPN para borrar.");
         if (!confirm("¿Seguro que quieres eliminar este anuncio para siempre?")) return;
         
         try {
-            // Conseguir el Token de seguridad del usuario logueado
             const token = await auth.currentUser.getIdToken();
             const urlDirecta = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas/${id}?key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
 
@@ -312,9 +313,11 @@
                 alert("✅ Anuncio eliminado."); 
                 location.reload(); 
             } else {
-                alert("❌ Error: Asegúrate de tener el VPN activado.");
+                // AQUI MOSTRAMOS EL ERROR REAL
+                const errorLog = await res.text();
+                alert("❌ Falló el borrado. Causa: " + errorLog);
             }
-        } catch (e) { alert("❌ Error al borrar. Revisa tu VPN."); }
+        } catch (e) { alert("❌ Error de red: " + e.message); }
     };
 
     window.marcarAgotado = async function(id) {
@@ -340,9 +343,11 @@
                 alert("✅ Producto marcado como agotado."); 
                 location.reload(); 
             } else { 
-                alert("❌ Error de permisos o VPN desactivado."); 
+                // AQUI MOSTRAMOS EL ERROR REAL
+                const errorLog = await res.text();
+                alert("❌ Error al marcar agotado. Causa: " + errorLog); 
             }
-        } catch (e) { alert("❌ Error de red."); }
+        } catch (e) { alert("❌ Error de red: " + e.message); }
     };
 
     window.gestionarFoto = async function(id, accion) {
@@ -386,8 +391,14 @@
                     body: JSON.stringify(payload)
                 });
 
-                if (res.ok) { alert("✅ Foto actualizada."); location.reload(); }
-                else { alert("❌ Error de permisos o VPN."); }
+                if (res.ok) { 
+                    alert("✅ Foto actualizada."); 
+                    location.reload(); 
+                } else { 
+                    // AQUI MOSTRAMOS EL ERROR REAL
+                    const errorLog = await res.text();
+                    alert("❌ Error al guardar foto en Firebase. Causa: " + errorLog); 
+                }
             } catch (err) { alert("❌ Error en el proceso: " + err.message); }
         };
         input.click();
@@ -410,6 +421,68 @@
             reader.readAsDataURL(files[i]);
         }
     };
+
+    window.guardarTienda = async function() {
+        if (!auth.currentUser) return alert("⚠️ Inicia sesión con VPN para publicar.");
+        const fotosInput = document.getElementById("fotosTienda");
+        if (fotosInput.files.length === 0) return alert("⚠️ Selecciona al menos una foto.");
+
+        const btn = document.querySelector(".btn-guardar");
+        btn.innerText = "Subiendo fotos...⏳"; btn.disabled = true;
+
+        try {
+            const urlsFotos = [];
+            for (let i = 0; i < fotosInput.files.length; i++) {
+                const formData = new FormData();
+                formData.append('file', fotosInput.files[i]);
+                formData.append('upload_preset', 'bazar_present'); 
+                const resImg = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: formData });
+                const dataImg = await resImg.json();
+                urlsFotos.push(dataImg.secure_url);
+            }
+
+            const payload = {
+                fields: {
+                    uidVendedor: { stringValue: auth.currentUser.uid },
+                    correo: { stringValue: auth.currentUser.email },
+                    nombre: { stringValue: document.getElementById("nombreTienda").value },
+                    precio: { stringValue: document.getElementById("precioTienda").value },
+                    fotos: { arrayValue: { values: urlsFotos.map(url => ({ stringValue: url })) } },
+                    estado: { stringValue: "disponible" },
+                    provincia: { stringValue: document.getElementById("provincia").value },
+                    tel: { stringValue: document.getElementById("whatsapp").value },
+                    lat: { doubleValue: 23.11 }, lng: { doubleValue: -82.36 },
+                    fecha: { timestampValue: new Date().toISOString() }
+                }
+            };
+
+            const token = await auth.currentUser.getIdToken();
+            const urlDirecta = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas?key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
+
+            const respuesta = await fetch(urlDirecta, {
+                method: 'POST', 
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            if (!respuesta.ok) {
+                // AQUI MOSTRAMOS EL ERROR REAL AL PUBLICAR
+                const errorLog = await respuesta.text();
+                throw new Error(errorLog);
+            }
+            
+            alert("✅ ¡Anuncio publicado!");
+            location.reload(); 
+        } catch (error) {
+            console.error(error); 
+            alert("❌ Falló la publicación: " + error.message);
+            btn.innerText = "Guardar y Publicar"; btn.disabled = false;
+        }
+    };
+;
 
     window.guardarTienda = async function() {
         if (!auth.currentUser) return alert("⚠️ Inicia sesión con VPN para publicar.");
