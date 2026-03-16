@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BazarCuba | Tu Catálogo de Anuncios</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+        header { background-color: #0056b3; padding: 15px; color: white; text-align: center; position: relative; }
+        .card { background: white; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); overflow: hidden; position: relative; transition: opacity 0.3s; }
+        .card h3 { margin: 10px; color: #333; font-size: 18px; }
+        .card p.provincia { margin: 0 10px 15px 10px; color: #666; font-size: 14px; font-weight: bold; }
+        .card-buttons { display: flex; gap: 10px; padding: 10px; }
+        .card-buttons button, .card-buttons a { flex: 1; padding: 10px; text-align: center; border-radius: 5px; font-weight: bold; text-decoration: none; cursor: pointer; border: none; font-size: 14px; }
+        .btn-mapa { background-color: #0056b3; color: white; }
+        .btn-wa { background-color: #25D366; color: white; }
+        .precio-tag { color: #d32f2f; font-size: 18px; font-weight: bold; margin: 5px 10px; }
+        .carousel-container { position: relative; width: 100%; height: 180px; background-color: #eee; overflow: hidden; }
+        .carousel-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 0.5s; }
+        .carousel-img.active { opacity: 1; }
+        .prev, .next { cursor: pointer; position: absolute; top: 50%; width: auto; padding: 10px; margin-top: -22px; color: white; font-weight: bold; font-size: 18px; transition: 0.6s ease; border-radius: 0 3px 3px 0; user-select: none; background-color: rgba(0,0,0,0.4); border: none; z-index: 5; }
+        .next { right: 0; border-radius: 3px 0 0 3px; }
+        .prev:hover, .next:hover { background-color: rgba(0,0,0,0.8); }
+        .badge-agotado { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 16px; z-index: 6; text-transform: uppercase; letter-spacing: 1px; }
+        .options-dots { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .options-menu { display: none; position: absolute; top: 45px; right: 10px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 20; width: 180px; overflow: hidden; }
+        .options-menu button { width: 100%; padding: 12px; text-align: left; background: none; border: none; border-bottom: 1px solid #eee; cursor: pointer; font-size: 14px; color: #333; }
+        .options-menu button:last-child { border-bottom: none; }
+        .options-menu button:hover { background: #f5f5f5; }
+        .filter-container { background: white; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .filter-container select { padding: 10px; width: 90%; max-width: 400px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; font-weight: bold; color: #333; }
+        .grid-tiendas { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; padding: 0 15px; max-width: 1200px; margin: 0 auto; }
+        #mapa-container { display: none; margin: 20px auto; max-width: 1200px; padding: 0 15px; }
+        #mapa { height: 400px; width: 100%; border: 3px solid #0056b3; border-radius: 8px; z-index: 1; }
+        .vendor-section { padding: 20px; background: white; margin: 30px auto; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-top: 4px solid #ffcc00; }
+        .vendor-section h2 { color: #333; margin-top: 0; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .btn-guardar { background-color: #ffcc00; color: #333; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; }
+        .btn-guardar:hover { background-color: #e6b800; }
+    </style>
+</head>
+<body>
+
+<div id="menu-dots" onclick="toggleMenu()" style="position: absolute; top: 20px; right: 20px; font-size: 30px; cursor: pointer; color: white; z-index: 1001;">⋮</div>
+
+<div id="side-menu" style="position: fixed; right: -300px; top: 0; width: 280px; height: 100%; background: white; transition: 0.3s; z-index: 2000; box-shadow: -5px 0 15px rgba(0,0,0,0.3); padding: 20px; box-sizing: border-box; overflow-y: auto;">
+    <button onclick="toggleMenu()" style="background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; float: right;">Cerrar X</button>
+    <h2 style="margin-top: 40px; color: #333;">Opciones</h2>
+    <hr>
+    <button id="btn-add-negocio" onclick="mostrarOpcionesAuth()" style="width: 100%; padding: 15px; background: #0056b3; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;">➕ Añadir negocio</button>
+    <button id="btn-cerrar-sesion" onclick="cerrarSesion()" style="display: none; width: 100%; padding: 10px; background: #ddd; color: #333; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;">Cerrar Sesión</button>
+
+    <div id="opciones-auth" style="display: none; margin-top: 20px; text-align: center;">
+        <button onclick="mostrarFormularioAuth('login')" style="width: 45%; padding: 10px; background: #eee; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; font-weight: bold;">Entrar</button>
+        <button onclick="mostrarFormularioAuth('registro')" style="width: 45%; padding: 10px; background: #eee; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; font-weight: bold;">Registrarse</button>
+    </div>
+
+    <div id="auth-container" style="display: none; margin-top: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+        <h3 id="auth-title" style="margin-top: 0; font-size: 16px; color: #0056b3;"></h3>
+        <div class="form-group">
+            <input type="email" id="email" placeholder="Correo electrónico" style="margin-bottom: 10px; width: 100%; padding: 8px;">
+            <input type="password" id="password" placeholder="Contraseña (mín 6 letras)" style="width: 100%; padding: 8px;">
+        </div>
+        <button id="btn-auth-accion" class="btn-guardar" style="margin-top: 10px; width: 100%;">Continuar</button>
+    </div>
+</div>
+
+<header>
+    <h1>BazarCuba 🇨🇺</h1>
+    <p style="margin: 0; font-size: 14px;">Encuentra lo que buscas en tu provincia</p>
+</header>
+
+<div class="filter-container">
+    <select id="filtroProvincia" onchange="filtrarPorProvincia()">
+        <option value="todas">📍 Ver todas las provincias</option>
+        <option value="La Habana">La Habana</option>
+        <option value="Santiago de Cuba">Santiago de Cuba</option>
+        <option value="Matanzas">Matanzas</option>
+    </select>
+</div>
+
+<div id="listaTiendas" class="grid-tiendas">
+    <p style="text-align: center; width: 100%; color: #666;">Conectando con BazarCuba...</p>
+</div>
+
+<div id="mapa-container">
+    <h3 style="color: #0056b3; margin-bottom: 10px;">📍 Ubicación del negocio:</h3>
+    <div id="mapa"></div>
+</div>
+
+<div id="formularioVendedor" class="vendor-section" style="display: none;">
+    <h2>🛠️ Publicar mi Negocio</h2>
+    <div style="border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 15px; border-radius: 10px; cursor: pointer;" onclick="document.getElementById('fotosTienda').click()">
+        <p id="previewText">📸 Agregue fotos (seleccione múltiples)</p>
+        <div id="imgPreviewContainer" style="display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; margin-top: 10px;"></div>
+        <input type="file" id="fotosTienda" accept="image/*" multiple style="display: none;" onchange="previsualizarImagenes(event)">
+    </div>
+    <div class="form-group"><label>Nombre del Negocio:</label><input type="text" id="nombreTienda" placeholder="Ej. El Mercadito de Juan"></div>
+    <div class="form-group"><label>Precio del Producto o Servicio:</label><input type="text" id="precioTienda" placeholder="Ej. $500 CUP o Negociable" required></div>
+    <div class="form-group">
+        <label>Provincia:</label>
+        <select id="provincia">
+            <option value="">-- Elige una provincia --</option>
+            <option value="La Habana">La Habana</option>
+            <option value="Santiago de Cuba">Santiago de Cuba</option>
+        </select>
+    </div>
+    <div class="form-group"><label>WhatsApp:</label><input type="tel" id="whatsapp" placeholder="+53 51234567"></div>
+    <button type="button" class="btn-guardar" onclick="guardarTienda()">Guardar y Publicar</button>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc",
+        authDomain: "bazarcuba.firebaseapp.com",
+        projectId: "bazarcuba",
+        appId: "1:341288499673:web:ca566add302596869d01c8",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    let tiendasData = [];
+    let map;
+    let marcadorActual;
+    const workerURL = "https://api-bazar.norges763.workers.dev";
+
+    // --- FUNCIONES DE INTERFAZ Y SESIÓN ---
+    window.toggleMenu = function() {
+        const menu = document.getElementById("side-menu");
+        menu.style.right = menu.style.right === "0px" ? "-300px" : "0px";
+    };
+
+    window.mostrarOpcionesAuth = function() {
+        if (auth.currentUser) {
+            document.getElementById("formularioVendedor").style.display = "block";
+            window.toggleMenu();
+            document.getElementById("formularioVendedor").scrollIntoView({ behavior: 'smooth' });
+        } else {
+            document.getElementById("opciones-auth").style.display = "block";
+            document.getElementById("auth-container").style.display = "none";
+        }
+    };
+
+    window.mostrarFormularioAuth = function(tipo) {
+        document.getElementById("auth-container").style.display = "block";
+        const titulo = document.getElementById("auth-title");
+        const boton = document.getElementById("btn-auth-accion");
+        titulo.innerText = tipo === 'login' ? "Iniciar Sesión" : "Crear Cuenta Nueva";
+        boton.innerText = tipo === 'login' ? "Entrar" : "Registrarse";
+        boton.onclick = window.login;
+    };
+
+    window.cerrarSesion = async function() {
+        try { await signOut(auth); alert("Sesión cerrada."); location.reload(); } catch (error) { console.error(error); }
+    };
+
+    onAuthStateChanged(auth, (user) => {
+        document.getElementById("btn-add-negocio").innerText = user ? "➕ Gestionar mi Negocio" : "➕ Añadir negocio";
+        document.getElementById("btn-cerrar-sesion").style.display = user ? "block" : "none";
+        document.getElementById("opciones-auth").style.display = "none";
+        document.getElementById("auth-container").style.display = "none";
+        renderizarTiendas(tiendasData);
+    });
+
+    window.login = async function() {
+        const email = document.getElementById("email").value;
+        const pass = document.getElementById("password").value;
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+            alert("✅ Sesión iniciada.");
+            window.toggleMenu();
+        } catch (error) { alert("❌ Error: Verifica tus datos y asegúrate de tener VPN activado para loguearte."); }
+    };
+
+    // --- LECTURA DE DATOS (SIN VPN, POR WORKER) ---
+    window.cargarTiendasSinVPN = async function() {
+        try {
+            const respuesta = await fetch(`${workerURL}/get-anuncios`);
+            const data = await respuesta.json();
+            if (data.documents) {
+                tiendasData = data.documents.map(doc => {
+                    const f = doc.fields || {};
+                    return {
+                        id: doc.name.split('/').pop(),
+                        uidVendedor: f.uidVendedor?.stringValue || "",
+                        nombre: f.nombre?.stringValue || "Sin nombre",
+                        precio: f.precio?.stringValue || "N/A",
+                        provincia: f.provincia?.stringValue || "N/A",
+                        fotos: f.fotos?.arrayValue?.values?.map(v => v.stringValue) || [f.fotoUrl?.stringValue || "https://via.placeholder.com/300"],
+                        estado: f.estado?.stringValue || "disponible",
+                        tel: f.tel?.stringValue || "",
+                        lat: f.lat?.doubleValue || 23.11,
+                        lng: f.lng?.doubleValue || -82.36
+                    };
+                });
+                renderizarTiendas(tiendasData);
+            } else {
+                document.getElementById("listaTiendas").innerHTML = "<p style='text-align:center;'>No hay anuncios disponibles.</p>";
+            }
+        } catch (error) { console.error("Error cargando anuncios:", error); }
+    };
+
+    window.renderizarTiendas = function(lista) {
+        const contenedor = document.getElementById("listaTiendas");
+        contenedor.innerHTML = "";
+        const usuarioActual = auth.currentUser ? auth.currentUser.uid : null;
+
+        lista.forEach(tienda => {
+            const esMio = tienda.uidVendedor === usuarioActual;
+
+            let fotosHtml = "";
+            tienda.fotos.forEach((foto, index) => {
+                fotosHtml += `<img src="${foto}" class="carousel-img ${index === 0 ? 'active' : ''}" data-index="${index}">`;
+            });
+
+            const controlesCarrusel = tienda.fotos.length > 1 ? `
+                <button class="prev" onclick="cambiarFoto('${tienda.id}', -1)">❮</button>
+                <button class="next" onclick="cambiarFoto('${tienda.id}', 1)">❯</button>
+            ` : "";
+
+            const badgeAgotado = tienda.estado === "agotado" ? `<div class="badge-agotado">AGOTADO</div>` : "";
+
+            const menuPuntos = esMio ? `
+                <div class="options-dots" onclick="event.preventDefault(); event.stopPropagation(); toggleOptionsMenu('${tienda.id}')" style="z-index:100;">⋮</div>
+                <div id="menu-${tienda.id}" class="options-menu" style="z-index:101;">
+                    <button onclick="event.preventDefault(); event.stopPropagation(); marcarAgotado('${tienda.id}')">🚫 Marcar agotado</button>
+                    <button onclick="event.preventDefault(); event.stopPropagation(); gestionarFoto('${tienda.id}', 'cambiar')">🔄 Cargar foto nueva</button>
+                    <button onclick="event.preventDefault(); event.stopPropagation(); gestionarFoto('${tienda.id}', 'agregar')">➕ Agregar foto extra</button>
+                    <button onclick="event.preventDefault(); event.stopPropagation(); borrarAnuncio('${tienda.id}')" style="color:red; font-weight:bold;">🗑️ Eliminar anuncio</button>
+                </div>
+            ` : "";
+
+            const cardHtml = `
+                <div class="card" id="card-${tienda.id}" style="opacity: ${tienda.estado === 'agotado' ? '0.6' : '1'}">
+                    ${menuPuntos}
+                    <div class="carousel-container">
+                        ${fotosHtml}
+                        ${controlesCarrusel}
+                        ${badgeAgotado}
+                    </div>
+                    <h3>${tienda.nombre}</h3>
+                    <p class="precio-tag">${tienda.precio}</p>
+                    <p class="provincia">${tienda.provincia}</p>
+                    <div class="card-buttons">
+                        <button class="btn-mapa" onclick="verUbicacion(${tienda.lat}, ${tienda.lng}, '${tienda.nombre}')">📍 Mapa</button>
+                        <a href="https://wa.me/${tienda.tel.replace(/\+/g, '')}" target="_blank" class="btn-wa">💬 WhatsApp</a>
+                    </div>
+                </div>`;
+            contenedor.insertAdjacentHTML('beforeend', cardHtml);
+        });
+    };
+
+    window.cambiarFoto = function(id, direccion) {
+        const contenedor = document.querySelector(`#card-${id} .carousel-container`);
+        const imagenes = contenedor.querySelectorAll('.carousel-img');
+        let indexActivo = Array.from(imagenes).findIndex(img => img.classList.contains('active'));
+
+        imagenes[indexActivo].classList.remove('active');
+        indexActivo += direccion;
+
+        if (indexActivo >= imagenes.length) indexActivo = 0;
+        if (indexActivo < 0) indexActivo = imagenes.length - 1;
+
+        imagenes[indexActivo].classList.add('active');
+    };
+
+    window.toggleOptionsMenu = function(id) {
+        document.querySelectorAll('.options-menu').forEach(menu => {
+            if (menu.id !== `menu-${id}`) menu.style.display = 'none';
+        });
+        const menu = document.getElementById(`menu-${id}`);
+        menu.style.display = menu.style.display === "block" ? "none" : "block";
+    };
+
+    // --- ACCIONES DIRECTAS A FIREBASE (CON VPN Y SESIÓN ACTIVA) ---
+
+    window.borrarAnuncio = async function(id) {
+        if (!auth.currentUser) return alert("⚠️ Inicia sesión y activa el VPN para borrar.");
+        if (!confirm("¿Seguro que quieres eliminar este anuncio para siempre?")) return;
+
+        try {
+            const token = await auth.currentUser.getIdToken();
+            const urlDirecta = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas/${id}?key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
+
+            const res = await fetch(urlDirecta, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if(res.ok) {
+                alert("✅ Anuncio eliminado.");
+                location.reload();
+            } else {
+                const errorLog = await res.text();
+                alert("❌ Falló el borrado. Causa: " + errorLog);
+            }
+        } catch (e) { alert("❌ Error de red: " + e.message); }
+    };
+
+    window.marcarAgotado = async function(id) {
+        if (!auth.currentUser) return alert("⚠️ Inicia sesión y activa el VPN.");
+        if (!confirm("¿Deseas marcar este producto como AGOTADO?")) return;
+
+        const payload = { fields: { estado: { stringValue: "agotado" } } };
+
+        try {
+            const token = await auth.currentUser.getIdToken();
+            // ✅ CORRECCIÓN: updateMask.fieldPaths
+            const urlDirecta = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas/${id}?updateMask.fieldPaths=estado&key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
+
+            const res = await fetch(urlDirecta, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert("✅ Producto marcado como agotado.");
+                location.reload();
+            } else {
+                const errorLog = await res.text();
+                alert("❌ Error al marcar agotado. Causa: " + errorLog);
+            }
+        } catch (e) { alert("❌ Error de red: " + e.message); }
+    };
+
+    window.gestionarFoto = async function(id, accion) {
+        if (!auth.currentUser) return alert("⚠️ Inicia sesión y activa el VPN.");
+
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            alert("Subiendo imagen a Cloudinary... ⏳");
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', 'bazar_present');
+
+                const resImg = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: formData });
+                const dataImg = await resImg.json();
+                const nuevaUrl = dataImg.secure_url;
+
+                const anuncio = tiendasData.find(t => t.id === id);
+                let fotosActuales = Array.isArray(anuncio.fotos) ? [...anuncio.fotos] : [];
+
+                if (accion === 'cambiar') fotosActuales = [nuevaUrl];
+                else fotosActuales.push(nuevaUrl);
+
+                const payload = { fields: { fotos: { arrayValue: { values: fotosActuales.map(url => ({ stringValue: url })) } } } };
+
+                const token = await auth.currentUser.getIdToken();
+                // ✅ CORRECCIÓN: updateMask.fieldPaths
+                const urlDirecta = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas/${id}?updateMask.fieldPaths=fotos&key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
+
+                const res = await fetch(urlDirecta, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    alert("✅ Foto actualizada.");
+                    location.reload();
+                } else {
+                    const errorLog = await res.text();
+                    alert("❌ Error al guardar foto en Firebase. Causa: " + errorLog);
+                }
+            } catch (err) { alert("❌ Error en el proceso: " + err.message); }
+        };
+        input.click();
+    };
+
+    // --- PREVISUALIZACIÓN Y GUARDADO ---
+    window.previsualizarImagenes = function(event) {
+        const container = document.getElementById('imgPreviewContainer');
+        container.innerHTML = "";
+        document.getElementById('previewText').style.display = "none";
+        const files = event.target.files;
+        for (let i = 0; i < files.length; i++) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.width = "80px"; img.style.height = "80px"; img.style.objectFit = "cover"; img.style.borderRadius = "5px";
+                container.appendChild(img);
+            }
+            reader.readAsDataURL(files[i]);
+        }
+    };
+
+    window.guardarTienda = async function() {
+        if (!auth.currentUser) return alert("⚠️ Inicia sesión con VPN para publicar.");
+        const fotosInput = document.getElementById("fotosTienda");
+        if (fotosInput.files.length === 0) return alert("⚠️ Selecciona al menos una foto.");
+
+        const btn = document.querySelector(".btn-guardar");
+        btn.innerText = "Subiendo fotos...⏳"; btn.disabled = true;
+
+        try {
+            const urlsFotos = [];
+            for (let i = 0; i < fotosInput.files.length; i++) {
+                const formData = new FormData();
+                formData.append('file', fotosInput.files[i]);
+                formData.append('upload_preset', 'bazar_present');
+                const resImg = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: formData });
+                const dataImg = await resImg.json();
+                urlsFotos.push(dataImg.secure_url);
+            }
+
+            const payload = {
+                fields: {
+                    uidVendedor: { stringValue: auth.currentUser.uid },
+                    correo: { stringValue: auth.currentUser.email },
+                    nombre: { stringValue: document.getElementById("nombreTienda").value },
+                    precio: { stringValue: document.getElementById("precioTienda").value },
+                    fotos: { arrayValue: { values: urlsFotos.map(url => ({ stringValue: url })) } },
+                    estado: { stringValue: "disponible" },
+                    provincia: { stringValue: document.getElementById("provincia").value },
+                    tel: { stringValue: document.getElementById("whatsapp").value },
+                    lat: { doubleValue: 23.11 }, lng: { doubleValue: -82.36 },
+                    fecha: { timestampValue: new Date().toISOString() }
+                }
+            };
+
+            const token = await auth.currentUser.getIdToken();
+            const urlDirecta = `https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas?key=AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc`;
+
+            const respuesta = await fetch(urlDirecta, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!respuesta.ok) {
+                const errorLog = await respuesta.text();
+                throw new Error(errorLog);
+            }
+
+            alert("✅ ¡Anuncio publicado!");
+            location.reload();
+        } catch (error) {
+            console.error(error);
+            alert("❌ Falló la publicación: " + error.message);
+            btn.innerText = "Guardar y Publicar"; btn.disabled = false;
+        }
+    };
+
+    window.filtrarPorProvincia = function() {
+        const filtro = document.getElementById("filtroProvincia").value;
+        const filtradas = filtro === "todas" ? tiendasData : tiendasData.filter(t => t.provincia === filtro);
+        renderizarTiendas(filtradas);
+    };
+
+    window.verUbicacion = function(lat, lng, nombre) {
+        document.getElementById("mapa-container").style.display = "block";
+        if (!map) {
+            map = L.map('mapa').setView([lat, lng], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        } else {
+            map.setView([lat, lng], 13);
+        }
+        if (marcadorActual) map.removeLayer(marcadorActual);
+        marcadorActual = L.marker([lat, lng]).addTo(map).bindPopup(nombre).openPopup();
+        document.getElementById("mapa-container").scrollIntoView({ behavior: 'smooth' });
+    };
+
+    cargarTiendasSinVPN();
+</script>
+</body>
+</html>
