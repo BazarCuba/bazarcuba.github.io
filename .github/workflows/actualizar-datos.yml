@@ -1,0 +1,26 @@
+name: Actualizar datos de tiendas
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v3
+
+      - name: Descargar datos de Firestore
+        run: |
+          curl -s "https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents/tiendas?key=${{ secrets.FIREBASE_API_KEY }}&pageSize=300" \
+          -o datos.json
+
+      - name: Commit y push si hay cambios
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add datos.json
+          git diff --staged --quiet || git commit -m "Actualizar datos de tiendas"
+          git push
