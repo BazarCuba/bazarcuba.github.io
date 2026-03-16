@@ -21,7 +21,6 @@
         header h1 { margin: 0; font-size: 26px; letter-spacing: 1px; }
         header p { margin: 4px 0 0; font-size: 13px; opacity: 0.85; }
 
-        /* BARRA DE FILTROS */
         .filter-container {
             background: white;
             padding: 10px 12px;
@@ -55,12 +54,8 @@
             white-space: nowrap;
             transition: all 0.2s;
         }
-        #btn-vista-toggle.activo {
-            background: #0056b3;
-            color: white;
-        }
+        #btn-vista-toggle.activo { background: #0056b3; color: white; }
 
-        /* GRID */
         .grid-tiendas {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -70,7 +65,6 @@
             margin: 0 auto;
         }
 
-        /* CARD */
         .card {
             background: white;
             border-radius: 14px;
@@ -105,7 +99,6 @@
         .next { right: 0; border-radius: 3px 0 0 3px; }
         .badge-agotado { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.75); color: white; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 12px; z-index: 6; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* 3 PUNTOS */
         .options-dots { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.92); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 16px; }
 
         #global-options-menu { display: none; position: absolute; background: white; border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,0.2); z-index: 9000; width: 190px; overflow: hidden; }
@@ -113,11 +106,9 @@
         #global-options-menu button:last-child { border-bottom: none; }
         #global-options-menu button:hover { background: #f5f7ff; }
 
-        /* MAPA PRINCIPAL (vista mapa) */
         #vista-mapa { display: none; padding: 10px; }
         #mapa-principal { height: 70vh; width: 100%; border: 3px solid #0056b3; border-radius: 12px; }
 
-        /* MAPA DETALLE (botón GPS de tarjeta) */
         #mapa-container { display: none; margin: 15px auto; max-width: 1200px; padding: 0 10px; }
         #mapa { height: 350px; width: 100%; border: 3px solid #0056b3; border-radius: 12px; z-index: 1; }
 
@@ -133,7 +124,32 @@
         }
         #banner-tienda h2 { margin: 0 0 4px; font-size: 18px; }
         #banner-tienda p { margin: 0; font-size: 13px; opacity: 0.85; }
-        #btn-volver-catalogo { margin-top: 10px; background: white; color: #0056b3; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; }
+        .banner-botones { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+        #btn-volver-catalogo {
+            background: white; color: #0056b3; border: none;
+            padding: 8px 16px; border-radius: 20px; font-weight: bold;
+            font-size: 13px; cursor: pointer;
+        }
+        #btn-copiar-link-banner {
+            background: rgba(255,255,255,0.2); color: white;
+            border: 1.5px solid rgba(255,255,255,0.5);
+            padding: 8px 16px; border-radius: 20px; font-weight: bold;
+            font-size: 13px; cursor: pointer; backdrop-filter: blur(4px);
+        }
+        #btn-copiar-link-banner:active { background: rgba(255,255,255,0.35); }
+
+        /* TOAST COPIADO */
+        #toast {
+            position: fixed;
+            bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #333; color: white;
+            padding: 10px 22px; border-radius: 25px;
+            font-size: 14px; font-weight: bold;
+            z-index: 99999;
+            opacity: 0; transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        #toast.show { opacity: 1; }
 
         /* LIGHTBOX */
         #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.94); z-index: 9999; align-items: center; justify-content: center; }
@@ -144,7 +160,6 @@
         #lightbox-prev { left: 10px; }
         #lightbox-next { right: 10px; }
 
-        /* MODAL DESCRIPCIÓN */
         #modal-descripcion { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 8000; align-items: center; justify-content: center; padding: 20px; }
         #modal-descripcion.active { display: flex; }
         #modal-desc-content { background: white; border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; }
@@ -152,56 +167,66 @@
         #modal-desc-content p { margin: 0; color: #333; font-size: 15px; line-height: 1.6; }
         #modal-desc-close { margin-top: 18px; width: 100%; padding: 10px; background: #0056b3; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
 
-        /* MENÚ LATERAL */
         #side-menu { position: fixed; right: -300px; top: 0; width: 280px; height: 100%; background: white; transition: 0.3s; z-index: 3000; box-shadow: -5px 0 20px rgba(0,0,0,0.2); padding: 20px; overflow-y: auto; }
 
-        /* PANEL GESTIONAR NEGOCIO */
+        /* PANEL VENDEDOR */
         .vendor-panel { padding: 0 10px 30px; max-width: 600px; margin: 0 auto; }
-
-        .seccion-card {
-            background: white;
-            border-radius: 14px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-            padding: 18px;
-            margin-bottom: 16px;
-        }
+        .seccion-card { background: white; border-radius: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); padding: 18px; margin-bottom: 16px; }
         .seccion-card h3 { margin: 0 0 14px; color: #0056b3; font-size: 16px; border-bottom: 2px solid #e8f4fd; padding-bottom: 8px; }
-
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; margin-bottom: 4px; font-weight: bold; color: #444; font-size: 13px; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; transition: border 0.2s; font-family: inherit; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #0056b3; }
         .form-row { display: flex; gap: 10px; }
         .form-row .form-group { flex: 1; }
-
         .btn-guardar { background: linear-gradient(135deg, #ffcc00, #ffaa00); color: #333; padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; width: 100%; font-size: 15px; font-weight: bold; }
         .btn-secundario { background: #f0f4f8; color: #0056b3; padding: 10px 20px; border: 2px solid #0056b3; border-radius: 10px; cursor: pointer; width: 100%; font-size: 14px; font-weight: bold; margin-bottom: 10px; }
+
+        /* BOTÓN COPIAR LINK EN PANEL VENDEDOR */
+        .btn-copiar-link {
+            background: #e8f4fd; color: #0056b3;
+            padding: 10px 16px; border: 2px solid #0056b3;
+            border-radius: 10px; cursor: pointer;
+            width: 100%; font-size: 14px; font-weight: bold;
+            margin-bottom: 10px; display: flex;
+            align-items: center; justify-content: center; gap: 6px;
+        }
 
         #mapa-selector { height: 220px; width: 100%; border-radius: 10px; border: 2px solid #0056b3; margin-top: 6px; }
         #coords-display { font-size: 11px; color: #666; margin-top: 4px; text-align: center; }
 
-        /* PRODUCTO DEL VENDEDOR (en panel gestionar) */
-        .producto-vendedor {
-            display: flex;
-            gap: 10px;
-            padding: 10px;
-            background: #f8fafc;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            align-items: center;
-        }
+        .producto-vendedor { display: flex; gap: 10px; padding: 10px; background: #f8fafc; border-radius: 10px; margin-bottom: 8px; align-items: center; }
         .producto-vendedor img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; }
         .producto-vendedor-info { flex: 1; }
         .producto-vendedor-info strong { font-size: 13px; color: #222; display: block; }
         .producto-vendedor-info span { font-size: 12px; color: #d32f2f; font-weight: bold; }
 
-        /* FORMULARIO NUEVO PRODUCTO */
         #form-nuevo-producto { display: none; margin-top: 12px; border-top: 2px dashed #ddd; padding-top: 14px; }
-
         #menu-dots { position: absolute; top: 18px; right: 18px; font-size: 28px; cursor: pointer; color: white; z-index: 1001; }
+
+        /* HEADER TIENDA (cuando se abre por link directo) */
+        #header-tienda-directa {
+            display: none;
+            background: linear-gradient(135deg, #0056b3, #003d82);
+            color: white;
+            padding: 16px;
+            text-align: center;
+        }
+        #header-tienda-directa h2 { margin: 0 0 4px; font-size: 20px; }
+        #header-tienda-directa p { margin: 0; font-size: 13px; opacity: 0.85; }
+        #btn-ver-catalogo-completo {
+            margin-top: 10px;
+            background: rgba(255,255,255,0.2);
+            color: white; border: 1.5px solid rgba(255,255,255,0.5);
+            padding: 7px 16px; border-radius: 20px;
+            font-weight: bold; font-size: 13px; cursor: pointer;
+        }
     </style>
 </head>
 <body>
+
+<!-- TOAST -->
+<div id="toast">🔗 ¡Link copiado!</div>
 
 <!-- LIGHTBOX -->
 <div id="lightbox" onclick="lightboxClickFuera(event)">
@@ -248,7 +273,14 @@
     <p>Encuentra lo que buscas en tu provincia</p>
 </header>
 
-<div class="filter-container">
+<!-- HEADER CUANDO SE ABRE POR LINK DIRECTO -->
+<div id="header-tienda-directa">
+    <h2 id="header-nombre-tienda-directa"></h2>
+    <p id="header-info-tienda-directa"></p>
+    <button id="btn-ver-catalogo-completo" onclick="verCatalogoCompleto()">🏪 Ver catálogo completo</button>
+</div>
+
+<div class="filter-container" id="filtro-container">
     <select id="filtroProvincia" onchange="filtrarPorProvincia()">
         <option value="todas">📍 Todas las provincias</option>
         <option value="Pinar del Río">Pinar del Río</option>
@@ -271,24 +303,23 @@
     <button id="btn-vista-toggle" onclick="toggleVista()">🗺️ Mapa</button>
 </div>
 
-<!-- VISTA MAPA -->
 <div id="vista-mapa">
     <div id="mapa-principal"></div>
 </div>
 
-<!-- BANNER DE TIENDA VISITADA -->
 <div id="banner-tienda">
-    <h2 id="banner-nombre-tienda">Nombre Tienda</h2>
+    <h2 id="banner-nombre-tienda"></h2>
     <p id="banner-info-tienda"></p>
-    <button id="btn-volver-catalogo" onclick="volverAlCatalogo()">← Volver al catálogo</button>
+    <div class="banner-botones">
+        <button id="btn-volver-catalogo" onclick="volverAlCatalogo()">← Volver</button>
+        <button id="btn-copiar-link-banner" onclick="copiarLinkTienda()">🔗 Copiar link</button>
+    </div>
 </div>
 
-<!-- GRID DE PRODUCTOS -->
 <div id="listaTiendas" class="grid-tiendas">
     <p style="text-align:center;width:100%;color:#888;grid-column:1/-1;">Conectando con BazarCuba...</p>
 </div>
 
-<!-- MAPA DETALLE (desde botón GPS de tarjeta) -->
 <div id="mapa-container">
     <h3 style="color:#0056b3;margin:0 0 8px 10px;">📍 Ubicación:</h3>
     <div id="mapa"></div>
@@ -297,13 +328,11 @@
 <!-- PANEL GESTIONAR NEGOCIO -->
 <div id="panelVendedor" style="display:none;">
     <div class="vendor-panel">
-
-        <!-- SECCIÓN INFO DE TIENDA -->
         <div class="seccion-card" id="seccion-info-tienda">
             <h3>🏪 Información de tu Tienda</h3>
             <div class="form-group"><label>Nombre de la Tienda:</label><input type="text" id="nombreTienda" placeholder="Ej. Tienda de Ropa de María"></div>
             <div class="form-group"><label>Teléfono / WhatsApp:</label><input type="tel" id="telTienda" placeholder="+53 51234567"></div>
-            <div class="form-group"><label>Dirección:</label><input type="text" id="direccionTienda" placeholder="Ej. Calle 23 #456, Vedado, La Habana"></div>
+            <div class="form-group"><label>Dirección:</label><input type="text" id="direccionTienda" placeholder="Ej. Calle 23 #456, Vedado"></div>
             <div class="form-group">
                 <label>Provincia:</label>
                 <select id="provinciaTienda">
@@ -334,15 +363,16 @@
             <button class="btn-guardar" onclick="guardarInfoTienda()">💾 Guardar Info de Tienda</button>
         </div>
 
-        <!-- SECCIÓN MIS PRODUCTOS -->
         <div class="seccion-card" id="seccion-mis-productos">
             <h3>📦 Mis Productos</h3>
+            <!-- BOTÓN COPIAR LINK EN PANEL VENDEDOR -->
+            <button class="btn-copiar-link" id="btn-copiar-link-panel" onclick="copiarLinkTienda()">
+                🔗 Copiar link de mi tienda
+            </button>
             <div id="lista-mis-productos">
                 <p style="color:#888;text-align:center;font-size:13px;">Cargando tus productos...</p>
             </div>
             <button class="btn-secundario" onclick="toggleFormNuevoProducto()">➕ Agregar nuevo producto</button>
-
-            <!-- FORMULARIO NUEVO PRODUCTO -->
             <div id="form-nuevo-producto">
                 <div style="border:2px dashed #ccc;padding:14px;text-align:center;margin-bottom:12px;border-radius:10px;cursor:pointer;background:#fafafa;" onclick="document.getElementById('fotosTienda').click()">
                     <p id="previewText" style="margin:0;color:#888;font-size:13px;">📸 Toca para agregar fotos</p>
@@ -361,7 +391,6 @@
                 <button class="btn-guardar" onclick="publicarProducto()">📤 Publicar Producto</button>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -383,11 +412,86 @@
     let map, mapPrincipal, mapSelector;
     let marcadorActual, marcadorSelector;
     let latSeleccionada = 23.11, lngSeleccionada = -82.36;
-    let vistaActual = 'tiendas'; // 'tiendas' o 'mapa'
-    let tiendaActivaUid = null; // uid del vendedor cuya tienda se está viendo
+    let vistaActual = 'tiendas';
+    let tiendaActivaUid = null;
+    let modoTiendaDirecta = false; // true cuando se abre por link directo
     const workerURL = "https://api-bazar.norges763.workers.dev";
     const API_KEY = "AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc";
     const FS_BASE = "https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents";
+
+    // =====================
+    // DETECTAR LINK DIRECTO
+    // Al cargar la página, verificar si hay ?tienda=UID en la URL
+    // =====================
+    function detectarLinkDirecto() {
+        const params = new URLSearchParams(window.location.search);
+        const uid = params.get('tienda');
+        if (uid) {
+            tiendaActivaUid = uid;
+            modoTiendaDirecta = true;
+            // Ocultar filtros mientras carga
+            document.getElementById('filtro-container').style.display = 'none';
+        }
+    }
+
+    function mostrarVistaDirecta() {
+        if (!modoTiendaDirecta || !tiendaActivaUid) return;
+        const productos = tiendasData.filter(t => t.uidVendedor === tiendaActivaUid);
+        if (productos.length === 0) return;
+        const info = productos[0];
+
+        // Mostrar header de tienda directa
+        const hd = document.getElementById('header-tienda-directa');
+        hd.style.display = 'block';
+        document.getElementById('header-nombre-tienda-directa').textContent = info.nombreTienda || 'Tienda';
+        const parts = [];
+        if (info.tel) parts.push('📞 ' + info.tel);
+        if (info.direccion) parts.push('📍 ' + info.direccion);
+        if (info.provincia) parts.push(info.provincia);
+        document.getElementById('header-info-tienda-directa').textContent = parts.join('  ·  ');
+
+        // Ocultar filtros, mostrar solo productos de la tienda
+        document.getElementById('filtro-container').style.display = 'none';
+        renderizarTiendas(productos);
+    }
+
+    window.verCatalogoCompleto = function() {
+        modoTiendaDirecta = false;
+        tiendaActivaUid = null;
+        document.getElementById('header-tienda-directa').style.display = 'none';
+        document.getElementById('filtro-container').style.display = 'flex';
+        // Limpiar URL sin recargar
+        window.history.replaceState({}, '', window.location.pathname);
+        renderizarTiendas(tiendasData);
+    };
+
+    // =====================
+    // COPIAR LINK
+    // =====================
+    window.copiarLinkTienda = function() {
+        const uid = tiendaActivaUid || (auth.currentUser ? auth.currentUser.uid : null);
+        if (!uid) return alert("No se pudo obtener el ID de la tienda.");
+        const url = `${window.location.origin}${window.location.pathname}?tienda=${uid}`;
+        navigator.clipboard.writeText(url).then(() => {
+            mostrarToast('🔗 ¡Link copiado!');
+        }).catch(() => {
+            // Fallback para navegadores que no soportan clipboard
+            const input = document.createElement('input');
+            input.value = url;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            mostrarToast('🔗 ¡Link copiado!');
+        });
+    };
+
+    function mostrarToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+    }
 
     // =====================
     // LIGHTBOX
@@ -425,7 +529,7 @@
     document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarLightbox(); cerrarModalDesc(); } });
 
     // =====================
-    // TOGGLE VISTA (Tiendas / Mapa)
+    // TOGGLE VISTA
     // =====================
     window.toggleVista = function() {
         const btn = document.getElementById('btn-vista-toggle');
@@ -448,38 +552,30 @@
     };
 
     // =====================
-    // MAPA PRINCIPAL (vista mapa con todas las tiendas)
+    // MAPA PRINCIPAL
     // =====================
     function iniciarMapaPrincipal() {
         if (!mapPrincipal) {
             mapPrincipal = L.map('mapa-principal').setView([22.0, -79.5], 6);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapPrincipal);
         }
-        // Limpiar marcadores anteriores
         mapPrincipal.eachLayer(layer => { if (layer instanceof L.Marker) mapPrincipal.removeLayer(layer); });
 
-        // Agrupar por vendedor (un pin por vendedor)
         const vendedoresVistos = {};
         tiendasData.forEach(t => {
-            if (!vendedoresVistos[t.uidVendedor] && t.lat && t.lng) {
-                vendedoresVistos[t.uidVendedor] = t;
-            }
+            if (!vendedoresVistos[t.uidVendedor] && t.lat && t.lng) vendedoresVistos[t.uidVendedor] = t;
         });
 
-        // Icono GPS rojo estilo Google Maps
         const gpsIcon = L.divIcon({
             html: `<svg width="32" height="40" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
                 <path d="M16 0C9.37 0 4 5.37 4 12c0 9 12 24 12 24S28 21 28 12C28 5.37 22.63 0 16 0z" fill="#EA4335"/>
                 <circle cx="16" cy="12" r="5" fill="white"/>
             </svg>`,
-            className: '',
-            iconSize: [32, 40],
-            iconAnchor: [16, 40],
-            popupAnchor: [0, -40]
+            className: '', iconSize: [32, 40], iconAnchor: [16, 40], popupAnchor: [0, -40]
         });
 
         Object.values(vendedoresVistos).forEach(t => {
-            const nombreT = t.nombreTienda || t.nombre || "Tienda";
+            const nombreT = t.nombreTienda || 'Tienda';
             const marker = L.marker([t.lat, t.lng], { icon: gpsIcon }).addTo(mapPrincipal);
             marker.bindPopup(`
                 <div style="text-align:center;min-width:130px;">
@@ -499,27 +595,23 @@
     // =====================
     window.visitarTienda = function(uid) {
         tiendaActivaUid = uid;
-
-        // Cerrar mapa y volver a vista tiendas
         vistaActual = 'tiendas';
         document.getElementById('btn-vista-toggle').textContent = '🗺️ Mapa';
         document.getElementById('btn-vista-toggle').classList.remove('activo');
         document.getElementById('vista-mapa').style.display = 'none';
         document.getElementById('listaTiendas').style.display = 'grid';
 
-        // Filtrar productos de esta tienda
         const productosT = tiendasData.filter(t => t.uidVendedor === uid);
         const infoT = productosT[0] || {};
 
-        // Mostrar banner
         const banner = document.getElementById('banner-tienda');
         banner.style.display = 'block';
         document.getElementById('banner-nombre-tienda').textContent = infoT.nombreTienda || 'Tienda';
-        const infoParts = [];
-        if (infoT.tel) infoParts.push('📞 ' + infoT.tel);
-        if (infoT.direccion) infoParts.push('📍 ' + infoT.direccion);
-        if (infoT.provincia) infoParts.push(infoT.provincia);
-        document.getElementById('banner-info-tienda').textContent = infoParts.join('  ·  ');
+        const parts = [];
+        if (infoT.tel) parts.push('📞 ' + infoT.tel);
+        if (infoT.direccion) parts.push('📍 ' + infoT.direccion);
+        if (infoT.provincia) parts.push(infoT.provincia);
+        document.getElementById('banner-info-tienda').textContent = parts.join('  ·  ');
 
         renderizarTiendas(productosT);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -596,7 +688,6 @@
         document.getElementById('mapa-container').style.display = 'none';
         document.getElementById('banner-tienda').style.display = 'none';
 
-        // Precargar info de tienda desde los productos del vendedor
         const misProductos = tiendasData.filter(t => t.uidVendedor === auth.currentUser.uid);
         if (misProductos.length > 0) {
             const info = misProductos[0];
@@ -605,19 +696,14 @@
             document.getElementById('direccionTienda').value = info.direccion || '';
             document.getElementById('provinciaTienda').value = info.provincia || '';
             if (info.lat && info.lng) {
-                latSeleccionada = info.lat;
-                lngSeleccionada = info.lng;
+                latSeleccionada = info.lat; lngSeleccionada = info.lng;
                 document.getElementById('coords-display').innerText = `📍 Lat: ${info.lat.toFixed(5)}, Lng: ${info.lng.toFixed(5)}`;
             }
         }
 
-        // Mostrar mis productos
         renderizarMisProductos(misProductos);
-
-        // Iniciar mapa selector
         setTimeout(() => {
             iniciarMapaSelector();
-            // Auto-scroll a la sección de productos
             document.getElementById('seccion-mis-productos').scrollIntoView({ behavior: 'smooth' });
         }, 300);
     };
@@ -694,8 +780,7 @@
             marcadorSelector = L.marker([latSeleccionada, lngSeleccionada]).addTo(mapSelector).bindPopup("Tu tienda").openPopup();
         }
         mapSelector.on('click', function(e) {
-            latSeleccionada = e.latlng.lat;
-            lngSeleccionada = e.latlng.lng;
+            latSeleccionada = e.latlng.lat; lngSeleccionada = e.latlng.lng;
             if (marcadorSelector) mapSelector.removeLayer(marcadorSelector);
             marcadorSelector = L.marker([latSeleccionada, lngSeleccionada]).addTo(mapSelector).bindPopup("Tu tienda").openPopup();
             document.getElementById('coords-display').innerText = `📍 Lat: ${latSeleccionada.toFixed(5)}, Lng: ${lngSeleccionada.toFixed(5)}`;
@@ -729,7 +814,12 @@
                         lng: f.lng?.doubleValue || -82.36
                     };
                 });
-                renderizarTiendas(tiendasData);
+                // Si hay link directo, mostrar solo esa tienda
+                if (modoTiendaDirecta) {
+                    mostrarVistaDirecta();
+                } else {
+                    renderizarTiendas(tiendasData);
+                }
             } else {
                 document.getElementById("listaTiendas").innerHTML = "<p style='text-align:center;width:100%;color:#888;grid-column:1/-1;'>No hay anuncios disponibles.</p>";
             }
@@ -775,7 +865,7 @@
             const badgeAgotado = esAgotado ? `<div class="badge-agotado">AGOTADO</div>` : "";
             const menuPuntos = esMio ? `<div class="options-dots" onclick="event.stopPropagation();toggleOptionsMenu('${tienda.id}', this)">⋮</div>` : "";
             const monedaHtml = tienda.moneda ? `<span class="moneda-tag">${tienda.moneda}</span>` : "";
-            const descIconHtml = tienda.descripcion ? `<button class="btn-descripcion" onclick="abrirModalDesc('${nombreSafe}', '${descSafe}')" title="Ver descripción">${svgDescripcion}</button>` : "";
+            const descIconHtml = tienda.descripcion ? `<button class="btn-descripcion" onclick="abrirModalDesc('${nombreSafe}', '${descSafe}')">${svgDescripcion}</button>` : "";
             const telLimpio = tienda.tel.replace(/\D/g, '');
 
             const cardHtml = `
@@ -794,9 +884,9 @@
                     </div>
                     <p class="provincia">📍 ${tienda.provincia}</p>
                     <div class="card-buttons">
-                        <a href="tel:${tienda.tel}" class="btn-llamar" title="Llamar">${svgLlamar}</a>
-                        <a href="https://wa.me/${telLimpio}" target="_blank" class="btn-wa" title="WhatsApp">${svgWhatsApp}</a>
-                        <button class="btn-mapa-card" onclick="verUbicacion(${tienda.lat}, ${tienda.lng}, '${nombreSafe}')" title="Ver en mapa">${svgMaps}</button>
+                        <a href="tel:${tienda.tel}" class="btn-llamar">${svgLlamar}</a>
+                        <a href="https://wa.me/${telLimpio}" target="_blank" class="btn-wa">${svgWhatsApp}</a>
+                        <button class="btn-mapa-card" onclick="verUbicacion(${tienda.lat}, ${tienda.lng}, '${nombreSafe}')">${svgMaps}</button>
                     </div>
                 </div>`;
             contenedor.insertAdjacentHTML('beforeend', cardHtml);
@@ -813,7 +903,7 @@
     };
 
     // =====================
-    // GUARDAR INFO TIENDA (actualiza todos sus productos)
+    // GUARDAR INFO TIENDA
     // =====================
     window.guardarInfoTienda = async function() {
         if (!auth.currentUser) return alert("⚠️ Inicia sesión y activa el VPN.");
@@ -833,10 +923,9 @@
         try {
             const token = await auth.currentUser.getIdToken();
             const masks = Object.keys(campos).map(k => `updateMask.fieldPaths=${k}`).join('&') + `&updateMask.fieldPaths=lat&updateMask.fieldPaths=lng`;
-
             const promises = misProductos.map(p => {
                 const payload = { fields: {} };
-                Object.entries(campos).forEach(([k,v]) => { payload.fields[k] = { stringValue: v }; });
+                Object.entries(campos).forEach(([k, v]) => { payload.fields[k] = { stringValue: v }; });
                 payload.fields.lat = { doubleValue: latSeleccionada };
                 payload.fields.lng = { doubleValue: lngSeleccionada };
                 return fetch(`${FS_BASE}/tiendas/${p.id}?${masks}&key=${API_KEY}`, {
@@ -845,7 +934,6 @@
                     body: JSON.stringify(payload)
                 });
             });
-
             await Promise.all(promises);
             alert("✅ Información de tienda guardada.");
             location.reload();
@@ -970,7 +1058,6 @@
                 urlsFotos.push(dataImg.secure_url);
             }
 
-            // Heredar info de tienda del vendedor si ya existe
             const misProductos = tiendasData.filter(t => t.uidVendedor === auth.currentUser.uid);
             const infoTienda = misProductos.length > 0 ? misProductos[0] : {};
 
@@ -984,7 +1071,6 @@
                     descripcion: { stringValue: document.getElementById("descripcionProducto").value.trim() },
                     fotos: { arrayValue: { values: urlsFotos.map(u => ({ stringValue: u })) } },
                     estado: { stringValue: "disponible" },
-                    // Heredar info de la tienda
                     nombreTienda: { stringValue: infoTienda.nombreTienda || document.getElementById('nombreTienda').value || "" },
                     tel: { stringValue: infoTienda.tel || document.getElementById('telTienda').value || "" },
                     direccion: { stringValue: infoTienda.direccion || document.getElementById('direccionTienda').value || "" },
@@ -1033,6 +1119,8 @@
         document.getElementById("mapa-container").scrollIntoView({ behavior: 'smooth' });
     };
 
+    // Iniciar
+    detectarLinkDirecto();
     cargarTiendasSinVPN();
 </script>
 </body>
