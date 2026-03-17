@@ -98,13 +98,6 @@
         .next { right: 0; border-radius: 3px 0 0 3px; }
         .badge-agotado { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.75); color: white; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 12px; z-index: 6; text-transform: uppercase; letter-spacing: 1px; }
 
-        .options-dots { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.92); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 16px; }
-
-        #global-options-menu { display: none; position: absolute; background: white; border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,0.2); z-index: 9000; width: 190px; overflow: hidden; }
-        #global-options-menu button { width: 100%; padding: 12px 16px; text-align: left; background: none; border: none; border-bottom: 1px solid #f0f0f0; cursor: pointer; font-size: 13px; color: #333; }
-        #global-options-menu button:last-child { border-bottom: none; }
-        #global-options-menu button:hover { background: #f5f7ff; }
-
         #vista-mapa { display: none; padding: 10px; }
         #mapa-principal { height: 70vh; width: 100%; border: 3px solid #0056b3; border-radius: 12px; }
 
@@ -126,7 +119,7 @@
         #btn-volver-catalogo { background: white; color: #0056b3; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; }
         #btn-copiar-link-banner { background: rgba(255,255,255,0.2); color: white; border: 1.5px solid rgba(255,255,255,0.5); padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; }
 
-        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 22px; border-radius: 25px; font-size: 14px; font-weight: bold; z-index: 99999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 22px; border-radius: 25px; font-size: 14px; font-weight: bold; z-index: 99999; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
         #toast.show { opacity: 1; }
 
         #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.94); z-index: 9999; align-items: center; justify-content: center; }
@@ -162,11 +155,41 @@
         #mapa-selector { height: 220px; width: 100%; border-radius: 10px; border: 2px solid #0056b3; margin-top: 6px; }
         #coords-display { font-size: 11px; color: #666; margin-top: 4px; text-align: center; }
 
-        .producto-vendedor { display: flex; gap: 10px; padding: 10px; background: #f8fafc; border-radius: 10px; margin-bottom: 8px; align-items: center; }
-        .producto-vendedor img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; }
+        /* PRODUCTO VENDEDOR EN PANEL - con acciones integradas */
+        .producto-vendedor {
+            background: #f8fafc;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            border: 1px solid #e8edf2;
+        }
+        .producto-vendedor-top { display: flex; gap: 10px; padding: 10px; align-items: center; }
+        .producto-vendedor-top img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
         .producto-vendedor-info { flex: 1; }
         .producto-vendedor-info strong { font-size: 13px; color: #222; display: block; }
         .producto-vendedor-info span { font-size: 12px; color: #d32f2f; font-weight: bold; }
+        .producto-vendedor-acciones {
+            display: flex;
+            border-top: 1px solid #e8edf2;
+            overflow: hidden;
+        }
+        .producto-vendedor-acciones button {
+            flex: 1;
+            padding: 9px 4px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            color: #555;
+            border-right: 1px solid #e8edf2;
+            transition: background 0.15s;
+        }
+        .producto-vendedor-acciones button:last-child { border-right: none; }
+        .producto-vendedor-acciones button:hover { background: #f0f4f8; }
+        .btn-accion-agotado { color: #e65100 !important; }
+        .btn-accion-habilitar { color: #2e7d32 !important; }
+        .btn-accion-borrar { color: red !important; }
 
         #form-nuevo-producto { display: none; margin-top: 12px; border-top: 2px dashed #ddd; padding-top: 14px; }
         #menu-dots { position: absolute; top: 18px; right: 18px; font-size: 28px; cursor: pointer; color: white; z-index: 1001; }
@@ -175,11 +198,22 @@
         #header-tienda-directa h2 { margin: 0 0 4px; font-size: 20px; }
         #header-tienda-directa p { margin: 0; font-size: 13px; opacity: 0.85; }
         #btn-ver-catalogo-completo { margin-top: 10px; background: rgba(255,255,255,0.2); color: white; border: 1.5px solid rgba(255,255,255,0.5); padding: 7px 16px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; }
+
+        /* SPINNER de sesión */
+        #spinner-sesion { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9998; align-items: center; justify-content: center; flex-direction: column; color: white; font-size: 16px; font-weight: bold; }
+        #spinner-sesion.show { display: flex; }
+        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<div id="toast">🔗 ¡Link copiado!</div>
+<div id="toast"></div>
+
+<div id="spinner-sesion">
+    <div class="spinner"></div>
+    Restaurando sesión...
+</div>
 
 <div id="lightbox" onclick="lightboxClickFuera(event)">
     <span id="lightbox-close" onclick="cerrarLightbox()">✕</span>
@@ -195,8 +229,6 @@
         <button id="modal-desc-close" onclick="cerrarModalDesc()">Cerrar</button>
     </div>
 </div>
-
-<div id="global-options-menu"></div>
 
 <div id="menu-dots" onclick="toggleMenu()">⋮</div>
 
@@ -347,28 +379,78 @@
     let vistaActual = 'tiendas';
     let tiendaActivaUid = null;
     let modoTiendaDirecta = false;
-    let usuarioActual = null; // Se llena solo después del login
-    let firebaseAuth = null;  // Se inicializa solo cuando se necesita
+    let usuarioActual = null;
+    let firebaseApp = null;
+    let firebaseAuth = null;
 
-
+    const MSG_5MIN = "\n\n⏳ Puede tardar un máximo de 5 minutos para que los demás usuarios lo vean.";
     const API_KEY = "AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc";
     const FS_BASE = "https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents";
 
     // =====================
-    // INICIAR FIREBASE (solo cuando el usuario lo necesita)
+    // SESIÓN PERSISTENTE
+    // Al cargar la página, verificar si había sesión guardada
+    // =====================
+    function restaurarSesion() {
+        const uidGuardado = localStorage.getItem('bc_uid');
+        const loginTime = parseInt(localStorage.getItem('bc_login_time') || '0');
+        if (!uidGuardado) return;
+
+        // Si pasaron mas de 24h, limpiar sesion
+        if (Date.now() - loginTime > 24 * 60 * 60 * 1000) {
+            localStorage.removeItem('bc_uid');
+            localStorage.removeItem('bc_login_time');
+            localStorage.removeItem('bc_email');
+            localStorage.removeItem('bc_pass');
+            return;
+        }
+
+        // Sesion valida: restaurar inmediatamente sin VPN
+        usuarioActual = uidGuardado;
+        actualizarUISession(true);
+
+        // Reconectar Firebase en background (para operaciones de escritura con VPN)
+        const emailGuardado = localStorage.getItem('bc_email');
+        const passGuardado = localStorage.getItem('bc_pass');
+        if (emailGuardado && passGuardado) {
+            iniciarFirebase().then(async (auth) => {
+                try {
+                    const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+                    await signInWithEmailAndPassword(auth, emailGuardado, passGuardado);
+                } catch(e) {
+                    console.log("Firebase background (sin VPN):", e.message);
+                }
+            });
+        }
+    }
+
+    function actualizarUISession(loggedIn) {
+        document.getElementById("btn-add-negocio").innerText = loggedIn ? "🏪 Gestionar mi Negocio" : "➕ Añadir negocio";
+        document.getElementById("btn-cerrar-sesion").style.display = loggedIn ? "block" : "none";
+    }
+
+    // =====================
+    // INICIAR FIREBASE (lazy)
     // =====================
     async function iniciarFirebase() {
         if (firebaseAuth) return firebaseAuth;
         const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
         const { getAuth } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
-        const app = initializeApp({
-            apiKey: API_KEY,
-            authDomain: "bazarcuba.firebaseapp.com",
-            projectId: "bazarcuba",
-            appId: "1:341288499673:web:ca566add302596869d01c8",
-        });
-        firebaseAuth = getAuth(app);
+        if (!firebaseApp) {
+            firebaseApp = initializeApp({
+                apiKey: API_KEY,
+                authDomain: "bazarcuba.firebaseapp.com",
+                projectId: "bazarcuba",
+                appId: "1:341288499673:web:ca566add302596869d01c8",
+            });
+        }
+        firebaseAuth = getAuth(firebaseApp);
         return firebaseAuth;
+    }
+
+    async function getToken() {
+        if (!firebaseAuth || !firebaseAuth.currentUser) throw new Error("Debes iniciar sesión con VPN.");
+        return await firebaseAuth.currentUser.getIdToken(true);
     }
 
     // =====================
@@ -545,46 +627,6 @@
     };
 
     // =====================
-    // MENÚ FLOTANTE
-    // =====================
-    let menuActivoId = null;
-
-    window.toggleOptionsMenu = function(id, dotEl) {
-        const menu = document.getElementById('global-options-menu');
-        if (menuActivoId === id && menu.style.display === 'block') { menu.style.display = 'none'; menuActivoId = null; return; }
-        menuActivoId = id;
-        const tienda = tiendasData.find(t => t.id === id);
-        const esAgotado = tienda && tienda.estado === 'agotado';
-        menu.innerHTML = `
-            ${esAgotado ? `<button onclick="habilitarProducto('${id}')">✅ Habilitar producto</button>` : `<button onclick="marcarAgotado('${id}')">🚫 Marcar agotado</button>`}
-            <button onclick="gestionarFoto('${id}', 'cambiar')">🔄 Cargar foto nueva</button>
-            <button onclick="gestionarFoto('${id}', 'agregar')">➕ Agregar foto extra</button>
-            <button onclick="borrarAnuncio('${id}')" style="color:red;font-weight:bold;">🗑️ Eliminar anuncio</button>
-        `;
-        const rect = dotEl.getBoundingClientRect();
-        let top = rect.bottom + window.scrollY + 4;
-        let left = rect.right - 190 + window.scrollX;
-        if (left < 8) left = 8;
-        menu.style.position = 'absolute';
-        menu.style.top = top + 'px';
-        menu.style.left = left + 'px';
-        menu.style.display = 'block';
-    };
-
-    window.addEventListener('scroll', () => {
-        const menu = document.getElementById('global-options-menu');
-        if (menu && menu.style.display === 'block') { menu.style.display = 'none'; menuActivoId = null; }
-    }, { passive: true });
-
-    document.addEventListener('click', e => {
-        if (!e.target.closest('.options-dots') && !e.target.closest('#global-options-menu')) {
-            const menu = document.getElementById('global-options-menu');
-            if (menu) menu.style.display = 'none';
-            menuActivoId = null;
-        }
-    });
-
-    // =====================
     // INTERFAZ Y SESIÓN
     // =====================
     window.toggleMenu = function() {
@@ -609,8 +651,12 @@
             const auth = await iniciarFirebase();
             await signInWithEmailAndPassword(auth, email, pass);
             usuarioActual = auth.currentUser.uid;
-            document.getElementById("btn-add-negocio").innerText = "🏪 Gestionar mi Negocio";
-            document.getElementById("btn-cerrar-sesion").style.display = "block";
+            // Guardar credenciales para restaurar sesión
+            localStorage.setItem('bc_uid', auth.currentUser.uid);
+            localStorage.setItem('bc_login_time', Date.now().toString());
+            localStorage.setItem('bc_email', email);
+            localStorage.setItem('bc_pass', pass);
+            actualizarUISession(true);
             document.getElementById("auth-container").style.display = "none";
             alert("✅ Sesión iniciada.");
             window.toggleMenu();
@@ -624,12 +670,18 @@
     window.cerrarSesion = function() {
         usuarioActual = null;
         firebaseAuth = null;
-        document.getElementById("btn-add-negocio").innerText = "➕ Añadir negocio";
-        document.getElementById("btn-cerrar-sesion").style.display = "none";
+        firebaseApp = null;
+        localStorage.removeItem('bc_uid');
+        localStorage.removeItem('bc_login_time');
+        localStorage.removeItem('bc_email');
+        localStorage.removeItem('bc_pass');
+        actualizarUISession(false);
         document.getElementById('panelVendedor').style.display = 'none';
         document.getElementById('listaTiendas').style.display = 'grid';
+        document.getElementById('mapa-container').style.display = 'none';
+        document.getElementById('banner-tienda').style.display = 'none';
         renderizarTiendas(tiendasData);
-        alert("Sesión cerrada.");
+        mostrarToast("Sesión cerrada");
     };
 
     window.mostrarPanelVendedor = function() {
@@ -663,26 +715,37 @@
         }, 300);
     };
 
+    // =====================
+    // RENDERIZAR MIS PRODUCTOS (con acciones integradas)
+    // =====================
     function renderizarMisProductos(lista) {
         const cont = document.getElementById('lista-mis-productos');
-        if (lista.length === 0) { cont.innerHTML = '<p style="color:#888;text-align:center;font-size:13px;">Aún no tienes productos.</p>'; return; }
+        if (lista.length === 0) {
+            cont.innerHTML = '<p style="color:#888;text-align:center;font-size:13px;">Aún no tienes productos.</p>';
+            return;
+        }
         cont.innerHTML = '';
         lista.forEach(t => {
             const foto = t.fotos && t.fotos.length > 0 ? t.fotos[0] : 'https://via.placeholder.com/60';
             const esAgotado = t.estado === 'agotado';
             cont.innerHTML += `
                 <div class="producto-vendedor">
-                    <img src="${foto}" alt="">
-                    <div class="producto-vendedor-info">
-                        <strong>${t.nombre || 'Sin nombre'}</strong>
-                        <span>${t.precio || ''} ${t.moneda || ''}</span>
-                        ${esAgotado ? '<br><small style="color:#e65100;">AGOTADO</small>' : ''}
+                    <div class="producto-vendedor-top">
+                        <img src="${foto}" alt="">
+                        <div class="producto-vendedor-info">
+                            <strong>${t.nombre || 'Sin nombre'}</strong>
+                            <span>${t.precio || ''} ${t.moneda || ''}</span>
+                            ${esAgotado ? '<br><small style="color:#e65100;font-weight:bold;">AGOTADO</small>' : ''}
+                        </div>
                     </div>
-                    <div style="display:flex;flex-direction:column;gap:4px;">
+                    <div class="producto-vendedor-acciones">
                         ${esAgotado
-                            ? `<button onclick="habilitarProducto('${t.id}')" style="font-size:11px;padding:4px 8px;border:none;border-radius:6px;background:#e8f5e9;color:#2e7d32;cursor:pointer;">✅ Habilitar</button>`
-                            : `<button onclick="marcarAgotado('${t.id}')" style="font-size:11px;padding:4px 8px;border:none;border-radius:6px;background:#fff3e0;color:#e65100;cursor:pointer;">🚫 Agotado</button>`}
-                        <button onclick="borrarAnuncio('${t.id}')" style="font-size:11px;padding:4px 8px;border:none;border-radius:6px;background:#fde8e8;color:red;cursor:pointer;">🗑️ Borrar</button>
+                            ? `<button class="btn-accion-habilitar" onclick="habilitarProducto('${t.id}')">✅ Habilitar</button>`
+                            : `<button class="btn-accion-agotado" onclick="marcarAgotado('${t.id}')">🚫 Agotado</button>`
+                        }
+                        <button onclick="gestionarFoto('${t.id}', 'cambiar')">🔄 Cambiar foto</button>
+                        <button onclick="gestionarFoto('${t.id}', 'agregar')">➕ Agregar foto</button>
+                        <button class="btn-accion-borrar" onclick="borrarAnuncio('${t.id}')">🗑️ Borrar</button>
                     </div>
                 </div>`;
         });
@@ -710,9 +773,9 @@
     }
 
     // =====================
-    // CARGA DE DATOS (sin Firebase)
+    // CARGA DE DATOS
     // =====================
-    async function cargarTiendasSinVPN() {
+    async function cargarTiendas() {
         try {
             const respuesta = await fetch(`/datos.json`);
             const data = await respuesta.json();
@@ -765,7 +828,6 @@
         }
         lista.forEach(tienda => {
             try {
-                const esMio = tienda.uidVendedor === usuarioActual;
                 const esAgotado = tienda.estado === "agotado";
                 const fotosEncoded = encodeURIComponent(JSON.stringify(tienda.fotos));
                 const nombreSafe = (tienda.nombre || "Sin nombre").replace(/'/g, "\\'").replace(/"/g, '&quot;');
@@ -780,14 +842,12 @@
                     <button class="prev" onclick="event.stopPropagation();cambiarFoto('${tienda.id}', -1)">❮</button>
                     <button class="next" onclick="event.stopPropagation();cambiarFoto('${tienda.id}', 1)">❯</button>` : "";
 
-                const menuPuntos = esMio ? `<div class="options-dots" onclick="event.stopPropagation();toggleOptionsMenu('${tienda.id}', this)">⋮</div>` : "";
                 const monedaHtml = tienda.moneda ? `<span class="moneda-tag">${tienda.moneda}</span>` : "";
                 const descIconHtml = tienda.descripcion ? `<button class="btn-descripcion" onclick="abrirModalDesc('${nombreSafe}', '${descSafe}')">${svgDesc}</button>` : "";
                 const telLimpio = tienda.tel.replace(/\D/g, '');
 
                 const cardHtml = `
                     <div class="card" id="card-${tienda.id}" style="opacity:${esAgotado ? '0.65' : '1'}">
-                        ${menuPuntos}
                         <div class="carousel-container">
                             ${fotosHtml}
                             ${controlesCarrusel}
@@ -806,7 +866,7 @@
                         </div>
                     </div>`;
                 contenedor.insertAdjacentHTML('beforeend', cardHtml);
-            } catch(err) { console.error('Error renderizando tienda:', tienda.id, err); }
+            } catch(err) { console.error('Error renderizando:', tienda.id, err); }
         });
     };
 
@@ -818,14 +878,6 @@
         idx = (idx + dir + imgs.length) % imgs.length;
         imgs[idx].classList.add('active');
     };
-
-    // =====================
-    // OBTENER TOKEN (requiere VPN)
-    // =====================
-    async function getToken() {
-        if (!firebaseAuth || !firebaseAuth.currentUser) throw new Error("Debes iniciar sesión con VPN.");
-        return await firebaseAuth.currentUser.getIdToken();
-    }
 
     // =====================
     // GUARDAR INFO TIENDA
@@ -856,7 +908,7 @@
                     body: JSON.stringify(payload)
                 });
             }));
-            alert("✅ Información guardada.\n\n⏳ Puede tardar un máximo de 5 minutos para que los demás usuarios lo vean.");
+            alert("✅ Información guardada." + MSG_5MIN);
             location.reload();
         } catch (e) { alert("❌ Error: " + e.message); btn.innerText = "💾 Guardar Info de Tienda"; btn.disabled = false; }
     };
@@ -865,19 +917,17 @@
     // ACCIONES FIREBASE
     // =====================
     window.borrarAnuncio = async function(id) {
-        document.getElementById('global-options-menu').style.display = 'none';
         if (!usuarioActual) return alert("⚠️ Inicia sesión con VPN.");
         if (!confirm("¿Eliminar este producto?")) return;
         try {
             const token = await getToken();
             const res = await fetch(`${FS_BASE}/tiendas/${id}?key=${API_KEY}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-            if (res.ok) { alert("✅ Eliminado.\n\n⏳ Puede tardar un máximo de 5 minutos para que los demás usuarios lo vean."); location.reload(); }
+            if (res.ok) { alert("✅ Eliminado." + MSG_5MIN); location.reload(); }
             else { alert("❌ " + await res.text()); }
         } catch (e) { alert("❌ " + e.message); }
     };
 
     window.marcarAgotado = async function(id) {
-        document.getElementById('global-options-menu').style.display = 'none';
         if (!usuarioActual) return alert("⚠️ Inicia sesión con VPN.");
         if (!confirm("¿Marcar como AGOTADO?")) return;
         try {
@@ -886,39 +936,38 @@
                 method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ fields: { estado: { stringValue: "agotado" } } })
             });
-            if (res.ok) { alert("✅ Agotado.\n\n⏳ Puede tardar un máximo de 5 minutos para que los demás usuarios lo vean."); location.reload(); }
+            if (res.ok) { alert("✅ Marcado como agotado." + MSG_5MIN); location.reload(); }
             else { alert("❌ " + await res.text()); }
         } catch (e) { alert("❌ " + e.message); }
     };
 
     window.habilitarProducto = async function(id) {
-        document.getElementById('global-options-menu').style.display = 'none';
         if (!usuarioActual) return alert("⚠️ Inicia sesión con VPN.");
-        if (!confirm("¿Habilitar?")) return;
+        if (!confirm("¿Habilitar este producto?")) return;
         try {
             const token = await getToken();
             const res = await fetch(`${FS_BASE}/tiendas/${id}?updateMask.fieldPaths=estado&key=${API_KEY}`, {
                 method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ fields: { estado: { stringValue: "disponible" } } })
             });
-            if (res.ok) { alert("✅ Habilitado.\n\n⏳ Puede tardar un máximo de 5 minutos para que los demás usuarios lo vean."); location.reload(); }
+            if (res.ok) { alert("✅ Habilitado." + MSG_5MIN); location.reload(); }
             else { alert("❌ " + await res.text()); }
         } catch (e) { alert("❌ " + e.message); }
     };
 
     window.gestionarFoto = async function(id, accion) {
-        document.getElementById('global-options-menu').style.display = 'none';
         if (!usuarioActual) return alert("⚠️ Inicia sesión con VPN.");
         const input = document.createElement('input');
         input.type = 'file'; input.accept = 'image/*';
         input.onchange = async (e) => {
             const file = e.target.files[0]; if (!file) return;
-            alert("Subiendo... ⏳");
+            mostrarToast("Subiendo imagen... ⏳");
             try {
                 const formData = new FormData();
                 formData.append('file', file); formData.append('upload_preset', 'bazar_present');
                 const resImg = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: formData });
                 const dataImg = await resImg.json();
+                if (!dataImg.secure_url) throw new Error("Error subiendo imagen a Cloudinary");
                 const anuncio = tiendasData.find(t => t.id === id);
                 let fotos = [...(anuncio.fotos || [])];
                 if (accion === 'cambiar') fotos = [dataImg.secure_url];
@@ -928,13 +977,16 @@
                     method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ fields: { fotos: { arrayValue: { values: fotos.map(u => ({ stringValue: u })) } } } })
                 });
-                if (res.ok) { alert("✅ Foto actualizada.\n\n⏳ Puede tardar un máximo de 5 minutos para que los demás usuarios lo vean."); location.reload(); }
+                if (res.ok) { alert("✅ Foto actualizada." + MSG_5MIN); location.reload(); }
                 else { alert("❌ " + await res.text()); }
             } catch (err) { alert("❌ " + err.message); }
         };
         input.click();
     };
 
+    // =====================
+    // PREVISUALIZACIÓN
+    // =====================
     window.previsualizarImagenes = function(event) {
         const container = document.getElementById('imgPreviewContainer');
         container.innerHTML = "";
@@ -951,6 +1003,9 @@
         });
     };
 
+    // =====================
+    // PUBLICAR PRODUCTO
+    // =====================
     window.publicarProducto = async function() {
         if (!usuarioActual) return alert("⚠️ Inicia sesión con VPN.");
         const fotosInput = document.getElementById("fotosTienda");
@@ -965,6 +1020,7 @@
                 formData.append('upload_preset', 'bazar_present');
                 const resImg = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: formData });
                 const dataImg = await resImg.json();
+                if (!dataImg.secure_url) throw new Error("Error subiendo imagen");
                 urlsFotos.push(dataImg.secure_url);
             }
             const misProductos = tiendasData.filter(t => t.uidVendedor === usuarioActual);
@@ -995,7 +1051,7 @@
                 body: JSON.stringify(payload)
             });
             if (!res.ok) throw new Error(await res.text());
-            alert("✅ ¡Producto publicado!\n\n⏳ Puede tardar un máximo de 5 minutos para que los demás usuarios lo vean.");
+            alert("✅ ¡Producto publicado!" + MSG_5MIN);
             location.reload();
         } catch (error) {
             alert("❌ " + error.message);
@@ -1003,6 +1059,9 @@
         }
     };
 
+    // =====================
+    // FILTRO Y MAPA
+    // =====================
     window.filtrarPorProvincia = function() {
         const filtro = document.getElementById("filtroProvincia").value;
         let filtradas = filtro === "todas" ? tiendasData : tiendasData.filter(t => t.provincia === filtro);
@@ -1021,9 +1080,14 @@
         document.getElementById("mapa-container").scrollIntoView({ behavior: 'smooth' });
     };
 
+    // =====================
     // INICIAR
+    // =====================
     detectarLinkDirecto();
-    cargarTiendasSinVPN();
+    cargarTiendas().then(() => {
+        // Después de cargar datos, intentar restaurar sesión
+        restaurarSesion();
+    });
 </script>
 </body>
 </html>
