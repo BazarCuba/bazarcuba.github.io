@@ -210,6 +210,30 @@
 
 <div id="toast"></div>
 
+<!-- MODAL BONITO DE MENSAJES -->
+<div id="msg-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99998;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:white;border-radius:20px;padding:28px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.3);animation:slideUp 0.2s ease;">
+        <div id="msg-icon" style="font-size:48px;margin-bottom:12px;"></div>
+        <p id="msg-texto" style="margin:0 0 20px;color:#333;font-size:15px;line-height:1.5;font-weight:500;"></p>
+        <button onclick="cerrarMsg()" style="background:linear-gradient(135deg,#0056b3,#003d82);color:white;border:none;padding:12px 32px;border-radius:25px;font-size:15px;font-weight:bold;cursor:pointer;width:100%;">Aceptar</button>
+    </div>
+</div>
+
+<!-- MODAL BONITO DE CONFIRMACIÓN -->
+<div id="confirm-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99998;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:white;border-radius:20px;padding:28px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.3);">
+        <div style="font-size:44px;margin-bottom:12px;">🤔</div>
+        <p id="confirm-texto" style="margin:0 0 20px;color:#333;font-size:15px;line-height:1.5;font-weight:500;"></p>
+        <div style="display:flex;gap:10px;">
+            <button onclick="resolverConfirm(false)" style="flex:1;background:#f0f0f0;color:#333;border:none;padding:12px;border-radius:25px;font-size:14px;font-weight:bold;cursor:pointer;">Cancelar</button>
+            <button onclick="resolverConfirm(true)" style="flex:1;background:linear-gradient(135deg,#d32f2f,#b71c1c);color:white;border:none;padding:12px;border-radius:25px;font-size:14px;font-weight:bold;cursor:pointer;">Confirmar</button>
+        </div>
+    </div>
+</div>
+<style>
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+</style>
+
 <div id="spinner-sesion">
     <div class="spinner"></div>
     Restaurando sesión...
@@ -259,7 +283,7 @@
 <div id="header-tienda-directa">
     <h2 id="header-nombre-tienda-directa"></h2>
     <p id="header-info-tienda-directa"></p>
-    <button id="btn-ver-catalogo-completo" onclick="verCatalogoCompleto()">🏪 Ver catálogo completo</button>
+    <button id="btn-ver-catalogo-completo" onclick="verCatalogoCompleto()">🏪 Ver otras tiendas</button>
 </div>
 
 <div class="filter-container" id="filtro-container">
@@ -383,7 +407,7 @@
     let firebaseApp = null;
     let firebaseAuth = null;
 
-    const MSG_5MIN = "\n\n⏳ Puede tardar un máximo de 5 minutos para que los demás usuarios lo vean.";
+    const MSG_5MIN = "\n\n⏳ Puede tardar hasta 10 minutos para que los demás usuarios lo vean.";
     const API_KEY = "AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc";
     const FS_BASE = "https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents";
 
@@ -498,7 +522,7 @@
     // =====================
     window.copiarLinkTienda = function() {
         const uid = tiendaActivaUid || usuarioActual;
-        if (!uid) return alert("No se pudo obtener el ID de la tienda.");
+        await showMsg("No se pudo obtener el ID de la tienda.", "warning"); return;
         const url = `${window.location.origin}${window.location.pathname}?tienda=${uid}`;
         if (navigator.clipboard) {
             navigator.clipboard.writeText(url).then(() => mostrarToast('🔗 ¡Link copiado!'));
@@ -519,6 +543,37 @@
         t.classList.add('show');
         setTimeout(() => t.classList.remove('show'), 2500);
     }
+
+    // Modal bonito en lugar de alert()
+    let _msgResolve = null;
+    function showMsg(texto, tipo) {
+        return new Promise(resolve => {
+            _msgResolve = resolve;
+            const iconos = { ok: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+            document.getElementById('msg-icon').textContent = iconos[tipo] || 'ℹ️';
+            document.getElementById('msg-texto').textContent = texto;
+            const modal = document.getElementById('msg-modal');
+            modal.style.display = 'flex';
+        });
+    }
+    window.cerrarMsg = function() {
+        document.getElementById('msg-modal').style.display = 'none';
+        if (_msgResolve) { _msgResolve(); _msgResolve = null; }
+    };
+
+    // Modal bonito en lugar de confirm()
+    let _confirmResolve = null;
+    function showConfirm(texto) {
+        return new Promise(resolve => {
+            _confirmResolve = resolve;
+            document.getElementById('confirm-texto').textContent = texto;
+            document.getElementById('confirm-modal').style.display = 'flex';
+        });
+    }
+    window.resolverConfirm = function(valor) {
+        document.getElementById('confirm-modal').style.display = 'none';
+        if (_confirmResolve) { _confirmResolve(valor); _confirmResolve = null; }
+    };
 
     // =====================
     // LIGHTBOX
@@ -658,11 +713,11 @@
             localStorage.setItem('bc_pass', pass);
             actualizarUISession(true);
             document.getElementById("auth-container").style.display = "none";
-            alert("✅ Sesión iniciada.");
+            await showMsg("✅ Sesión iniciada.", "ok");
             window.toggleMenu();
             renderizarTiendas(tiendasData);
         } catch (e) {
-            alert("❌ Error: Verifica tus datos. Recuerda que necesitas VPN.");
+            await showMsg("❌ Error: Verifica tus datos. Recuerda que necesitas VPN.", "error");
             btn.innerText = "Continuar"; btn.disabled = false;
         }
     };
@@ -883,9 +938,9 @@
     // GUARDAR INFO TIENDA
     // =====================
     window.guardarInfoTienda = async function() {
-        if (!usuarioActual) return alert("⚠️ Inicia sesión con VPN.");
+        if (!usuarioActual) return await showMsg("⚠️ Inicia sesión con VPN.", "warning");
         const misProductos = tiendasData.filter(t => t.uidVendedor === usuarioActual);
-        if (misProductos.length === 0) return alert("⚠️ Primero publica al menos un producto.");
+        if (misProductos.length === 0) return await showMsg("⚠️ Primero publica al menos un producto.", "warning");
         const btn = document.querySelector('#seccion-info-tienda .btn-guardar');
         btn.innerText = "Guardando... ⏳"; btn.disabled = true;
         const campos = {
@@ -908,60 +963,89 @@
                     body: JSON.stringify(payload)
                 });
             }));
-            alert("✅ Información guardada." + MSG_5MIN);
-            location.reload();
-        } catch (e) { alert("❌ Error: " + e.message); btn.innerText = "💾 Guardar Info de Tienda"; btn.disabled = false; }
+                        // Actualizar en memoria al instante
+            const campos2 = {
+                nombreTienda: document.getElementById('nombreTienda').value,
+                tel: document.getElementById('telTienda').value,
+                direccion: document.getElementById('direccionTienda').value,
+                provincia: document.getElementById('provinciaTienda').value,
+            };
+            tiendasData.forEach(t => {
+                if (t.uidVendedor === usuarioActual) {
+                    Object.assign(t, campos2);
+                    t.lat = latSeleccionada;
+                    t.lng = lngSeleccionada;
+                }
+            });
+            renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioActual));
+            await showMsg("✅ Información guardada.\n\n⏳ Puede tardar hasta 10 minutos para que los demás usuarios lo vean.", "ok");
+            btn.innerText = "💾 Guardar Info de Tienda"; btn.disabled = false;
+        } catch (e) { await showMsg("❌ " + e.message, "error"); btn.innerText = "💾 Guardar Info de Tienda"; btn.disabled = false; }
     };
 
     // =====================
     // ACCIONES FIREBASE
     // =====================
     window.borrarAnuncio = async function(id) {
-        if (!usuarioActual) return alert("⚠️ Inicia sesión con VPN.");
-        if (!confirm("¿Eliminar este producto?")) return;
+        if (!usuarioActual) return await showMsg("⚠️ Inicia sesión con VPN.", "warning");
+        if (!await showConfirm("¿Seguro que quieres eliminar este producto?")) return;
         try {
             const token = await getToken();
             const res = await fetch(`${FS_BASE}/tiendas/${id}?key=${API_KEY}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-            if (res.ok) { alert("✅ Eliminado." + MSG_5MIN); location.reload(); }
-            else { alert("❌ " + await res.text()); }
-        } catch (e) { alert("❌ " + e.message); }
+            if (res.ok) {
+                // Eliminar en memoria al instante
+                tiendasData = tiendasData.filter(t => t.id !== id);
+                renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioActual));
+                await showMsg("✅ Producto eliminado.\n\n⏳ Puede tardar hasta 10 minutos para que los demás usuarios lo vean.", "ok");
+            } else { await showMsg("❌ " + await res.text(), "error"); }
+        } catch (e) { await showMsg("❌ " + e.message, "error"); }
     };
 
     window.marcarAgotado = async function(id) {
-        if (!usuarioActual) return alert("⚠️ Inicia sesión con VPN.");
-        if (!confirm("¿Marcar como AGOTADO?")) return;
+        if (!usuarioActual) return await showMsg("⚠️ Inicia sesión con VPN.", "warning");
+        if (!await showConfirm("¿Marcar este producto como AGOTADO?")) return;
         try {
             const token = await getToken();
             const res = await fetch(`${FS_BASE}/tiendas/${id}?updateMask.fieldPaths=estado&key=${API_KEY}`, {
                 method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ fields: { estado: { stringValue: "agotado" } } })
             });
-            if (res.ok) { alert("✅ Marcado como agotado." + MSG_5MIN); location.reload(); }
-            else { alert("❌ " + await res.text()); }
-        } catch (e) { alert("❌ " + e.message); }
+            if (res.ok) {
+                // Actualizar en memoria al instante
+                const t = tiendasData.find(t => t.id === id);
+                if (t) t.estado = "agotado";
+                renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioActual));
+                await showMsg("✅ Marcado como agotado.\n\n⏳ Puede tardar hasta 10 minutos para que los demás usuarios lo vean.", "ok");
+            } else { await showMsg("❌ " + await res.text(), "error"); }
+        } catch (e) { await showMsg("❌ " + e.message, "error"); }
     };
 
     window.habilitarProducto = async function(id) {
-        if (!usuarioActual) return alert("⚠️ Inicia sesión con VPN.");
-        if (!confirm("¿Habilitar este producto?")) return;
+        if (!usuarioActual) return await showMsg("⚠️ Inicia sesión con VPN.", "warning");
+        if (!await showConfirm("¿Habilitar este producto nuevamente?")) return;
         try {
             const token = await getToken();
             const res = await fetch(`${FS_BASE}/tiendas/${id}?updateMask.fieldPaths=estado&key=${API_KEY}`, {
                 method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ fields: { estado: { stringValue: "disponible" } } })
             });
-            if (res.ok) { alert("✅ Habilitado." + MSG_5MIN); location.reload(); }
-            else { alert("❌ " + await res.text()); }
-        } catch (e) { alert("❌ " + e.message); }
+            if (res.ok) {
+                // Actualizar en memoria al instante
+                const t = tiendasData.find(t => t.id === id);
+                if (t) t.estado = "disponible";
+                renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioActual));
+                await showMsg("✅ Producto habilitado.\n\n⏳ Puede tardar hasta 10 minutos para que los demás usuarios lo vean.", "ok");
+            } else { await showMsg("❌ " + await res.text(), "error"); }
+        } catch (e) { await showMsg("❌ " + e.message, "error"); }
     };
 
     window.gestionarFoto = async function(id, accion) {
-        if (!usuarioActual) return alert("⚠️ Inicia sesión con VPN.");
+        if (!usuarioActual) return await showMsg("⚠️ Inicia sesión con VPN.", "warning");
         const input = document.createElement('input');
         input.type = 'file'; input.accept = 'image/*';
         input.onchange = async (e) => {
             const file = e.target.files[0]; if (!file) return;
-            mostrarToast("Subiendo imagen... ⏳");
+            mostrarToast("📤 Subiendo imagen...");
             try {
                 const formData = new FormData();
                 formData.append('file', file); formData.append('upload_preset', 'bazar_present');
@@ -977,9 +1061,15 @@
                     method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ fields: { fotos: { arrayValue: { values: fotos.map(u => ({ stringValue: u })) } } } })
                 });
-                if (res.ok) { alert("✅ Foto actualizada." + MSG_5MIN); location.reload(); }
-                else { alert("❌ " + await res.text()); }
-            } catch (err) { alert("❌ " + err.message); }
+                if (res.ok) {
+                    // Actualizar en memoria al instante
+                    const anuncioIdx = tiendasData.findIndex(t => t.id === id);
+                    if (anuncioIdx !== -1) tiendasData[anuncioIdx].fotos = fotos;
+                    renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioActual));
+                    await showMsg("✅ Foto actualizada.\n\n⏳ Puede tardar hasta 10 minutos para que los demás usuarios lo vean.", "ok");
+                }
+                else { await showMsg("❌ " + await res.text(), "error"); }
+            } catch (err) { await showMsg("❌ " + err.message, "error"); }
         };
         input.click();
     };
@@ -1007,9 +1097,9 @@
     // PUBLICAR PRODUCTO
     // =====================
     window.publicarProducto = async function() {
-        if (!usuarioActual) return alert("⚠️ Inicia sesión con VPN.");
+        if (!usuarioActual) return await showMsg("⚠️ Inicia sesión con VPN.", "warning");
         const fotosInput = document.getElementById("fotosTienda");
-        if (fotosInput.files.length === 0) return alert("⚠️ Selecciona al menos una foto.");
+        if (fotosInput.files.length === 0) return await showMsg("⚠️ Selecciona al menos una foto.", "warning");
         const btn = document.querySelector('#form-nuevo-producto .btn-guardar');
         btn.innerText = "Subiendo... ⏳"; btn.disabled = true;
         try {
@@ -1051,10 +1141,36 @@
                 body: JSON.stringify(payload)
             });
             if (!res.ok) throw new Error(await res.text());
-            alert("✅ ¡Producto publicado!" + MSG_5MIN);
-            location.reload();
+            // Agregar a memoria al instante
+            const docNuevo = await res.json();
+            const fNuevo = docNuevo.fields || {};
+            tiendasData.push({
+                id: docNuevo.name.split('/').pop(),
+                uidVendedor: usuarioActual,
+                nombre: document.getElementById("nombreProducto").value,
+                nombreTienda: (tiendasData.find(t=>t.uidVendedor===usuarioActual)||{}).nombreTienda || '',
+                precio: document.getElementById("precioProducto").value,
+                moneda: document.getElementById("monedaProducto").value,
+                descripcion: document.getElementById("descripcionProducto").value.trim(),
+                fotos: urlsFotos,
+                estado: "disponible",
+                tel: (tiendasData.find(t=>t.uidVendedor===usuarioActual)||{}).tel || '',
+                direccion: (tiendasData.find(t=>t.uidVendedor===usuarioActual)||{}).direccion || '',
+                provincia: (tiendasData.find(t=>t.uidVendedor===usuarioActual)||{}).provincia || '',
+                lat: latSeleccionada, lng: lngSeleccionada
+            });
+            renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioActual));
+            // Limpiar formulario
+            document.getElementById('form-nuevo-producto').style.display = 'none';
+            document.getElementById('imgPreviewContainer').innerHTML = '';
+            document.getElementById('previewText').style.display = 'block';
+            document.getElementById('nombreProducto').value = '';
+            document.getElementById('precioProducto').value = '';
+            document.getElementById('descripcionProducto').value = '';
+            await showMsg("✅ ¡Producto publicado!\n\n⏳ Puede tardar hasta 10 minutos para que los demás usuarios lo vean.", "ok");
+            btn.innerText = "📤 Publicar Producto"; btn.disabled = false;
         } catch (error) {
-            alert("❌ " + error.message);
+            await showMsg("❌ " + error.message, "error");
             btn.innerText = "📤 Publicar Producto"; btn.disabled = false;
         }
     };
