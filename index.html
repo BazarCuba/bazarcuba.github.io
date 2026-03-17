@@ -350,7 +350,7 @@
     let usuarioActual = null; // Se llena solo después del login
     let firebaseAuth = null;  // Se inicializa solo cuando se necesita
 
-    const workerURL = "https://api-bazar.norges763.workers.dev";
+
     const API_KEY = "AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc";
     const FS_BASE = "https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents";
 
@@ -714,7 +714,7 @@
     // =====================
     async function cargarTiendasSinVPN() {
         try {
-            const respuesta = await fetch(`${workerURL}/get-anuncios`);
+            const respuesta = await fetch(`/datos.json`);
             const data = await respuesta.json();
             if (data.documents) {
                 tiendasData = data.documents.map(doc => {
@@ -856,7 +856,7 @@
                     body: JSON.stringify(payload)
                 });
             }));
-            alert("✅ Información guardada.");
+            alert("✅ Información guardada.\n\n⏳ Puede tardar un máximo de 5 minutos para que los demás usuarios lo vean.");
             location.reload();
         } catch (e) { alert("❌ Error: " + e.message); btn.innerText = "💾 Guardar Info de Tienda"; btn.disabled = false; }
     };
@@ -871,7 +871,7 @@
         try {
             const token = await getToken();
             const res = await fetch(`${FS_BASE}/tiendas/${id}?key=${API_KEY}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-            if (res.ok) { alert("✅ Eliminado."); location.reload(); }
+            if (res.ok) { alert("✅ Eliminado.\n\n⏳ Puede tardar un máximo de 5 minutos para que los demás usuarios lo vean."); location.reload(); }
             else { alert("❌ " + await res.text()); }
         } catch (e) { alert("❌ " + e.message); }
     };
@@ -886,7 +886,7 @@
                 method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ fields: { estado: { stringValue: "agotado" } } })
             });
-            if (res.ok) { alert("✅ Agotado."); location.reload(); }
+            if (res.ok) { alert("✅ Agotado.\n\n⏳ Puede tardar un máximo de 5 minutos para que los demás usuarios lo vean."); location.reload(); }
             else { alert("❌ " + await res.text()); }
         } catch (e) { alert("❌ " + e.message); }
     };
@@ -901,7 +901,7 @@
                 method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ fields: { estado: { stringValue: "disponible" } } })
             });
-            if (res.ok) { alert("✅ Habilitado."); location.reload(); }
+            if (res.ok) { alert("✅ Habilitado.\n\n⏳ Puede tardar un máximo de 5 minutos para que los demás usuarios lo vean."); location.reload(); }
             else { alert("❌ " + await res.text()); }
         } catch (e) { alert("❌ " + e.message); }
     };
@@ -928,7 +928,7 @@
                     method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ fields: { fotos: { arrayValue: { values: fotos.map(u => ({ stringValue: u })) } } } })
                 });
-                if (res.ok) { alert("✅ Foto actualizada."); location.reload(); }
+                if (res.ok) { alert("✅ Foto actualizada.\n\n⏳ Puede tardar un máximo de 5 minutos para que los demás usuarios lo vean."); location.reload(); }
                 else { alert("❌ " + await res.text()); }
             } catch (err) { alert("❌ " + err.message); }
         };
@@ -995,7 +995,7 @@
                 body: JSON.stringify(payload)
             });
             if (!res.ok) throw new Error(await res.text());
-            alert("✅ ¡Producto publicado!");
+            alert("✅ ¡Producto publicado!\n\n⏳ Puede tardar un máximo de 5 minutos para que los demás usuarios lo vean.");
             location.reload();
         } catch (error) {
             alert("❌ " + error.message);
