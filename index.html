@@ -10,82 +10,27 @@
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f4f8; }
 
-        header {
-            background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
-            padding: 18px 15px 14px;
-            color: white;
-            text-align: center;
-            position: relative;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-        }
+        header { background: linear-gradient(135deg, #0056b3 0%, #003d82 100%); padding: 18px 15px 14px; color: white; text-align: center; position: relative; box-shadow: 0 3px 10px rgba(0,0,0,0.3); }
         header h1 { margin: 0; font-size: 26px; letter-spacing: 1px; }
         header p { margin: 4px 0 0; font-size: 13px; opacity: 0.85; }
 
-        .filter-container {
-            background: white;
-            padding: 10px 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-            margin-bottom: 15px;
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        .filter-container select {
-            flex: 1;
-            padding: 9px 12px;
-            border-radius: 25px;
-            border: 2px solid #0056b3;
-            font-size: 14px;
-            font-weight: bold;
-            color: #0056b3;
-            background: white;
-            outline: none;
-            cursor: pointer;
-        }
-        #btn-vista-toggle {
-            padding: 9px 13px;
-            border-radius: 25px;
-            border: 2px solid #0056b3;
-            background: white;
-            color: #0056b3;
-            font-weight: bold;
-            font-size: 13px;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s;
-        }
+        .filter-container { background: white; padding: 10px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 15px; display: flex; gap: 8px; align-items: center; }
+        .filter-container select { flex: 1; padding: 9px 12px; border-radius: 25px; border: 2px solid #0056b3; font-size: 14px; font-weight: bold; color: #0056b3; background: white; outline: none; cursor: pointer; }
+        #btn-vista-toggle { padding: 9px 13px; border-radius: 25px; border: 2px solid #0056b3; background: white; color: #0056b3; font-weight: bold; font-size: 13px; cursor: pointer; white-space: nowrap; }
         #btn-vista-toggle.activo { background: #0056b3; color: white; }
 
-        .grid-tiendas {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            padding: 0 10px 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        .grid-tiendas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 10px 20px; max-width: 1200px; margin: 0 auto; }
 
-        .card {
-            background: white;
-            border-radius: 14px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.1);
-            position: relative;
-            overflow: hidden;
-        }
+        .card { background: white; border-radius: 14px; box-shadow: 0 3px 12px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
         .card h3 { margin: 8px 8px 2px; color: #222; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card p.provincia { margin: 0 8px 4px; color: #888; font-size: 11px; font-weight: bold; }
         .precio-row { display: flex; align-items: center; gap: 5px; margin: 0 8px 6px; flex-wrap: wrap; }
         .precio-tag { color: #d32f2f; font-size: 15px; font-weight: bold; }
         .moneda-tag { color: #0056b3; font-size: 12px; font-weight: bold; background: #e8f4fd; padding: 2px 6px; border-radius: 10px; }
         .btn-descripcion { background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; }
-        .btn-descripcion svg { width: 18px; height: 18px; }
 
-        .card-buttons { display: flex; gap: 6px; padding: 6px 8px 10px; justify-content: center; }
-        .card-buttons a, .card-buttons button {
-            flex: 1; padding: 8px 4px; text-align: center;
-            border-radius: 12px; cursor: pointer; border: none;
-            display: flex; align-items: center; justify-content: center;
-        }
+        .card-buttons { display: flex; gap: 6px; padding: 6px 8px 10px; }
+        .card-buttons a, .card-buttons button { flex: 1; padding: 8px 4px; border-radius: 12px; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; }
         .btn-llamar { background-color: #e8f5e9; }
         .btn-wa { background-color: #e8fdf0; }
         .btn-mapa-card { background-color: #fff3e0; }
@@ -96,45 +41,53 @@
         .carousel-img.active { opacity: 1; z-index: 2; pointer-events: auto; }
         .prev, .next { cursor: pointer; position: absolute; top: 50%; width: auto; padding: 5px 9px; margin-top: -16px; color: white; font-weight: bold; font-size: 13px; border-radius: 0 3px 3px 0; user-select: none; background-color: rgba(0,0,0,0.45); border: none; z-index: 5; }
         .next { right: 0; border-radius: 3px 0 0 3px; }
-        .badge-agotado { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.75); color: white; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 12px; z-index: 6; text-transform: uppercase; letter-spacing: 1px; }
+        .badge-agotado { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.75); color: white; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 12px; z-index: 6; text-transform: uppercase; letter-spacing: 1px; }
 
         #vista-mapa { display: none; padding: 10px; }
         #mapa-principal { height: 70vh; width: 100%; border: 3px solid #0056b3; border-radius: 12px; }
-
         #mapa-container { display: none; margin: 15px auto; max-width: 1200px; padding: 0 10px; }
         #mapa { height: 350px; width: 100%; border: 3px solid #0056b3; border-radius: 12px; z-index: 1; }
 
-        #banner-tienda {
-            display: none;
-            background: linear-gradient(135deg, #0056b3, #003d82);
-            color: white;
-            padding: 14px 16px;
-            margin: 0 10px 12px;
-            border-radius: 14px;
-            box-shadow: 0 4px 12px rgba(0,86,179,0.3);
-        }
+        #banner-tienda { display: none; background: linear-gradient(135deg, #0056b3, #003d82); color: white; padding: 14px 16px; margin: 0 10px 12px; border-radius: 14px; }
         #banner-tienda h2 { margin: 0 0 4px; font-size: 18px; }
         #banner-tienda p { margin: 0; font-size: 13px; opacity: 0.85; }
         .banner-botones { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
         #btn-volver-catalogo { background: white; color: #0056b3; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; }
         #btn-copiar-link-banner { background: rgba(255,255,255,0.2); color: white; border: 1.5px solid rgba(255,255,255,0.5); padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; }
 
+        #header-tienda-directa { display: none; background: linear-gradient(135deg, #0056b3, #003d82); color: white; padding: 16px; text-align: center; }
+        #header-tienda-directa h2 { margin: 0 0 4px; font-size: 20px; }
+        #header-tienda-directa p { margin: 0; font-size: 13px; opacity: 0.85; }
+        #btn-ver-otras-tiendas { margin-top: 10px; background: rgba(255,255,255,0.2); color: white; border: 1.5px solid rgba(255,255,255,0.5); padding: 7px 16px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; }
+
         #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 22px; border-radius: 25px; font-size: 14px; font-weight: bold; z-index: 99999; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
         #toast.show { opacity: 1; }
+
+        /* MODALES BONITOS */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.55); z-index: 9998; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.show { display: flex; }
+        .modal-box { background: white; border-radius: 20px; padding: 28px 24px; max-width: 340px; width: 100%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3); animation: slideUp 0.2s ease; }
+        .modal-icon { font-size: 48px; margin-bottom: 12px; }
+        .modal-texto { margin: 0 0 20px; color: #333; font-size: 15px; line-height: 1.5; font-weight: 500; white-space: pre-line; }
+        .modal-btn-ok { background: linear-gradient(135deg, #0056b3, #003d82); color: white; border: none; padding: 12px 32px; border-radius: 25px; font-size: 15px; font-weight: bold; cursor: pointer; width: 100%; }
+        .modal-btns { display: flex; gap: 10px; }
+        .modal-btn-cancel { flex: 1; background: #f0f0f0; color: #333; border: none; padding: 12px; border-radius: 25px; font-size: 14px; font-weight: bold; cursor: pointer; }
+        .modal-btn-confirm { flex: 1; background: linear-gradient(135deg, #d32f2f, #b71c1c); color: white; border: none; padding: 12px; border-radius: 25px; font-size: 14px; font-weight: bold; cursor: pointer; }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.94); z-index: 9999; align-items: center; justify-content: center; }
         #lightbox.active { display: flex; }
         #lightbox-img { max-width: 95vw; max-height: 85vh; object-fit: contain; border-radius: 8px; display: block; }
-        #lightbox-close { position: fixed; top: 16px; right: 20px; color: white; font-size: 38px; cursor: pointer; font-weight: bold; line-height: 1; z-index: 10000; }
+        #lightbox-close { position: fixed; top: 16px; right: 20px; color: white; font-size: 38px; cursor: pointer; font-weight: bold; z-index: 10000; }
         #lightbox-prev, #lightbox-next { position: fixed; top: 50%; transform: translateY(-50%); color: white; font-size: 28px; cursor: pointer; background: rgba(255,255,255,0.18); border: none; padding: 12px 16px; border-radius: 10px; z-index: 10000; }
         #lightbox-prev { left: 10px; }
         #lightbox-next { right: 10px; }
 
-        #modal-descripcion { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 8000; align-items: center; justify-content: center; padding: 20px; }
-        #modal-descripcion.active { display: flex; }
-        #modal-desc-content { background: white; border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; }
-        #modal-desc-content h3 { margin: 0 0 12px; color: #0056b3; }
-        #modal-desc-content p { margin: 0; color: #333; font-size: 15px; line-height: 1.6; }
+        #modal-desc { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 8000; align-items: center; justify-content: center; padding: 20px; }
+        #modal-desc.active { display: flex; }
+        #modal-desc-box { background: white; border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; }
+        #modal-desc-box h3 { margin: 0 0 12px; color: #0056b3; }
+        #modal-desc-box p { margin: 0; color: #333; font-size: 15px; line-height: 1.6; }
         #modal-desc-close { margin-top: 18px; width: 100%; padding: 10px; background: #0056b3; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
 
         #side-menu { position: fixed; right: -300px; top: 0; width: 280px; height: 100%; background: white; transition: 0.3s; z-index: 3000; box-shadow: -5px 0 20px rgba(0,0,0,0.2); padding: 20px; overflow-y: auto; }
@@ -144,7 +97,7 @@
         .seccion-card h3 { margin: 0 0 14px; color: #0056b3; font-size: 16px; border-bottom: 2px solid #e8f4fd; padding-bottom: 8px; }
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; margin-bottom: 4px; font-weight: bold; color: #444; font-size: 13px; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; transition: border 0.2s; font-family: inherit; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #0056b3; }
         .form-row { display: flex; gap: 10px; }
         .form-row .form-group { flex: 1; }
@@ -155,102 +108,64 @@
         #mapa-selector { height: 220px; width: 100%; border-radius: 10px; border: 2px solid #0056b3; margin-top: 6px; }
         #coords-display { font-size: 11px; color: #666; margin-top: 4px; text-align: center; }
 
-        /* PRODUCTO VENDEDOR EN PANEL - con acciones integradas */
-        .producto-vendedor {
-            background: #f8fafc;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            overflow: hidden;
-            border: 1px solid #e8edf2;
-        }
+        .producto-vendedor { background: #f8fafc; border-radius: 12px; margin-bottom: 10px; overflow: hidden; border: 1px solid #e8edf2; }
         .producto-vendedor-top { display: flex; gap: 10px; padding: 10px; align-items: center; }
         .producto-vendedor-top img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
         .producto-vendedor-info { flex: 1; }
         .producto-vendedor-info strong { font-size: 13px; color: #222; display: block; }
         .producto-vendedor-info span { font-size: 12px; color: #d32f2f; font-weight: bold; }
-        .producto-vendedor-acciones {
-            display: flex;
-            border-top: 1px solid #e8edf2;
-            overflow: hidden;
-        }
-        .producto-vendedor-acciones button {
-            flex: 1;
-            padding: 9px 4px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: bold;
-            color: #555;
-            border-right: 1px solid #e8edf2;
-            transition: background 0.15s;
-        }
-        .producto-vendedor-acciones button:last-child { border-right: none; }
-        .producto-vendedor-acciones button:hover { background: #f0f4f8; }
-        .btn-accion-agotado { color: #e65100 !important; }
-        .btn-accion-habilitar { color: #2e7d32 !important; }
-        .btn-accion-borrar { color: red !important; }
+        .producto-acciones { display: flex; border-top: 1px solid #e8edf2; }
+        .producto-acciones button { flex: 1; padding: 9px 4px; border: none; background: none; cursor: pointer; font-size: 11px; font-weight: bold; color: #555; border-right: 1px solid #e8edf2; }
+        .producto-acciones button:last-child { border-right: none; }
+        .producto-acciones button:hover { background: #f0f4f8; }
+        .btn-acc-agotado { color: #e65100 !important; }
+        .btn-acc-habilitar { color: #2e7d32 !important; }
+        .btn-acc-borrar { color: red !important; }
 
         #form-nuevo-producto { display: none; margin-top: 12px; border-top: 2px dashed #ddd; padding-top: 14px; }
         #menu-dots { position: absolute; top: 18px; right: 18px; font-size: 28px; cursor: pointer; color: white; z-index: 1001; }
-
-        #header-tienda-directa { display: none; background: linear-gradient(135deg, #0056b3, #003d82); color: white; padding: 16px; text-align: center; }
-        #header-tienda-directa h2 { margin: 0 0 4px; font-size: 20px; }
-        #header-tienda-directa p { margin: 0; font-size: 13px; opacity: 0.85; }
-        #btn-ver-catalogo-completo { margin-top: 10px; background: rgba(255,255,255,0.2); color: white; border: 1.5px solid rgba(255,255,255,0.5); padding: 7px 16px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; }
-
-        /* SPINNER de sesión */
-        #spinner-sesion { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9998; align-items: center; justify-content: center; flex-direction: column; color: white; font-size: 16px; font-weight: bold; }
-        #spinner-sesion.show { display: flex; }
-        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
+<!-- TOAST -->
 <div id="toast"></div>
 
-<!-- MODAL BONITO DE MENSAJES -->
-<div id="msg-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99998;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:white;border-radius:20px;padding:28px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.3);animation:slideUp 0.2s ease;">
-        <div id="msg-icon" style="font-size:48px;margin-bottom:12px;"></div>
-        <p id="msg-texto" style="margin:0 0 20px;color:#333;font-size:15px;line-height:1.5;font-weight:500;"></p>
-        <button onclick="cerrarMsg()" style="background:linear-gradient(135deg,#0056b3,#003d82);color:white;border:none;padding:12px 32px;border-radius:25px;font-size:15px;font-weight:bold;cursor:pointer;width:100%;">Aceptar</button>
+<!-- MODAL MENSAJE -->
+<div class="modal-overlay" id="modal-msg">
+    <div class="modal-box">
+        <div class="modal-icon" id="modal-msg-icon"></div>
+        <p class="modal-texto" id="modal-msg-texto"></p>
+        <button class="modal-btn-ok" onclick="cerrarMsg()">Aceptar</button>
     </div>
 </div>
 
-<!-- MODAL BONITO DE CONFIRMACIÓN -->
-<div id="confirm-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99998;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:white;border-radius:20px;padding:28px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.3);">
-        <div style="font-size:44px;margin-bottom:12px;">🤔</div>
-        <p id="confirm-texto" style="margin:0 0 20px;color:#333;font-size:15px;line-height:1.5;font-weight:500;"></p>
-        <div style="display:flex;gap:10px;">
-            <button onclick="resolverConfirm(false)" style="flex:1;background:#f0f0f0;color:#333;border:none;padding:12px;border-radius:25px;font-size:14px;font-weight:bold;cursor:pointer;">Cancelar</button>
-            <button onclick="resolverConfirm(true)" style="flex:1;background:linear-gradient(135deg,#d32f2f,#b71c1c);color:white;border:none;padding:12px;border-radius:25px;font-size:14px;font-weight:bold;cursor:pointer;">Confirmar</button>
+<!-- MODAL CONFIRMAR -->
+<div class="modal-overlay" id="modal-confirm">
+    <div class="modal-box">
+        <div class="modal-icon">🤔</div>
+        <p class="modal-texto" id="modal-confirm-texto"></p>
+        <div class="modal-btns">
+            <button class="modal-btn-cancel" onclick="resolverConfirm(false)">Cancelar</button>
+            <button class="modal-btn-confirm" onclick="resolverConfirm(true)">Confirmar</button>
         </div>
     </div>
 </div>
-<style>
-@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-</style>
 
-<div id="spinner-sesion">
-    <div class="spinner"></div>
-    Restaurando sesión...
-</div>
-
-<div id="lightbox" onclick="lightboxClickFuera(event)">
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="if(event.target===this)cerrarLightbox()">
     <span id="lightbox-close" onclick="cerrarLightbox()">✕</span>
-    <button id="lightbox-prev" onclick="lightboxNavegar(-1)">❮</button>
+    <button id="lightbox-prev" onclick="lightboxNav(-1)">❮</button>
     <img id="lightbox-img" src="" alt="">
-    <button id="lightbox-next" onclick="lightboxNavegar(1)">❯</button>
+    <button id="lightbox-next" onclick="lightboxNav(1)">❯</button>
 </div>
 
-<div id="modal-descripcion" onclick="cerrarModalDesc(event)">
-    <div id="modal-desc-content">
-        <h3 id="modal-desc-titulo">Descripción</h3>
+<!-- MODAL DESCRIPCION -->
+<div id="modal-desc" onclick="if(event.target===this)cerrarDesc()">
+    <div id="modal-desc-box">
+        <h3 id="modal-desc-titulo"></h3>
         <p id="modal-desc-texto"></p>
-        <button id="modal-desc-close" onclick="cerrarModalDesc()">Cerrar</button>
+        <button id="modal-desc-close" onclick="cerrarDesc()">Cerrar</button>
     </div>
 </div>
 
@@ -269,8 +184,8 @@
     <div id="auth-container" style="display:none;margin-top:20px;border:1.5px solid #ddd;padding:15px;border-radius:10px;">
         <h3 id="auth-title" style="margin-top:0;font-size:16px;color:#0056b3;"></h3>
         <p style="font-size:12px;color:#e65100;margin:0 0 10px;">⚠️ Necesitas VPN activado para iniciar sesión</p>
-        <input type="email" id="email" placeholder="Correo electrónico" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;margin-bottom:10px;font-size:14px;">
-        <input type="password" id="password" placeholder="Contraseña (mín 6 letras)" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;">
+        <input type="email" id="auth-email" placeholder="Correo electrónico" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;margin-bottom:10px;font-size:14px;">
+        <input type="password" id="auth-pass" placeholder="Contraseña (mín 6 letras)" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;">
         <button id="btn-auth-accion" onclick="hacerLogin()" style="width:100%;margin-top:12px;padding:11px;background:linear-gradient(135deg,#0056b3,#003d82);color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:15px;">Continuar</button>
     </div>
 </div>
@@ -281,9 +196,9 @@
 </header>
 
 <div id="header-tienda-directa">
-    <h2 id="header-nombre-tienda-directa"></h2>
-    <p id="header-info-tienda-directa"></p>
-    <button id="btn-ver-catalogo-completo" onclick="verCatalogoCompleto()">🏪 Ver otras tiendas</button>
+    <h2 id="hd-nombre"></h2>
+    <p id="hd-info"></p>
+    <button id="btn-ver-otras-tiendas" onclick="verCatalogoCompleto()">🏪 Ver otras tiendas</button>
 </div>
 
 <div class="filter-container" id="filtro-container">
@@ -312,11 +227,11 @@
 <div id="vista-mapa"><div id="mapa-principal"></div></div>
 
 <div id="banner-tienda">
-    <h2 id="banner-nombre-tienda"></h2>
-    <p id="banner-info-tienda"></p>
+    <h2 id="banner-nombre"></h2>
+    <p id="banner-info"></p>
     <div class="banner-botones">
         <button id="btn-volver-catalogo" onclick="volverAlCatalogo()">← Volver</button>
-        <button id="btn-copiar-link-banner" onclick="copiarLinkTienda()">🔗 Copiar link</button>
+        <button id="btn-copiar-link-banner" onclick="copiarLink()">🔗 Copiar link</button>
     </div>
 </div>
 
@@ -331,14 +246,14 @@
 
 <div id="panelVendedor" style="display:none;">
     <div class="vendor-panel">
-        <div class="seccion-card" id="seccion-info-tienda">
+        <div class="seccion-card">
             <h3>🏪 Información de tu Tienda</h3>
-            <div class="form-group"><label>Nombre de la Tienda:</label><input type="text" id="nombreTienda" placeholder="Ej. Tienda de Ropa de María"></div>
-            <div class="form-group"><label>Teléfono / WhatsApp:</label><input type="tel" id="telTienda" placeholder="+53 51234567"></div>
-            <div class="form-group"><label>Dirección:</label><input type="text" id="direccionTienda" placeholder="Ej. Calle 23 #456, Vedado"></div>
+            <div class="form-group"><label>Nombre de la Tienda:</label><input type="text" id="v-nombre" placeholder="Ej. Tienda de Ropa de María"></div>
+            <div class="form-group"><label>Teléfono / WhatsApp:</label><input type="tel" id="v-tel" placeholder="+53 51234567"></div>
+            <div class="form-group"><label>Dirección:</label><input type="text" id="v-dir" placeholder="Ej. Calle 23 #456, Vedado"></div>
             <div class="form-group">
                 <label>Provincia:</label>
-                <select id="provinciaTienda">
+                <select id="v-prov">
                     <option value="">-- Elige una provincia --</option>
                     <option value="Pinar del Río">Pinar del Río</option>
                     <option value="Artemisa">Artemisa</option>
@@ -366,25 +281,25 @@
             <button class="btn-guardar" onclick="guardarInfoTienda()">💾 Guardar Info de Tienda</button>
         </div>
 
-        <div class="seccion-card" id="seccion-mis-productos">
+        <div class="seccion-card" id="seccion-productos">
             <h3>📦 Mis Productos</h3>
-            <button class="btn-copiar-link" onclick="copiarLinkTienda()">🔗 Copiar link de mi tienda</button>
+            <button class="btn-copiar-link" onclick="copiarLink()">🔗 Copiar link de mi tienda</button>
             <div id="lista-mis-productos"><p style="color:#888;text-align:center;font-size:13px;">Cargando...</p></div>
-            <button class="btn-secundario" onclick="toggleFormNuevoProducto()">➕ Agregar nuevo producto</button>
+            <button class="btn-secundario" onclick="toggleFormProducto()">➕ Agregar nuevo producto</button>
             <div id="form-nuevo-producto">
-                <div style="border:2px dashed #ccc;padding:14px;text-align:center;margin-bottom:12px;border-radius:10px;cursor:pointer;background:#fafafa;" onclick="document.getElementById('fotosTienda').click()">
-                    <p id="previewText" style="margin:0;color:#888;font-size:13px;">📸 Toca para agregar fotos</p>
-                    <div id="imgPreviewContainer" style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:8px;"></div>
-                    <input type="file" id="fotosTienda" accept="image/*" multiple style="display:none;" onchange="previsualizarImagenes(event)">
+                <div style="border:2px dashed #ccc;padding:14px;text-align:center;margin-bottom:12px;border-radius:10px;cursor:pointer;background:#fafafa;" onclick="document.getElementById('input-fotos').click()">
+                    <p id="preview-text" style="margin:0;color:#888;font-size:13px;">📸 Toca para agregar fotos</p>
+                    <div id="preview-container" style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:8px;"></div>
+                    <input type="file" id="input-fotos" accept="image/*" multiple style="display:none;" onchange="previsualizarFotos(event)">
                 </div>
-                <div class="form-group"><label>Nombre del Producto:</label><input type="text" id="nombreProducto" placeholder="Ej. Vestido de verano"></div>
+                <div class="form-group"><label>Nombre del Producto:</label><input type="text" id="p-nombre" placeholder="Ej. Vestido de verano"></div>
                 <div class="form-row">
-                    <div class="form-group"><label>Precio:</label><input type="text" id="precioProducto" placeholder="500"></div>
-                    <div class="form-group"><label>Moneda:</label><select id="monedaProducto"><option value="CUP">CUP</option><option value="USD">USD</option></select></div>
+                    <div class="form-group"><label>Precio:</label><input type="text" id="p-precio" placeholder="500"></div>
+                    <div class="form-group"><label>Moneda:</label><select id="p-moneda"><option value="CUP">CUP</option><option value="USD">USD</option></select></div>
                 </div>
                 <div class="form-group">
                     <label>Descripción <span style="color:#aaa;font-weight:normal;">(opcional)</span>:</label>
-                    <textarea id="descripcionProducto" rows="2" placeholder="Describe el producto..."></textarea>
+                    <textarea id="p-desc" rows="2" placeholder="Describe el producto..."></textarea>
                 </div>
                 <button class="btn-guardar" onclick="publicarProducto()">📤 Publicar Producto</button>
             </div>
@@ -393,240 +308,197 @@
 </div>
 
 <script>
-    // =====================
-    // VARIABLES GLOBALES
-    // =====================
+    // ============================================================
+    // VARIABLES
+    // ============================================================
     let tiendasData = [];
     let map, mapPrincipal, mapSelector;
     let marcadorActual, marcadorSelector;
-    let latSeleccionada = 23.11, lngSeleccionada = -82.36;
+    let latSel = 23.11, lngSel = -82.36;
     let vistaActual = 'tiendas';
-    let tiendaActivaUid = null;
-    let modoTiendaDirecta = false;
-    let usuarioActual = null;
-    let firebaseApp = null;
-    let firebaseAuth = null;
+    let tiendaUID = null;
+    let modoDirecto = false;
+    let usuarioUID = null;
+    let fbAuth = null;
+    let fbApp = null;
 
-    const MSG_5MIN = "\n\n⏳ Puede tardar hasta 10 minutos para que los demás usuarios lo vean.";
     const API_KEY = "AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc";
-    const FS_BASE = "https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents";
+    const FS = "https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents";
+    const MSG10 = "\n\n⏳ Puede tardar hasta 10 minutos para que los demás usuarios lo vean.";
 
-    // =====================
-    // SESIÓN PERSISTENTE
-    // Al cargar la página, verificar si había sesión guardada
-    // =====================
-    function restaurarSesion() {
-        const uidGuardado = localStorage.getItem('bc_uid');
-        const loginTime = parseInt(localStorage.getItem('bc_login_time') || '0');
-        if (!uidGuardado) return;
+    // ============================================================
+    // MODALES BONITOS
+    // ============================================================
+    let _msgRes = null, _confirmRes = null;
 
-        // Si pasaron mas de 24h, limpiar sesion
-        if (Date.now() - loginTime > 24 * 60 * 60 * 1000) {
-            localStorage.removeItem('bc_uid');
-            localStorage.removeItem('bc_login_time');
-            localStorage.removeItem('bc_email');
-            localStorage.removeItem('bc_pass');
-            return;
-        }
-
-        // Sesion valida: restaurar inmediatamente sin VPN
-        usuarioActual = uidGuardado;
-        actualizarUISession(true);
-
-        // Reconectar Firebase en background (para operaciones de escritura con VPN)
-        const emailGuardado = localStorage.getItem('bc_email');
-        const passGuardado = localStorage.getItem('bc_pass');
-        if (emailGuardado && passGuardado) {
-            iniciarFirebase().then(async (auth) => {
-                try {
-                    const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
-                    await signInWithEmailAndPassword(auth, emailGuardado, passGuardado);
-                } catch(e) {
-                    console.log("Firebase background (sin VPN):", e.message);
-                }
-            });
-        }
+    function showMsg(texto, tipo) {
+        return new Promise(res => {
+            _msgRes = res;
+            const iconos = { ok: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+            document.getElementById('modal-msg-icon').textContent = iconos[tipo] || 'ℹ️';
+            document.getElementById('modal-msg-texto').textContent = texto;
+            document.getElementById('modal-msg').classList.add('show');
+        });
     }
-
-    function actualizarUISession(loggedIn) {
-        document.getElementById("btn-add-negocio").innerText = loggedIn ? "🏪 Gestionar mi Negocio" : "➕ Añadir negocio";
-        document.getElementById("btn-cerrar-sesion").style.display = loggedIn ? "block" : "none";
-    }
-
-    // =====================
-    // INICIAR FIREBASE (lazy)
-    // =====================
-    async function iniciarFirebase() {
-        if (firebaseAuth) return firebaseAuth;
-        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
-        const { getAuth } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
-        if (!firebaseApp) {
-            firebaseApp = initializeApp({
-                apiKey: API_KEY,
-                authDomain: "bazarcuba.firebaseapp.com",
-                projectId: "bazarcuba",
-                appId: "1:341288499673:web:ca566add302596869d01c8",
-            });
-        }
-        firebaseAuth = getAuth(firebaseApp);
-        return firebaseAuth;
-    }
-
-    async function getToken() {
-        if (!firebaseAuth || !firebaseAuth.currentUser) throw new Error("Debes iniciar sesión con VPN.");
-        return await firebaseAuth.currentUser.getIdToken(true);
-    }
-
-    // =====================
-    // DETECTAR LINK DIRECTO
-    // =====================
-    function detectarLinkDirecto() {
-        const params = new URLSearchParams(window.location.search);
-        const uid = params.get('tienda');
-        if (uid) {
-            tiendaActivaUid = uid;
-            modoTiendaDirecta = true;
-            document.getElementById('filtro-container').style.display = 'none';
-        }
-    }
-
-    function mostrarVistaDirecta() {
-        if (!modoTiendaDirecta || !tiendaActivaUid) return;
-        const productos = tiendasData.filter(t => t.uidVendedor === tiendaActivaUid);
-        if (productos.length === 0) {
-            document.getElementById("listaTiendas").innerHTML = "<p style='text-align:center;width:100%;color:#888;grid-column:1/-1;'>Esta tienda no tiene productos.</p>";
-            return;
-        }
-        const info = productos[0];
-        document.getElementById('header-tienda-directa').style.display = 'block';
-        document.getElementById('header-nombre-tienda-directa').textContent = info.nombreTienda || 'Tienda';
-        const parts = [];
-        if (info.tel) parts.push('📞 ' + info.tel);
-        if (info.direccion) parts.push('📍 ' + info.direccion);
-        if (info.provincia) parts.push(info.provincia);
-        document.getElementById('header-info-tienda-directa').textContent = parts.join('  ·  ');
-        renderizarTiendas(productos);
-    }
-
-    window.verCatalogoCompleto = function() {
-        modoTiendaDirecta = false;
-        tiendaActivaUid = null;
-        document.getElementById('header-tienda-directa').style.display = 'none';
-        document.getElementById('filtro-container').style.display = 'flex';
-        window.history.replaceState({}, '', window.location.pathname);
-        renderizarTiendas(tiendasData);
+    window.cerrarMsg = function() {
+        document.getElementById('modal-msg').classList.remove('show');
+        if (_msgRes) { _msgRes(); _msgRes = null; }
     };
 
-    // =====================
-    // COPIAR LINK
-    // =====================
-    window.copiarLinkTienda = function() {
-        const uid = tiendaActivaUid || usuarioActual;
-        await showMsg("No se pudo obtener el ID de la tienda.", "warning"); return;
-        const url = `${window.location.origin}${window.location.pathname}?tienda=${uid}`;
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(url).then(() => mostrarToast('🔗 ¡Link copiado!'));
-        } else {
-            const input = document.createElement('input');
-            input.value = url;
-            document.body.appendChild(input);
-            input.select();
-            document.execCommand('copy');
-            document.body.removeChild(input);
-            mostrarToast('🔗 ¡Link copiado!');
-        }
+    function showConfirm(texto) {
+        return new Promise(res => {
+            _confirmRes = res;
+            document.getElementById('modal-confirm-texto').textContent = texto;
+            document.getElementById('modal-confirm').classList.add('show');
+        });
+    }
+    window.resolverConfirm = function(val) {
+        document.getElementById('modal-confirm').classList.remove('show');
+        if (_confirmRes) { _confirmRes(val); _confirmRes = null; }
     };
 
-    function mostrarToast(msg) {
+    function toast(msg) {
         const t = document.getElementById('toast');
         t.textContent = msg;
         t.classList.add('show');
         setTimeout(() => t.classList.remove('show'), 2500);
     }
 
-    // Modal bonito en lugar de alert()
-    let _msgResolve = null;
-    function showMsg(texto, tipo) {
-        return new Promise(resolve => {
-            _msgResolve = resolve;
-            const iconos = { ok: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
-            document.getElementById('msg-icon').textContent = iconos[tipo] || 'ℹ️';
-            document.getElementById('msg-texto').textContent = texto;
-            const modal = document.getElementById('msg-modal');
-            modal.style.display = 'flex';
-        });
-    }
-    window.cerrarMsg = function() {
-        document.getElementById('msg-modal').style.display = 'none';
-        if (_msgResolve) { _msgResolve(); _msgResolve = null; }
-    };
-
-    // Modal bonito en lugar de confirm()
-    let _confirmResolve = null;
-    function showConfirm(texto) {
-        return new Promise(resolve => {
-            _confirmResolve = resolve;
-            document.getElementById('confirm-texto').textContent = texto;
-            document.getElementById('confirm-modal').style.display = 'flex';
-        });
-    }
-    window.resolverConfirm = function(valor) {
-        document.getElementById('confirm-modal').style.display = 'none';
-        if (_confirmResolve) { _confirmResolve(valor); _confirmResolve = null; }
-    };
-
-    // =====================
+    // ============================================================
     // LIGHTBOX
-    // =====================
-    let lightboxFotos = [], lightboxIndex = 0;
+    // ============================================================
+    let lbFotos = [], lbIdx = 0;
 
-    window.abrirLightbox = function(fotosJson, index) {
-        lightboxFotos = JSON.parse(decodeURIComponent(fotosJson));
-        lightboxIndex = index;
-        document.getElementById('lightbox-img').src = lightboxFotos[lightboxIndex];
+    window.abrirLightbox = function(fotosJson, idx) {
+        lbFotos = JSON.parse(decodeURIComponent(fotosJson));
+        lbIdx = idx;
+        document.getElementById('lightbox-img').src = lbFotos[lbIdx];
         document.getElementById('lightbox').classList.add('active');
-        document.getElementById('lightbox-prev').style.display = lightboxFotos.length > 1 ? 'block' : 'none';
-        document.getElementById('lightbox-next').style.display = lightboxFotos.length > 1 ? 'block' : 'none';
+        document.getElementById('lightbox-prev').style.display = lbFotos.length > 1 ? 'block' : 'none';
+        document.getElementById('lightbox-next').style.display = lbFotos.length > 1 ? 'block' : 'none';
     };
     window.cerrarLightbox = function() { document.getElementById('lightbox').classList.remove('active'); };
-    window.lightboxClickFuera = function(e) { if (e.target === document.getElementById('lightbox')) cerrarLightbox(); };
-    window.lightboxNavegar = function(dir) {
-        lightboxIndex = (lightboxIndex + dir + lightboxFotos.length) % lightboxFotos.length;
-        document.getElementById('lightbox-img').src = lightboxFotos[lightboxIndex];
+    window.lightboxNav = function(d) {
+        lbIdx = (lbIdx + d + lbFotos.length) % lbFotos.length;
+        document.getElementById('lightbox-img').src = lbFotos[lbIdx];
     };
 
-    // =====================
-    // MODAL DESCRIPCIÓN
-    // =====================
-    window.abrirModalDesc = function(nombre, descripcion) {
+    // ============================================================
+    // DESCRIPCION
+    // ============================================================
+    window.abrirDesc = function(nombre, desc) {
         document.getElementById('modal-desc-titulo').innerText = nombre;
-        document.getElementById('modal-desc-texto').innerText = descripcion;
-        document.getElementById('modal-descripcion').classList.add('active');
+        document.getElementById('modal-desc-texto').innerText = desc;
+        document.getElementById('modal-desc').classList.add('active');
     };
-    window.cerrarModalDesc = function(e) {
-        if (!e || e.target === document.getElementById('modal-descripcion') || e.target === document.getElementById('modal-desc-close'))
-            document.getElementById('modal-descripcion').classList.remove('active');
-    };
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarLightbox(); cerrarModalDesc(); } });
+    window.cerrarDesc = function() { document.getElementById('modal-desc').classList.remove('active'); };
 
-    // =====================
-    // TOGGLE VISTA
-    // =====================
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarLightbox(); cerrarDesc(); } });
+
+    // ============================================================
+    // SESION (24 horas, sin recargar con VPN)
+    // ============================================================
+    function restaurarSesion() {
+        const uid = localStorage.getItem('bc_uid');
+        const t = parseInt(localStorage.getItem('bc_t') || '0');
+        if (!uid) return;
+        if (Date.now() - t > 86400000) { // 24h
+            localStorage.clear();
+            return;
+        }
+        usuarioUID = uid;
+        actualizarUI(true);
+        // Reconectar Firebase en background para poder escribir
+        const email = localStorage.getItem('bc_e');
+        const pass = localStorage.getItem('bc_p');
+        if (email && pass) {
+            iniciarFB().then(async auth => {
+                try {
+                    const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+                    await signInWithEmailAndPassword(auth, email, pass);
+                } catch(e) { /* Sin VPN, silencioso */ }
+            });
+        }
+    }
+
+    async function iniciarFB() {
+        if (fbAuth) return fbAuth;
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+        const { getAuth } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+        if (!fbApp) fbApp = initializeApp({ apiKey: API_KEY, authDomain: "bazarcuba.firebaseapp.com", projectId: "bazarcuba", appId: "1:341288499673:web:ca566add302596869d01c8" });
+        fbAuth = getAuth(fbApp);
+        return fbAuth;
+    }
+
+    async function getToken() {
+        if (!fbAuth || !fbAuth.currentUser) throw new Error("Inicia sesión con VPN para realizar esta acción.");
+        return await fbAuth.currentUser.getIdToken(true);
+    }
+
+    function actualizarUI(loggedIn) {
+        document.getElementById('btn-add-negocio').innerText = loggedIn ? '🏪 Gestionar mi Negocio' : '➕ Añadir negocio';
+        document.getElementById('btn-cerrar-sesion').style.display = loggedIn ? 'block' : 'none';
+    }
+
+    // ============================================================
+    // LINK DIRECTO (?tienda=UID)
+    // ============================================================
+    function detectarDirecto() {
+        const uid = new URLSearchParams(window.location.search).get('tienda');
+        if (uid) { tiendaUID = uid; modoDirecto = true; document.getElementById('filtro-container').style.display = 'none'; }
+    }
+
+    function mostrarDirecto() {
+        if (!modoDirecto || !tiendaUID) return;
+        const prods = tiendasData.filter(t => t.uidVendedor === tiendaUID);
+        if (!prods.length) { document.getElementById('listaTiendas').innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#888;'>Esta tienda no tiene productos.</p>"; return; }
+        const i = prods[0];
+        document.getElementById('header-tienda-directa').style.display = 'block';
+        document.getElementById('hd-nombre').textContent = i.nombreTienda || 'Tienda';
+        const p = [i.tel && '📞 '+i.tel, i.direccion && '📍 '+i.direccion, i.provincia].filter(Boolean);
+        document.getElementById('hd-info').textContent = p.join('  ·  ');
+        renderizar(prods);
+    }
+
+    window.verCatalogoCompleto = function() {
+        modoDirecto = false; tiendaUID = null;
+        document.getElementById('header-tienda-directa').style.display = 'none';
+        document.getElementById('filtro-container').style.display = 'flex';
+        window.history.replaceState({}, '', window.location.pathname);
+        renderizar(tiendasData);
+    };
+
+    // ============================================================
+    // COPIAR LINK
+    // ============================================================
+    window.copiarLink = function() {
+        const uid = tiendaUID || usuarioUID;
+        if (!uid) { showMsg('No se pudo obtener el link.', 'warning'); return; }
+        const url = window.location.origin + window.location.pathname + '?tienda=' + uid;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => toast('🔗 ¡Link copiado!'));
+        } else {
+            const inp = document.createElement('input');
+            inp.value = url; document.body.appendChild(inp); inp.select();
+            document.execCommand('copy'); document.body.removeChild(inp);
+            toast('🔗 ¡Link copiado!');
+        }
+    };
+
+    // ============================================================
+    // MAPA / VISTA
+    // ============================================================
     window.toggleVista = function() {
         const btn = document.getElementById('btn-vista-toggle');
         if (vistaActual === 'tiendas') {
-            vistaActual = 'mapa';
-            btn.textContent = '🏪 Tiendas';
-            btn.classList.add('activo');
+            vistaActual = 'mapa'; btn.textContent = '🏪 Tiendas'; btn.classList.add('activo');
             document.getElementById('listaTiendas').style.display = 'none';
             document.getElementById('banner-tienda').style.display = 'none';
             document.getElementById('mapa-container').style.display = 'none';
             document.getElementById('vista-mapa').style.display = 'block';
             iniciarMapaPrincipal();
         } else {
-            vistaActual = 'tiendas';
-            btn.textContent = '🗺️ Mapa';
-            btn.classList.remove('activo');
+            vistaActual = 'tiendas'; btn.textContent = '🗺️ Mapa'; btn.classList.remove('activo');
             document.getElementById('vista-mapa').style.display = 'none';
             document.getElementById('listaTiendas').style.display = 'grid';
         }
@@ -638,175 +510,140 @@
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapPrincipal);
         }
         mapPrincipal.eachLayer(l => { if (l instanceof L.Marker) mapPrincipal.removeLayer(l); });
-        const vistos = {};
-        tiendasData.forEach(t => { if (!vistos[t.uidVendedor] && t.lat && t.lng) vistos[t.uidVendedor] = t; });
-        const gpsIcon = L.divIcon({
-            html: `<svg width="32" height="40" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg"><path d="M16 0C9.37 0 4 5.37 4 12c0 9 12 24 12 24S28 21 28 12C28 5.37 22.63 0 16 0z" fill="#EA4335"/><circle cx="16" cy="12" r="5" fill="white"/></svg>`,
-            className: '', iconSize: [32, 40], iconAnchor: [16, 40], popupAnchor: [0, -40]
-        });
-        Object.values(vistos).forEach(t => {
-            const nombreT = t.nombreTienda || 'Tienda';
-            L.marker([t.lat, t.lng], { icon: gpsIcon }).addTo(mapPrincipal).bindPopup(`
-                <div style="text-align:center;min-width:130px;">
-                    <strong style="font-size:14px;">${nombreT}</strong><br>
-                    <small style="color:#666;">${t.provincia || ''}</small><br>
-                    <button onclick="visitarTienda('${t.uidVendedor}')" style="margin-top:8px;background:#0056b3;color:white;border:none;padding:7px 14px;border-radius:20px;font-weight:bold;cursor:pointer;font-size:13px;">Visitar tienda</button>
-                </div>`);
+        const vis = {};
+        tiendasData.forEach(t => { if (!vis[t.uidVendedor] && t.lat && t.lng) vis[t.uidVendedor] = t; });
+        const ico = L.divIcon({ html: '<svg width="32" height="40" viewBox="0 0 32 40"><path d="M16 0C9.37 0 4 5.37 4 12c0 9 12 24 12 24S28 21 28 12C28 5.37 22.63 0 16 0z" fill="#EA4335"/><circle cx="16" cy="12" r="5" fill="white"/></svg>', className: '', iconSize: [32,40], iconAnchor: [16,40], popupAnchor: [0,-40] });
+        Object.values(vis).forEach(t => {
+            L.marker([t.lat, t.lng], { icon: ico }).addTo(mapPrincipal).bindPopup(
+                `<div style="text-align:center;min-width:130px;"><strong>${t.nombreTienda||'Tienda'}</strong><br><small>${t.provincia||''}</small><br><button onclick="visitarTienda('${t.uidVendedor}')" style="margin-top:8px;background:#0056b3;color:white;border:none;padding:7px 14px;border-radius:20px;font-weight:bold;cursor:pointer;">Visitar tienda</button></div>`
+            );
         });
     }
 
     window.visitarTienda = function(uid) {
-        tiendaActivaUid = uid;
-        vistaActual = 'tiendas';
+        tiendaUID = uid; vistaActual = 'tiendas';
         document.getElementById('btn-vista-toggle').textContent = '🗺️ Mapa';
         document.getElementById('btn-vista-toggle').classList.remove('activo');
         document.getElementById('vista-mapa').style.display = 'none';
         document.getElementById('listaTiendas').style.display = 'grid';
-        const productosT = tiendasData.filter(t => t.uidVendedor === uid);
-        const infoT = productosT[0] || {};
+        const prods = tiendasData.filter(t => t.uidVendedor === uid);
+        const i = prods[0] || {};
         document.getElementById('banner-tienda').style.display = 'block';
-        document.getElementById('banner-nombre-tienda').textContent = infoT.nombreTienda || 'Tienda';
-        const parts = [];
-        if (infoT.tel) parts.push('📞 ' + infoT.tel);
-        if (infoT.direccion) parts.push('📍 ' + infoT.direccion);
-        if (infoT.provincia) parts.push(infoT.provincia);
-        document.getElementById('banner-info-tienda').textContent = parts.join('  ·  ');
-        renderizarTiendas(productosT);
+        document.getElementById('banner-nombre').textContent = i.nombreTienda || 'Tienda';
+        const p = [i.tel && '📞 '+i.tel, i.direccion && '📍 '+i.direccion, i.provincia].filter(Boolean);
+        document.getElementById('banner-info').textContent = p.join('  ·  ');
+        renderizar(prods);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     window.volverAlCatalogo = function() {
-        tiendaActivaUid = null;
+        tiendaUID = null;
         document.getElementById('banner-tienda').style.display = 'none';
         filtrarPorProvincia();
     };
 
-    // =====================
-    // INTERFAZ Y SESIÓN
-    // =====================
+    // ============================================================
+    // INTERFAZ
+    // ============================================================
     window.toggleMenu = function() {
-        const menu = document.getElementById("side-menu");
-        menu.style.right = menu.style.right === "0px" ? "-300px" : "0px";
+        const m = document.getElementById('side-menu');
+        m.style.right = m.style.right === '0px' ? '-300px' : '0px';
     };
 
     window.mostrarFormAuth = function(tipo) {
-        document.getElementById("opciones-auth").style.display = "none";
-        document.getElementById("auth-container").style.display = "block";
-        document.getElementById("auth-title").innerText = tipo === 'login' ? "Iniciar Sesión" : "Crear Cuenta";
-        document.getElementById("btn-auth-accion").innerText = tipo === 'login' ? "Entrar" : "Registrarse";
+        document.getElementById('opciones-auth').style.display = 'none';
+        document.getElementById('auth-container').style.display = 'block';
+        document.getElementById('auth-title').innerText = tipo === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta';
+        document.getElementById('btn-auth-accion').innerText = tipo === 'login' ? 'Entrar' : 'Registrarse';
     };
 
     window.hacerLogin = async function() {
-        const email = document.getElementById("email").value;
-        const pass = document.getElementById("password").value;
-        const btn = document.getElementById("btn-auth-accion");
-        btn.innerText = "Conectando... ⏳"; btn.disabled = true;
+        const email = document.getElementById('auth-email').value;
+        const pass = document.getElementById('auth-pass').value;
+        const btn = document.getElementById('btn-auth-accion');
+        btn.innerText = 'Conectando...'; btn.disabled = true;
         try {
             const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
-            const auth = await iniciarFirebase();
+            const auth = await iniciarFB();
             await signInWithEmailAndPassword(auth, email, pass);
-            usuarioActual = auth.currentUser.uid;
-            // Guardar credenciales para restaurar sesión
-            localStorage.setItem('bc_uid', auth.currentUser.uid);
-            localStorage.setItem('bc_login_time', Date.now().toString());
-            localStorage.setItem('bc_email', email);
-            localStorage.setItem('bc_pass', pass);
-            actualizarUISession(true);
-            document.getElementById("auth-container").style.display = "none";
-            await showMsg("✅ Sesión iniciada.", "ok");
-            window.toggleMenu();
-            renderizarTiendas(tiendasData);
-        } catch (e) {
-            await showMsg("❌ Error: Verifica tus datos. Recuerda que necesitas VPN.", "error");
-            btn.innerText = "Continuar"; btn.disabled = false;
+            usuarioUID = auth.currentUser.uid;
+            localStorage.setItem('bc_uid', usuarioUID);
+            localStorage.setItem('bc_t', Date.now().toString());
+            localStorage.setItem('bc_e', email);
+            localStorage.setItem('bc_p', pass);
+            actualizarUI(true);
+            document.getElementById('auth-container').style.display = 'none';
+            toggleMenu();
+            await showMsg('✅ Sesión iniciada correctamente.', 'ok');
+            renderizar(tiendasData);
+        } catch(e) {
+            await showMsg('No se pudo iniciar sesión. Verifica tus datos y asegúrate de tener el VPN activado.', 'error');
+            btn.innerText = 'Continuar'; btn.disabled = false;
         }
     };
 
     window.cerrarSesion = function() {
-        usuarioActual = null;
-        firebaseAuth = null;
-        firebaseApp = null;
-        localStorage.removeItem('bc_uid');
-        localStorage.removeItem('bc_login_time');
-        localStorage.removeItem('bc_email');
-        localStorage.removeItem('bc_pass');
-        actualizarUISession(false);
+        usuarioUID = null; fbAuth = null; fbApp = null;
+        localStorage.removeItem('bc_uid'); localStorage.removeItem('bc_t');
+        localStorage.removeItem('bc_e'); localStorage.removeItem('bc_p');
+        actualizarUI(false);
         document.getElementById('panelVendedor').style.display = 'none';
         document.getElementById('listaTiendas').style.display = 'grid';
-        document.getElementById('mapa-container').style.display = 'none';
-        document.getElementById('banner-tienda').style.display = 'none';
-        renderizarTiendas(tiendasData);
-        mostrarToast("Sesión cerrada");
+        renderizar(tiendasData);
+        toast('Sesión cerrada');
     };
 
     window.mostrarPanelVendedor = function() {
-        if (!usuarioActual) {
-            document.getElementById("opciones-auth").style.display = "block";
-            document.getElementById("auth-container").style.display = "none";
+        if (!usuarioUID) {
+            document.getElementById('opciones-auth').style.display = 'block';
+            document.getElementById('auth-container').style.display = 'none';
             return;
         }
-        window.toggleMenu();
+        toggleMenu();
         document.getElementById('panelVendedor').style.display = 'block';
         document.getElementById('listaTiendas').style.display = 'none';
         document.getElementById('mapa-container').style.display = 'none';
         document.getElementById('banner-tienda').style.display = 'none';
-
-        const misProductos = tiendasData.filter(t => t.uidVendedor === usuarioActual);
-        if (misProductos.length > 0) {
-            const info = misProductos[0];
-            document.getElementById('nombreTienda').value = info.nombreTienda || '';
-            document.getElementById('telTienda').value = info.tel || '';
-            document.getElementById('direccionTienda').value = info.direccion || '';
-            document.getElementById('provinciaTienda').value = info.provincia || '';
-            if (info.lat && info.lng) {
-                latSeleccionada = info.lat; lngSeleccionada = info.lng;
-                document.getElementById('coords-display').innerText = `📍 Lat: ${info.lat.toFixed(5)}, Lng: ${info.lng.toFixed(5)}`;
-            }
+        const mis = tiendasData.filter(t => t.uidVendedor === usuarioUID);
+        if (mis.length > 0) {
+            const i = mis[0];
+            document.getElementById('v-nombre').value = i.nombreTienda || '';
+            document.getElementById('v-tel').value = i.tel || '';
+            document.getElementById('v-dir').value = i.direccion || '';
+            document.getElementById('v-prov').value = i.provincia || '';
+            if (i.lat && i.lng) { latSel = i.lat; lngSel = i.lng; document.getElementById('coords-display').innerText = `📍 Lat: ${i.lat.toFixed(5)}, Lng: ${i.lng.toFixed(5)}`; }
         }
-        renderizarMisProductos(misProductos);
-        setTimeout(() => {
-            iniciarMapaSelector();
-            document.getElementById('seccion-mis-productos').scrollIntoView({ behavior: 'smooth' });
-        }, 300);
+        renderizarMisProductos(mis);
+        setTimeout(() => { iniciarMapaSelector(); document.getElementById('seccion-productos').scrollIntoView({ behavior: 'smooth' }); }, 300);
     };
 
-    // =====================
-    // RENDERIZAR MIS PRODUCTOS (con acciones integradas)
-    // =====================
     function renderizarMisProductos(lista) {
-        const cont = document.getElementById('lista-mis-productos');
-        if (lista.length === 0) {
-            cont.innerHTML = '<p style="color:#888;text-align:center;font-size:13px;">Aún no tienes productos.</p>';
-            return;
-        }
-        cont.innerHTML = '';
-        lista.forEach(t => {
-            const foto = t.fotos && t.fotos.length > 0 ? t.fotos[0] : 'https://via.placeholder.com/60';
-            const esAgotado = t.estado === 'agotado';
-            cont.innerHTML += `
-                <div class="producto-vendedor">
-                    <div class="producto-vendedor-top">
-                        <img src="${foto}" alt="">
-                        <div class="producto-vendedor-info">
-                            <strong>${t.nombre || 'Sin nombre'}</strong>
-                            <span>${t.precio || ''} ${t.moneda || ''}</span>
-                            ${esAgotado ? '<br><small style="color:#e65100;font-weight:bold;">AGOTADO</small>' : ''}
-                        </div>
+        const c = document.getElementById('lista-mis-productos');
+        if (!lista.length) { c.innerHTML = '<p style="color:#888;text-align:center;font-size:13px;">Aún no tienes productos.</p>'; return; }
+        c.innerHTML = lista.map(t => {
+            const foto = (t.fotos && t.fotos[0]) || 'https://via.placeholder.com/60';
+            const ag = t.estado === 'agotado';
+            return `<div class="producto-vendedor">
+                <div class="producto-vendedor-top">
+                    <img src="${foto}" alt="">
+                    <div class="producto-vendedor-info">
+                        <strong>${t.nombre || 'Sin nombre'}</strong>
+                        <span>${t.precio || ''} ${t.moneda || ''}</span>
+                        ${ag ? '<br><small style="color:#e65100;font-weight:bold;">AGOTADO</small>' : ''}
                     </div>
-                    <div class="producto-vendedor-acciones">
-                        ${esAgotado
-                            ? `<button class="btn-accion-habilitar" onclick="habilitarProducto('${t.id}')">✅ Habilitar</button>`
-                            : `<button class="btn-accion-agotado" onclick="marcarAgotado('${t.id}')">🚫 Agotado</button>`
-                        }
-                        <button onclick="gestionarFoto('${t.id}', 'cambiar')">🔄 Cambiar foto</button>
-                        <button onclick="gestionarFoto('${t.id}', 'agregar')">➕ Agregar foto</button>
-                        <button class="btn-accion-borrar" onclick="borrarAnuncio('${t.id}')">🗑️ Borrar</button>
-                    </div>
-                </div>`;
-        });
+                </div>
+                <div class="producto-acciones">
+                    ${ag ? `<button class="btn-acc-habilitar" onclick="habilitarProducto('${t.id}')">✅ Habilitar</button>`
+                          : `<button class="btn-acc-agotado" onclick="marcarAgotado('${t.id}')">🚫 Agotado</button>`}
+                    <button onclick="gestionarFoto('${t.id}','cambiar')">🔄 Foto</button>
+                    <button onclick="gestionarFoto('${t.id}','agregar')">➕ Foto</button>
+                    <button class="btn-acc-borrar" onclick="borrarAnuncio('${t.id}')">🗑️ Borrar</button>
+                </div>
+            </div>`;
+        }).join('');
     }
 
-    window.toggleFormNuevoProducto = function() {
+    window.toggleFormProducto = function() {
         const f = document.getElementById('form-nuevo-producto');
         f.style.display = f.style.display === 'block' ? 'none' : 'block';
         if (f.style.display === 'block') f.scrollIntoView({ behavior: 'smooth' });
@@ -814,396 +651,283 @@
 
     function iniciarMapaSelector() {
         if (mapSelector) { mapSelector.invalidateSize(); return; }
-        mapSelector = L.map('mapa-selector').setView([latSeleccionada, lngSeleccionada], 7);
+        mapSelector = L.map('mapa-selector').setView([latSel, lngSel], 7);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapSelector);
-        if (latSeleccionada !== 23.11 || lngSeleccionada !== -82.36) {
-            marcadorSelector = L.marker([latSeleccionada, lngSeleccionada]).addTo(mapSelector).bindPopup("Tu tienda").openPopup();
-        }
-        mapSelector.on('click', function(e) {
-            latSeleccionada = e.latlng.lat; lngSeleccionada = e.latlng.lng;
+        if (latSel !== 23.11 || lngSel !== -82.36) marcadorSelector = L.marker([latSel, lngSel]).addTo(mapSelector);
+        mapSelector.on('click', e => {
+            latSel = e.latlng.lat; lngSel = e.latlng.lng;
             if (marcadorSelector) mapSelector.removeLayer(marcadorSelector);
-            marcadorSelector = L.marker([latSeleccionada, lngSeleccionada]).addTo(mapSelector).bindPopup("Tu tienda").openPopup();
-            document.getElementById('coords-display').innerText = `📍 Lat: ${latSeleccionada.toFixed(5)}, Lng: ${lngSeleccionada.toFixed(5)}`;
+            marcadorSelector = L.marker([latSel, lngSel]).addTo(mapSelector).bindPopup('Tu tienda').openPopup();
+            document.getElementById('coords-display').innerText = `📍 Lat: ${latSel.toFixed(5)}, Lng: ${lngSel.toFixed(5)}`;
         });
     }
 
-    // =====================
-    // CARGA DE DATOS
-    // =====================
-    async function cargarTiendas() {
+    // ============================================================
+    // CARGAR DATOS
+    // ============================================================
+    async function cargarDatos() {
         try {
-            const respuesta = await fetch(`/datos.json`);
-            const data = await respuesta.json();
+            const r = await fetch('/datos.json?v=' + Date.now());
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const data = await r.json();
             if (data.documents) {
                 tiendasData = data.documents.map(doc => {
                     const f = doc.fields || {};
                     return {
                         id: doc.name.split('/').pop(),
-                        uidVendedor: f.uidVendedor?.stringValue || "",
-                        nombre: f.nombre?.stringValue || "Sin nombre",
-                        nombreTienda: f.nombreTienda?.stringValue || "",
-                        precio: f.precio?.stringValue || "N/A",
-                        moneda: f.moneda?.stringValue || "",
-                        descripcion: f.descripcion?.stringValue || "",
-                        direccion: f.direccion?.stringValue || "",
-                        provincia: f.provincia?.stringValue || "N/A",
-                        fotos: f.fotos?.arrayValue?.values?.map(v => v.stringValue) || [f.fotoUrl?.stringValue || "https://via.placeholder.com/300"],
-                        estado: f.estado?.stringValue || "disponible",
-                        tel: f.tel?.stringValue || "",
+                        uidVendedor: f.uidVendedor?.stringValue || '',
+                        nombre: f.nombre?.stringValue || 'Sin nombre',
+                        nombreTienda: f.nombreTienda?.stringValue || '',
+                        precio: f.precio?.stringValue || 'N/A',
+                        moneda: f.moneda?.stringValue || '',
+                        descripcion: f.descripcion?.stringValue || '',
+                        direccion: f.direccion?.stringValue || '',
+                        provincia: f.provincia?.stringValue || 'N/A',
+                        fotos: f.fotos?.arrayValue?.values?.map(v => v.stringValue) || [f.fotoUrl?.stringValue || 'https://via.placeholder.com/300'],
+                        estado: f.estado?.stringValue || 'disponible',
+                        tel: f.tel?.stringValue || '',
                         lat: f.lat?.doubleValue || 23.11,
                         lng: f.lng?.doubleValue || -82.36
                     };
                 });
-                if (modoTiendaDirecta) mostrarVistaDirecta();
-                else renderizarTiendas(tiendasData);
+                if (modoDirecto) mostrarDirecto();
+                else renderizar(tiendasData);
             } else {
-                document.getElementById("listaTiendas").innerHTML = "<p style='text-align:center;width:100%;color:#888;grid-column:1/-1;'>No hay anuncios disponibles.</p>";
+                document.getElementById('listaTiendas').innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#888;'>No hay anuncios disponibles.</p>";
             }
-        } catch (error) {
-            console.error("Error:", error);
-            document.getElementById("listaTiendas").innerHTML = "<p style='text-align:center;width:100%;color:#888;grid-column:1/-1;'>Error al conectar. Intenta de nuevo.</p>";
+        } catch(e) {
+            document.getElementById('listaTiendas').innerHTML = `<p style='grid-column:1/-1;text-align:center;color:#888;'>Error al cargar: ${e.message}</p>`;
         }
     }
 
     // SVGs
-    const svgLlamar = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#4CAF50"/><path d="M6.5 7.5C6.5 6.67 7.17 6 8 6h1.5c.28 0 .53.15.66.38l1.5 2.5c.16.27.1.61-.13.82L10.7 10.5c.52 1.1 1.2 1.78 2.3 2.3l.8-.83c.21-.23.55-.29.82-.13l2.5 1.5c.23.13.38.38.38.66V16c0 .83-.67 1.5-1.5 1.5C9.49 17.5 6.5 14.51 6.5 7.5z" fill="white"/></svg>`;
-    const svgWhatsApp = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#25D366"/><path d="M12 4C7.58 4 4 7.58 4 12c0 1.42.37 2.75 1.02 3.91L4 20l4.18-1.01C9.3 19.63 10.62 20 12 20c4.42 0 8-3.58 8-8s-3.58-8-8-8zm3.93 11.07c-.16.45-.94.88-1.29.93-.33.05-.74.07-1.19-.07-.27-.09-.63-.2-1.08-.4-1.89-.82-3.13-2.73-3.22-2.86-.09-.13-.76-1.01-.76-1.93s.48-1.37.65-1.56c.17-.19.37-.23.49-.23.12 0 .25 0 .36.01.11 0 .27-.04.42.32.16.37.54 1.31.59 1.4.05.09.08.2.02.32-.06.12-.09.19-.18.3-.09.1-.19.23-.27.31-.09.09-.18.18-.08.36.1.18.46.75.98 1.22.67.6 1.24.79 1.42.88.18.09.28.07.39-.04.11-.12.46-.54.58-.72.12-.18.24-.15.41-.09.17.06 1.1.52 1.29.61.19.09.31.13.36.2.05.11.05.61-.11 1.06z" fill="white"/></svg>`;
-    const svgMaps = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="white"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335"/><path d="M12 2C8.13 2 5 5.13 5 9c0 1.8.6 3.46 1.6 4.8L12 2z" fill="#FBBC05"/><path d="M12 2v7l5.4 7.8C18.4 15.46 19 13.8 19 12c0-3.87-3.13-7-7-7z" fill="#4285F4"/><circle cx="12" cy="9" r="2.5" fill="white"/></svg>`;
-    const svgDesc = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#e8f4fd"/><path d="M7 6h10v2H7zM7 10h10v2H7zM7 14h6v2H7z" fill="#0056b3"/><path d="M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="#0056b3" stroke-width="1.5" fill="none"/></svg>`;
+    const svgTel = `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#4CAF50"/><path d="M6.5 7.5C6.5 6.67 7.17 6 8 6h1.5c.28 0 .53.15.66.38l1.5 2.5c.16.27.1.61-.13.82L10.7 10.5c.52 1.1 1.2 1.78 2.3 2.3l.8-.83c.21-.23.55-.29.82-.13l2.5 1.5c.23.13.38.38.38.66V16c0 .83-.67 1.5-1.5 1.5C9.49 17.5 6.5 14.51 6.5 7.5z" fill="white"/></svg>`;
+    const svgWA = `<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#25D366"/><path d="M12 4C7.58 4 4 7.58 4 12c0 1.42.37 2.75 1.02 3.91L4 20l4.18-1.01C9.3 19.63 10.62 20 12 20c4.42 0 8-3.58 8-8s-3.58-8-8-8zm3.93 11.07c-.16.45-.94.88-1.29.93-.33.05-.74.07-1.19-.07-.27-.09-.63-.2-1.08-.4-1.89-.82-3.13-2.73-3.22-2.86-.09-.13-.76-1.01-.76-1.93s.48-1.37.65-1.56c.17-.19.37-.23.49-.23.12 0 .25 0 .36.01.11 0 .27-.04.42.32.16.37.54 1.31.59 1.4.05.09.08.2.02.32-.06.12-.09.19-.18.3-.09.1-.19.23-.27.31-.09.09-.18.18-.08.36.1.18.46.75.98 1.22.67.6 1.24.79 1.42.88.18.09.28.07.39-.04.11-.12.46-.54.58-.72.12-.18.24-.15.41-.09.17.06 1.1.52 1.29.61.19.09.31.13.36.2.05.11.05.61-.11 1.06z" fill="white"/></svg>`;
+    const svgGPS = `<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="white"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335"/><path d="M12 2C8.13 2 5 5.13 5 9c0 1.8.6 3.46 1.6 4.8L12 2z" fill="#FBBC05"/><path d="M12 2v7l5.4 7.8C18.4 15.46 19 13.8 19 12c0-3.87-3.13-7-7-7z" fill="#4285F4"/><circle cx="12" cy="9" r="2.5" fill="white"/></svg>`;
+    const svgDoc = `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#e8f4fd"/><path d="M7 6h10v2H7zM7 10h10v2H7zM7 14h6v2H7z" fill="#0056b3"/><path d="M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="#0056b3" stroke-width="1.5" fill="none"/></svg>`;
 
-    // =====================
-    // RENDERIZAR TIENDAS
-    // =====================
-    window.renderizarTiendas = function(lista) {
-        const contenedor = document.getElementById("listaTiendas");
-        contenedor.innerHTML = "";
-        if (lista.length === 0) {
-            contenedor.innerHTML = "<p style='text-align:center;width:100%;color:#888;grid-column:1/-1;'>No hay productos disponibles.</p>";
+    // ============================================================
+    // RENDERIZAR
+    // ============================================================
+    function renderizar(lista) {
+        const c = document.getElementById('listaTiendas');
+        c.innerHTML = '';
+        if (!lista || !lista.length) {
+            c.innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#888;'>No hay productos disponibles.</p>";
             return;
         }
-        lista.forEach(tienda => {
+        lista.forEach(t => {
             try {
-                const esAgotado = tienda.estado === "agotado";
-                const fotosEncoded = encodeURIComponent(JSON.stringify(tienda.fotos));
-                const nombreSafe = (tienda.nombre || "Sin nombre").replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                const descSafe = (tienda.descripcion || "").replace(/'/g, "\\'").replace(/"/g, '&quot;');
-
-                let fotosHtml = "";
-                tienda.fotos.forEach((foto, index) => {
-                    fotosHtml += `<img src="${foto}" class="carousel-img ${index === 0 ? 'active' : ''}" onclick="abrirLightbox('${fotosEncoded}', ${index})">`;
-                });
-
-                const controlesCarrusel = tienda.fotos.length > 1 ? `
-                    <button class="prev" onclick="event.stopPropagation();cambiarFoto('${tienda.id}', -1)">❮</button>
-                    <button class="next" onclick="event.stopPropagation();cambiarFoto('${tienda.id}', 1)">❯</button>` : "";
-
-                const monedaHtml = tienda.moneda ? `<span class="moneda-tag">${tienda.moneda}</span>` : "";
-                const descIconHtml = tienda.descripcion ? `<button class="btn-descripcion" onclick="abrirModalDesc('${nombreSafe}', '${descSafe}')">${svgDesc}</button>` : "";
-                const telLimpio = tienda.tel.replace(/\D/g, '');
-
-                const cardHtml = `
-                    <div class="card" id="card-${tienda.id}" style="opacity:${esAgotado ? '0.65' : '1'}">
-                        <div class="carousel-container">
-                            ${fotosHtml}
-                            ${controlesCarrusel}
-                            ${esAgotado ? '<div class="badge-agotado">AGOTADO</div>' : ''}
-                        </div>
-                        <h3>${tienda.nombre || 'Sin nombre'}</h3>
+                const ag = t.estado === 'agotado';
+                const fe = encodeURIComponent(JSON.stringify(t.fotos));
+                const ns = (t.nombre||'Sin nombre').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+                const ds = (t.descripcion||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+                const tel = (t.tel||'').replace(/\D/g,'');
+                let imgs = t.fotos.map((f,i) => `<img src="${f}" class="carousel-img ${i===0?'active':''}" onclick="abrirLightbox('${fe}',${i})">`).join('');
+                const ctrl = t.fotos.length > 1 ? `<button class="prev" onclick="event.stopPropagation();cambiarFoto('${t.id}',-1)">❮</button><button class="next" onclick="event.stopPropagation();cambiarFoto('${t.id}',1)">❯</button>` : '';
+                c.insertAdjacentHTML('beforeend', `
+                    <div class="card" id="card-${t.id}" style="opacity:${ag?'0.65':'1'}">
+                        <div class="carousel-container">${imgs}${ctrl}${ag?'<div class="badge-agotado">AGOTADO</div>':''}</div>
+                        <h3>${t.nombre||'Sin nombre'}</h3>
                         <div class="precio-row">
-                            <span class="precio-tag">${tienda.precio}</span>
-                            ${monedaHtml}${descIconHtml}
+                            <span class="precio-tag">${t.precio}</span>
+                            ${t.moneda?`<span class="moneda-tag">${t.moneda}</span>`:''}
+                            ${t.descripcion?`<button class="btn-descripcion" onclick="abrirDesc('${ns}','${ds}')">${svgDoc}</button>`:''}
                         </div>
-                        <p class="provincia">📍 ${tienda.provincia}</p>
+                        <p class="provincia">📍 ${t.provincia}</p>
                         <div class="card-buttons">
-                            <a href="tel:${tienda.tel}" class="btn-llamar">${svgLlamar}</a>
-                            <a href="https://wa.me/${telLimpio}" target="_blank" class="btn-wa">${svgWhatsApp}</a>
-                            <button class="btn-mapa-card" onclick="verUbicacion(${tienda.lat}, ${tienda.lng}, '${nombreSafe}')">${svgMaps}</button>
+                            <a href="tel:${t.tel}" class="btn-llamar">${svgTel}</a>
+                            <a href="https://wa.me/${tel}" target="_blank" class="btn-wa">${svgWA}</a>
+                            <button class="btn-mapa-card" onclick="verUbicacion(${t.lat},${t.lng},'${ns}')">${svgGPS}</button>
                         </div>
-                    </div>`;
-                contenedor.insertAdjacentHTML('beforeend', cardHtml);
-            } catch(err) { console.error('Error renderizando:', tienda.id, err); }
+                    </div>`);
+            } catch(e) { console.error('Error card:', t.id, e); }
         });
-    };
+    }
 
-    window.cambiarFoto = function(id, dir) {
-        const cont = document.querySelector(`#card-${id} .carousel-container`);
-        const imgs = cont.querySelectorAll('.carousel-img');
+    window.cambiarFoto = function(id, d) {
+        const imgs = document.querySelectorAll(`#card-${id} .carousel-img`);
         let idx = Array.from(imgs).findIndex(i => i.classList.contains('active'));
         imgs[idx].classList.remove('active');
-        idx = (idx + dir + imgs.length) % imgs.length;
+        idx = (idx + d + imgs.length) % imgs.length;
         imgs[idx].classList.add('active');
     };
 
-    // =====================
-    // GUARDAR INFO TIENDA
-    // =====================
+    // ============================================================
+    // ACCIONES FIREBASE
+    // ============================================================
     window.guardarInfoTienda = async function() {
-        if (!usuarioActual) return await showMsg("⚠️ Inicia sesión con VPN.", "warning");
-        const misProductos = tiendasData.filter(t => t.uidVendedor === usuarioActual);
-        if (misProductos.length === 0) return await showMsg("⚠️ Primero publica al menos un producto.", "warning");
-        const btn = document.querySelector('#seccion-info-tienda .btn-guardar');
-        btn.innerText = "Guardando... ⏳"; btn.disabled = true;
-        const campos = {
-            nombreTienda: document.getElementById('nombreTienda').value,
-            tel: document.getElementById('telTienda').value,
-            direccion: document.getElementById('direccionTienda').value,
-            provincia: document.getElementById('provinciaTienda').value,
-        };
+        if (!usuarioUID) { await showMsg('Inicia sesión con VPN para guardar.', 'warning'); return; }
+        const mis = tiendasData.filter(t => t.uidVendedor === usuarioUID);
+        if (!mis.length) { await showMsg('Primero publica al menos un producto.', 'warning'); return; }
+        const btn = document.querySelector('#panelVendedor .seccion-card .btn-guardar');
+        btn.innerText = 'Guardando... ⏳'; btn.disabled = true;
+        const campos = { nombreTienda: document.getElementById('v-nombre').value, tel: document.getElementById('v-tel').value, direccion: document.getElementById('v-dir').value, provincia: document.getElementById('v-prov').value };
         try {
             const token = await getToken();
-            const masks = Object.keys(campos).map(k => `updateMask.fieldPaths=${k}`).join('&') + `&updateMask.fieldPaths=lat&updateMask.fieldPaths=lng`;
-            await Promise.all(misProductos.map(p => {
-                const payload = { fields: {} };
-                Object.entries(campos).forEach(([k, v]) => { payload.fields[k] = { stringValue: v }; });
-                payload.fields.lat = { doubleValue: latSeleccionada };
-                payload.fields.lng = { doubleValue: lngSeleccionada };
-                return fetch(`${FS_BASE}/tiendas/${p.id}?${masks}&key=${API_KEY}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify(payload)
-                });
+            const masks = Object.keys(campos).map(k => `updateMask.fieldPaths=${k}`).join('&') + '&updateMask.fieldPaths=lat&updateMask.fieldPaths=lng';
+            await Promise.all(mis.map(p => {
+                const pay = { fields: {} };
+                Object.entries(campos).forEach(([k,v]) => { pay.fields[k] = { stringValue: v }; });
+                pay.fields.lat = { doubleValue: latSel }; pay.fields.lng = { doubleValue: lngSel };
+                return fetch(`${FS}/tiendas/${p.id}?${masks}&key=${API_KEY}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(pay) });
             }));
-                        // Actualizar en memoria al instante
-            const campos2 = {
-                nombreTienda: document.getElementById('nombreTienda').value,
-                tel: document.getElementById('telTienda').value,
-                direccion: document.getElementById('direccionTienda').value,
-                provincia: document.getElementById('provinciaTienda').value,
-            };
-            tiendasData.forEach(t => {
-                if (t.uidVendedor === usuarioActual) {
-                    Object.assign(t, campos2);
-                    t.lat = latSeleccionada;
-                    t.lng = lngSeleccionada;
-                }
-            });
-            renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioActual));
-            await showMsg("✅ Información guardada.\n\n⏳ Puede tardar hasta 10 minutos para que los demás usuarios lo vean.", "ok");
-            btn.innerText = "💾 Guardar Info de Tienda"; btn.disabled = false;
-        } catch (e) { await showMsg("❌ " + e.message, "error"); btn.innerText = "💾 Guardar Info de Tienda"; btn.disabled = false; }
+            // Actualizar en memoria
+            tiendasData.forEach(t => { if (t.uidVendedor === usuarioUID) { Object.assign(t, campos); t.lat = latSel; t.lng = lngSel; } });
+            renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
+            await showMsg('✅ Información guardada.' + MSG10, 'ok');
+            btn.innerText = '💾 Guardar Info de Tienda'; btn.disabled = false;
+        } catch(e) { await showMsg('❌ ' + e.message, 'error'); btn.innerText = '💾 Guardar Info de Tienda'; btn.disabled = false; }
     };
 
-    // =====================
-    // ACCIONES FIREBASE
-    // =====================
     window.borrarAnuncio = async function(id) {
-        if (!usuarioActual) return await showMsg("⚠️ Inicia sesión con VPN.", "warning");
-        if (!await showConfirm("¿Seguro que quieres eliminar este producto?")) return;
+        if (!usuarioUID) { await showMsg('Inicia sesión con VPN.', 'warning'); return; }
+        if (!await showConfirm('¿Seguro que quieres eliminar este producto?')) return;
         try {
             const token = await getToken();
-            const res = await fetch(`${FS_BASE}/tiendas/${id}?key=${API_KEY}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-            if (res.ok) {
-                // Eliminar en memoria al instante
+            const r = await fetch(`${FS}/tiendas/${id}?key=${API_KEY}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            if (r.ok) {
                 tiendasData = tiendasData.filter(t => t.id !== id);
-                renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioActual));
-                await showMsg("✅ Producto eliminado.\n\n⏳ Puede tardar hasta 10 minutos para que los demás usuarios lo vean.", "ok");
-            } else { await showMsg("❌ " + await res.text(), "error"); }
-        } catch (e) { await showMsg("❌ " + e.message, "error"); }
+                renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
+                await showMsg('✅ Producto eliminado.' + MSG10, 'ok');
+            } else { await showMsg('❌ ' + await r.text(), 'error'); }
+        } catch(e) { await showMsg('❌ ' + e.message, 'error'); }
     };
 
     window.marcarAgotado = async function(id) {
-        if (!usuarioActual) return await showMsg("⚠️ Inicia sesión con VPN.", "warning");
-        if (!await showConfirm("¿Marcar este producto como AGOTADO?")) return;
+        if (!usuarioUID) { await showMsg('Inicia sesión con VPN.', 'warning'); return; }
+        if (!await showConfirm('¿Marcar este producto como AGOTADO?')) return;
         try {
             const token = await getToken();
-            const res = await fetch(`${FS_BASE}/tiendas/${id}?updateMask.fieldPaths=estado&key=${API_KEY}`, {
-                method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ fields: { estado: { stringValue: "agotado" } } })
-            });
-            if (res.ok) {
-                // Actualizar en memoria al instante
-                const t = tiendasData.find(t => t.id === id);
-                if (t) t.estado = "agotado";
-                renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioActual));
-                await showMsg("✅ Marcado como agotado.\n\n⏳ Puede tardar hasta 10 minutos para que los demás usuarios lo vean.", "ok");
-            } else { await showMsg("❌ " + await res.text(), "error"); }
-        } catch (e) { await showMsg("❌ " + e.message, "error"); }
+            const r = await fetch(`${FS}/tiendas/${id}?updateMask.fieldPaths=estado&key=${API_KEY}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ fields: { estado: { stringValue: 'agotado' } } }) });
+            if (r.ok) {
+                const t = tiendasData.find(t => t.id === id); if (t) t.estado = 'agotado';
+                renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
+                await showMsg('✅ Marcado como agotado.' + MSG10, 'ok');
+            } else { await showMsg('❌ ' + await r.text(), 'error'); }
+        } catch(e) { await showMsg('❌ ' + e.message, 'error'); }
     };
 
     window.habilitarProducto = async function(id) {
-        if (!usuarioActual) return await showMsg("⚠️ Inicia sesión con VPN.", "warning");
-        if (!await showConfirm("¿Habilitar este producto nuevamente?")) return;
+        if (!usuarioUID) { await showMsg('Inicia sesión con VPN.', 'warning'); return; }
+        if (!await showConfirm('¿Habilitar este producto nuevamente?')) return;
         try {
             const token = await getToken();
-            const res = await fetch(`${FS_BASE}/tiendas/${id}?updateMask.fieldPaths=estado&key=${API_KEY}`, {
-                method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ fields: { estado: { stringValue: "disponible" } } })
-            });
-            if (res.ok) {
-                // Actualizar en memoria al instante
-                const t = tiendasData.find(t => t.id === id);
-                if (t) t.estado = "disponible";
-                renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioActual));
-                await showMsg("✅ Producto habilitado.\n\n⏳ Puede tardar hasta 10 minutos para que los demás usuarios lo vean.", "ok");
-            } else { await showMsg("❌ " + await res.text(), "error"); }
-        } catch (e) { await showMsg("❌ " + e.message, "error"); }
+            const r = await fetch(`${FS}/tiendas/${id}?updateMask.fieldPaths=estado&key=${API_KEY}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ fields: { estado: { stringValue: 'disponible' } } }) });
+            if (r.ok) {
+                const t = tiendasData.find(t => t.id === id); if (t) t.estado = 'disponible';
+                renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
+                await showMsg('✅ Producto habilitado.' + MSG10, 'ok');
+            } else { await showMsg('❌ ' + await r.text(), 'error'); }
+        } catch(e) { await showMsg('❌ ' + e.message, 'error'); }
     };
 
     window.gestionarFoto = async function(id, accion) {
-        if (!usuarioActual) return await showMsg("⚠️ Inicia sesión con VPN.", "warning");
-        const input = document.createElement('input');
-        input.type = 'file'; input.accept = 'image/*';
-        input.onchange = async (e) => {
+        if (!usuarioUID) { await showMsg('Inicia sesión con VPN.', 'warning'); return; }
+        const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
+        inp.onchange = async e => {
             const file = e.target.files[0]; if (!file) return;
-            mostrarToast("📤 Subiendo imagen...");
+            toast('📤 Subiendo imagen...');
             try {
-                const formData = new FormData();
-                formData.append('file', file); formData.append('upload_preset', 'bazar_present');
-                const resImg = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: formData });
-                const dataImg = await resImg.json();
-                if (!dataImg.secure_url) throw new Error("Error subiendo imagen a Cloudinary");
+                const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', 'bazar_present');
+                const ri = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: fd });
+                const di = await ri.json();
+                if (!di.secure_url) throw new Error('Error subiendo imagen');
                 const anuncio = tiendasData.find(t => t.id === id);
                 let fotos = [...(anuncio.fotos || [])];
-                if (accion === 'cambiar') fotos = [dataImg.secure_url];
-                else fotos.push(dataImg.secure_url);
+                if (accion === 'cambiar') fotos = [di.secure_url]; else fotos.push(di.secure_url);
                 const token = await getToken();
-                const res = await fetch(`${FS_BASE}/tiendas/${id}?updateMask.fieldPaths=fotos&key=${API_KEY}`, {
-                    method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ fields: { fotos: { arrayValue: { values: fotos.map(u => ({ stringValue: u })) } } } })
-                });
-                if (res.ok) {
-                    // Actualizar en memoria al instante
-                    const anuncioIdx = tiendasData.findIndex(t => t.id === id);
-                    if (anuncioIdx !== -1) tiendasData[anuncioIdx].fotos = fotos;
-                    renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioActual));
-                    await showMsg("✅ Foto actualizada.\n\n⏳ Puede tardar hasta 10 minutos para que los demás usuarios lo vean.", "ok");
-                }
-                else { await showMsg("❌ " + await res.text(), "error"); }
-            } catch (err) { await showMsg("❌ " + err.message, "error"); }
+                const r = await fetch(`${FS}/tiendas/${id}?updateMask.fieldPaths=fotos&key=${API_KEY}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ fields: { fotos: { arrayValue: { values: fotos.map(u => ({ stringValue: u })) } } } }) });
+                if (r.ok) {
+                    anuncio.fotos = fotos;
+                    renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
+                    await showMsg('✅ Foto actualizada.' + MSG10, 'ok');
+                } else { await showMsg('❌ ' + await r.text(), 'error'); }
+            } catch(err) { await showMsg('❌ ' + err.message, 'error'); }
         };
-        input.click();
+        inp.click();
     };
 
-    // =====================
-    // PREVISUALIZACIÓN
-    // =====================
-    window.previsualizarImagenes = function(event) {
-        const container = document.getElementById('imgPreviewContainer');
-        container.innerHTML = "";
-        document.getElementById('previewText').style.display = "none";
-        Array.from(event.target.files).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = e => {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.style.cssText = "width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #0056b3;";
-                container.appendChild(img);
-            };
-            reader.readAsDataURL(file);
+    window.previsualizarFotos = function(e) {
+        const c = document.getElementById('preview-container');
+        c.innerHTML = ''; document.getElementById('preview-text').style.display = 'none';
+        Array.from(e.target.files).forEach(f => {
+            const r = new FileReader();
+            r.onload = ev => { const img = document.createElement('img'); img.src = ev.target.result; img.style.cssText = 'width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #0056b3;'; c.appendChild(img); };
+            r.readAsDataURL(f);
         });
     };
 
-    // =====================
-    // PUBLICAR PRODUCTO
-    // =====================
     window.publicarProducto = async function() {
-        if (!usuarioActual) return await showMsg("⚠️ Inicia sesión con VPN.", "warning");
-        const fotosInput = document.getElementById("fotosTienda");
-        if (fotosInput.files.length === 0) return await showMsg("⚠️ Selecciona al menos una foto.", "warning");
+        if (!usuarioUID) { await showMsg('Inicia sesión con VPN.', 'warning'); return; }
+        const inp = document.getElementById('input-fotos');
+        if (!inp.files.length) { await showMsg('Selecciona al menos una foto.', 'warning'); return; }
         const btn = document.querySelector('#form-nuevo-producto .btn-guardar');
-        btn.innerText = "Subiendo... ⏳"; btn.disabled = true;
+        btn.innerText = 'Subiendo... ⏳'; btn.disabled = true;
         try {
-            const urlsFotos = [];
-            for (let i = 0; i < fotosInput.files.length; i++) {
-                const formData = new FormData();
-                formData.append('file', fotosInput.files[i]);
-                formData.append('upload_preset', 'bazar_present');
-                const resImg = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: formData });
-                const dataImg = await resImg.json();
-                if (!dataImg.secure_url) throw new Error("Error subiendo imagen");
-                urlsFotos.push(dataImg.secure_url);
+            const urls = [];
+            for (let i = 0; i < inp.files.length; i++) {
+                const fd = new FormData(); fd.append('file', inp.files[i]); fd.append('upload_preset', 'bazar_present');
+                const ri = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: fd });
+                const di = await ri.json();
+                if (!di.secure_url) throw new Error('Error subiendo foto ' + (i+1));
+                urls.push(di.secure_url);
             }
-            const misProductos = tiendasData.filter(t => t.uidVendedor === usuarioActual);
-            const infoT = misProductos.length > 0 ? misProductos[0] : {};
+            const mis = tiendasData.filter(t => t.uidVendedor === usuarioUID);
+            const iT = mis[0] || {};
             const token = await getToken();
-            const payload = {
-                fields: {
-                    uidVendedor: { stringValue: usuarioActual },
-                    correo: { stringValue: firebaseAuth.currentUser.email },
-                    nombre: { stringValue: document.getElementById("nombreProducto").value },
-                    precio: { stringValue: document.getElementById("precioProducto").value },
-                    moneda: { stringValue: document.getElementById("monedaProducto").value },
-                    descripcion: { stringValue: document.getElementById("descripcionProducto").value.trim() },
-                    fotos: { arrayValue: { values: urlsFotos.map(u => ({ stringValue: u })) } },
-                    estado: { stringValue: "disponible" },
-                    nombreTienda: { stringValue: infoT.nombreTienda || document.getElementById('nombreTienda').value || "" },
-                    tel: { stringValue: infoT.tel || document.getElementById('telTienda').value || "" },
-                    direccion: { stringValue: infoT.direccion || document.getElementById('direccionTienda').value || "" },
-                    provincia: { stringValue: infoT.provincia || document.getElementById('provinciaTienda').value || "" },
-                    lat: { doubleValue: infoT.lat || latSeleccionada },
-                    lng: { doubleValue: infoT.lng || lngSeleccionada },
-                    fecha: { timestampValue: new Date().toISOString() }
-                }
-            };
-            const res = await fetch(`${FS_BASE}/tiendas?key=${API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify(payload)
-            });
-            if (!res.ok) throw new Error(await res.text());
-            // Agregar a memoria al instante
-            const docNuevo = await res.json();
-            const fNuevo = docNuevo.fields || {};
-            tiendasData.push({
-                id: docNuevo.name.split('/').pop(),
-                uidVendedor: usuarioActual,
-                nombre: document.getElementById("nombreProducto").value,
-                nombreTienda: (tiendasData.find(t=>t.uidVendedor===usuarioActual)||{}).nombreTienda || '',
-                precio: document.getElementById("precioProducto").value,
-                moneda: document.getElementById("monedaProducto").value,
-                descripcion: document.getElementById("descripcionProducto").value.trim(),
-                fotos: urlsFotos,
-                estado: "disponible",
-                tel: (tiendasData.find(t=>t.uidVendedor===usuarioActual)||{}).tel || '',
-                direccion: (tiendasData.find(t=>t.uidVendedor===usuarioActual)||{}).direccion || '',
-                provincia: (tiendasData.find(t=>t.uidVendedor===usuarioActual)||{}).provincia || '',
-                lat: latSeleccionada, lng: lngSeleccionada
-            });
-            renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioActual));
-            // Limpiar formulario
+            const pay = { fields: {
+                uidVendedor: { stringValue: usuarioUID },
+                correo: { stringValue: fbAuth.currentUser.email },
+                nombre: { stringValue: document.getElementById('p-nombre').value },
+                precio: { stringValue: document.getElementById('p-precio').value },
+                moneda: { stringValue: document.getElementById('p-moneda').value },
+                descripcion: { stringValue: document.getElementById('p-desc').value.trim() },
+                fotos: { arrayValue: { values: urls.map(u => ({ stringValue: u })) } },
+                estado: { stringValue: 'disponible' },
+                nombreTienda: { stringValue: iT.nombreTienda || document.getElementById('v-nombre').value || '' },
+                tel: { stringValue: iT.tel || document.getElementById('v-tel').value || '' },
+                direccion: { stringValue: iT.direccion || document.getElementById('v-dir').value || '' },
+                provincia: { stringValue: iT.provincia || document.getElementById('v-prov').value || '' },
+                lat: { doubleValue: iT.lat || latSel }, lng: { doubleValue: iT.lng || lngSel },
+                fecha: { timestampValue: new Date().toISOString() }
+            }};
+            const r = await fetch(`${FS}/tiendas?key=${API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(pay) });
+            if (!r.ok) throw new Error(await r.text());
+            const doc = await r.json();
+            const nuevo = { id: doc.name.split('/').pop(), uidVendedor: usuarioUID, nombre: document.getElementById('p-nombre').value, nombreTienda: iT.nombreTienda||'', precio: document.getElementById('p-precio').value, moneda: document.getElementById('p-moneda').value, descripcion: document.getElementById('p-desc').value.trim(), fotos: urls, estado: 'disponible', tel: iT.tel||'', direccion: iT.direccion||'', provincia: iT.provincia||'', lat: iT.lat||latSel, lng: iT.lng||lngSel };
+            tiendasData.push(nuevo);
+            renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
+            // Limpiar form
+            inp.value = ''; document.getElementById('preview-container').innerHTML = ''; document.getElementById('preview-text').style.display = 'block';
+            document.getElementById('p-nombre').value = ''; document.getElementById('p-precio').value = ''; document.getElementById('p-desc').value = '';
             document.getElementById('form-nuevo-producto').style.display = 'none';
-            document.getElementById('imgPreviewContainer').innerHTML = '';
-            document.getElementById('previewText').style.display = 'block';
-            document.getElementById('nombreProducto').value = '';
-            document.getElementById('precioProducto').value = '';
-            document.getElementById('descripcionProducto').value = '';
-            await showMsg("✅ ¡Producto publicado!\n\n⏳ Puede tardar hasta 10 minutos para que los demás usuarios lo vean.", "ok");
-            btn.innerText = "📤 Publicar Producto"; btn.disabled = false;
-        } catch (error) {
-            await showMsg("❌ " + error.message, "error");
-            btn.innerText = "📤 Publicar Producto"; btn.disabled = false;
-        }
+            await showMsg('✅ ¡Producto publicado!' + MSG10, 'ok');
+            btn.innerText = '📤 Publicar Producto'; btn.disabled = false;
+        } catch(e) { await showMsg('❌ ' + e.message, 'error'); btn.innerText = '📤 Publicar Producto'; btn.disabled = false; }
     };
 
-    // =====================
-    // FILTRO Y MAPA
-    // =====================
     window.filtrarPorProvincia = function() {
-        const filtro = document.getElementById("filtroProvincia").value;
-        let filtradas = filtro === "todas" ? tiendasData : tiendasData.filter(t => t.provincia === filtro);
-        if (tiendaActivaUid) filtradas = filtradas.filter(t => t.uidVendedor === tiendaActivaUid);
-        renderizarTiendas(filtradas);
+        const f = document.getElementById('filtroProvincia').value;
+        let r = f === 'todas' ? tiendasData : tiendasData.filter(t => t.provincia === f);
+        if (tiendaUID) r = r.filter(t => t.uidVendedor === tiendaUID);
+        renderizar(r);
     };
 
     window.verUbicacion = function(lat, lng, nombre) {
-        document.getElementById("mapa-container").style.display = "block";
-        if (!map) {
-            map = L.map('mapa').setView([lat, lng], 14);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        } else { map.setView([lat, lng], 14); }
+        document.getElementById('mapa-container').style.display = 'block';
+        if (!map) { map = L.map('mapa').setView([lat,lng],14); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); }
+        else map.setView([lat,lng],14);
         if (marcadorActual) map.removeLayer(marcadorActual);
-        marcadorActual = L.marker([lat, lng]).addTo(map).bindPopup(`<b>${nombre}</b>`).openPopup();
-        document.getElementById("mapa-container").scrollIntoView({ behavior: 'smooth' });
+        marcadorActual = L.marker([lat,lng]).addTo(map).bindPopup(`<b>${nombre}</b>`).openPopup();
+        document.getElementById('mapa-container').scrollIntoView({ behavior: 'smooth' });
     };
 
-    // =====================
+    // ============================================================
     // INICIAR
-    // =====================
-    detectarLinkDirecto();
-    cargarTiendas().then(() => {
-        // Después de cargar datos, intentar restaurar sesión
-        restaurarSesion();
-    });
+    // ============================================================
+    detectarDirecto();
+    cargarDatos().then(() => restaurarSesion());
 </script>
 </body>
 </html>
