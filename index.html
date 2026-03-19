@@ -503,31 +503,12 @@
     // Contar visita en Firestore (no necesita auth, usa regla pública de escritura especial)
     // Guardamos vistas en una colección separada "vistas/{uidVendedor}
     async function contarVista(uidVendedor, tipo) {
-        // tipo: 'link' (abrió link directo) o 'tienda' (visitó desde catálogo)
+        // Usar el worker (funciona sin VPN en Cuba)
         try {
-            const docId = uidVendedor;
-            const url = `${FS}/vistas/${docId}?key=${API_KEY}`;
-            // Leer primero para obtener valores actuales
-            const r = await fetch(url);
-            let visitasLink = 0, visitasTienda = 0;
-            if (r.ok) {
-                const data = await r.json();
-                const f = data.fields || {};
-                visitasLink = f.visitasLink?.integerValue ? parseInt(f.visitasLink.integerValue) : 0;
-                visitasTienda = f.visitasTienda?.integerValue ? parseInt(f.visitasTienda.integerValue) : 0;
-            }
-            if (tipo === 'link') visitasLink++;
-            else visitasTienda++;
-            // Escribir con API key (las reglas permiten escritura pública en /vistas)
-            await fetch(`${FS}/vistas/${docId}?key=${API_KEY}`, {
-                method: 'PATCH',
+            await fetch(`${WORKER}/registrar-vista`, {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fields: {
-                    uidVendedor: { stringValue: uidVendedor },
-                    visitasLink: { integerValue: visitasLink },
-                    visitasTienda: { integerValue: visitasTienda },
-                    total: { integerValue: visitasLink + visitasTienda }
-                }})
+                body: JSON.stringify({ uid: uidVendedor, tipo: tipo })
             });
         } catch(e) { /* silencioso */ }
     }
@@ -773,8 +754,9 @@
     };
 
     async function cargarVistas(uid) {
+        // Usar el worker para leer vistas (funciona sin VPN)
         try {
-            const r = await fetch(`${FS}/vistas/${uid}?key=${API_KEY}`);
+            const r = await fetch(`${WORKER}/get-vistas/${uid}`);
             const panel = document.getElementById('panel-vistas');
             if (r.ok) {
                 const data = await r.json();
