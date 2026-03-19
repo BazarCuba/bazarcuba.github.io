@@ -34,6 +34,7 @@
         .btn-llamar { background-color: #e8f5e9; }
         .btn-wa { background-color: #e8fdf0; }
         .btn-mapa-card { background-color: #fff3e0; }
+        .btn-tienda { background-color: #e8f4fd; }
         .btn-llamar svg, .btn-wa svg, .btn-mapa-card svg { width: 26px; height: 26px; }
 
         .carousel-container { position: relative; width: 100%; height: 130px; background-color: #e8edf2; overflow: hidden; }
@@ -665,13 +666,46 @@
     // ============================================================
     // CARGAR DATOS
     // ============================================================
+    // ============================================================
+    // CAMBIOS LOCALES PENDIENTES (localStorage)
+    // ============================================================
+    function guardarCambioLocal(id, cambios) {
+        const locales = JSON.parse(localStorage.getItem('bc_cambios') || '{}');
+        if (cambios === null) {
+            // null = eliminado
+            locales[id] = { _eliminado: true };
+        } else {
+            locales[id] = Object.assign(locales[id] || {}, cambios);
+        }
+        localStorage.setItem('bc_cambios', JSON.stringify(locales));
+    }
+
+    function aplicarCambiosLocales(lista) {
+        const locales = JSON.parse(localStorage.getItem('bc_cambios') || '{}');
+        if (!Object.keys(locales).length) return lista;
+        // Filtrar eliminados y aplicar cambios
+        return lista
+            .filter(t => !locales[t.id]?._eliminado)
+            .map(t => locales[t.id] ? Object.assign({}, t, locales[t.id]) : t);
+    }
+
+    function agregarProductoLocal(producto) {
+        const locales = JSON.parse(localStorage.getItem('bc_nuevos') || '[]');
+        locales.push(producto);
+        localStorage.setItem('bc_nuevos', JSON.stringify(locales));
+    }
+
+    function obtenerNuevosLocales() {
+        return JSON.parse(localStorage.getItem('bc_nuevos') || '[]');
+    }
+
     async function cargarDatos() {
         try {
-            const r = await fetch('/datos.json?v=' + Date.now());
+            const r = await fetch(`${FS}/tiendas?key=${API_KEY}&pageSize=300`);
             if (!r.ok) throw new Error('HTTP ' + r.status);
             const data = await r.json();
             if (data.documents) {
-                tiendasData = data.documents.map(doc => {
+                let lista = data.documents.map(doc => {
                     const f = doc.fields || {};
                     return {
                         id: doc.name.split('/').pop(),
@@ -690,6 +724,20 @@
                         lng: f.lng?.doubleValue || -82.36
                     };
                 });
+
+                // Aplicar cambios locales pendientes
+                lista = aplicarCambiosLocales(lista);
+
+                // Agregar productos nuevos locales que aún no están en datos.json
+                const nuevos = obtenerNuevosLocales();
+                const idsExistentes = new Set(lista.map(t => t.id));
+                nuevos.forEach(n => { if (!idsExistentes.has(n.id)) lista.push(n); });
+
+                // Limpiar locales cuyos IDs ya están en datos.json con los cambios aplicados
+                // (significa que el workflow ya los actualizó)
+                limpiarLocalesObsoletos(lista, data.documents);
+
+                tiendasData = lista;
                 if (modoDirecto) mostrarDirecto();
                 else renderizar(tiendasData);
             } else {
@@ -700,10 +748,46 @@
         }
     }
 
+    function limpiarLocalesObsoletos(listaFinal, docsOriginales) {
+        // Si un cambio local ya está reflejado en datos.json, eliminarlo
+        const locales = JSON.parse(localStorage.getItem('bc_cambios') || '{}');
+        const nuevos = JSON.parse(localStorage.getItem('bc_nuevos') || '[]');
+        const idsEnServer = new Set(docsOriginales.map(d => d.name.split('/').pop()));
+
+        // Limpiar cambios de IDs que ya existen en el servidor
+        // (significa el workflow ya sincronizó)
+        let hayLocales = false;
+        Object.keys(locales).forEach(id => {
+            if (idsEnServer.has(id)) {
+                const docServer = docsOriginales.find(d => d.name.split('/').pop() === id);
+                if (docServer) {
+                    const fServer = docServer.fields || {};
+                    const estadoServer = fServer.estado?.stringValue || 'disponible';
+                    const localCambio = locales[id];
+                    // Si el estado en servidor ya coincide con el local, limpiar
+                    if (localCambio.estado && localCambio.estado === estadoServer) {
+                        delete locales[id];
+                    } else if (localCambio._eliminado && !idsEnServer.has(id)) {
+                        delete locales[id];
+                    } else {
+                        hayLocales = true;
+                    }
+                }
+            }
+        });
+
+        // Limpiar nuevos que ya están en el servidor
+        const nuevosActualizados = nuevos.filter(n => !idsEnServer.has(n.id));
+
+        localStorage.setItem('bc_cambios', JSON.stringify(locales));
+        localStorage.setItem('bc_nuevos', JSON.stringify(nuevosActualizados));
+    }
+
     // SVGs
     const svgTel = `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#4CAF50"/><path d="M6.5 7.5C6.5 6.67 7.17 6 8 6h1.5c.28 0 .53.15.66.38l1.5 2.5c.16.27.1.61-.13.82L10.7 10.5c.52 1.1 1.2 1.78 2.3 2.3l.8-.83c.21-.23.55-.29.82-.13l2.5 1.5c.23.13.38.38.38.66V16c0 .83-.67 1.5-1.5 1.5C9.49 17.5 6.5 14.51 6.5 7.5z" fill="white"/></svg>`;
     const svgWA = `<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#25D366"/><path d="M12 4C7.58 4 4 7.58 4 12c0 1.42.37 2.75 1.02 3.91L4 20l4.18-1.01C9.3 19.63 10.62 20 12 20c4.42 0 8-3.58 8-8s-3.58-8-8-8zm3.93 11.07c-.16.45-.94.88-1.29.93-.33.05-.74.07-1.19-.07-.27-.09-.63-.2-1.08-.4-1.89-.82-3.13-2.73-3.22-2.86-.09-.13-.76-1.01-.76-1.93s.48-1.37.65-1.56c.17-.19.37-.23.49-.23.12 0 .25 0 .36.01.11 0 .27-.04.42.32.16.37.54 1.31.59 1.4.05.09.08.2.02.32-.06.12-.09.19-.18.3-.09.1-.19.23-.27.31-.09.09-.18.18-.08.36.1.18.46.75.98 1.22.67.6 1.24.79 1.42.88.18.09.28.07.39-.04.11-.12.46-.54.58-.72.12-.18.24-.15.41-.09.17.06 1.1.52 1.29.61.19.09.31.13.36.2.05.11.05.61-.11 1.06z" fill="white"/></svg>`;
     const svgGPS = `<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="white"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335"/><path d="M12 2C8.13 2 5 5.13 5 9c0 1.8.6 3.46 1.6 4.8L12 2z" fill="#FBBC05"/><path d="M12 2v7l5.4 7.8C18.4 15.46 19 13.8 19 12c0-3.87-3.13-7-7-7z" fill="#4285F4"/><circle cx="12" cy="9" r="2.5" fill="white"/></svg>`;
+    const svgTienda = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#e8f4fd"/><path d="M4 7h16l-1.5 9H5.5L4 7z" fill="#0056b3" opacity="0.15"/><path d="M4 7h16l-1.5 9H5.5L4 7z" stroke="#0056b3" stroke-width="1.5" fill="none"/><path d="M9 7V5.5A1.5 1.5 0 0110.5 4h3A1.5 1.5 0 0115 5.5V7" stroke="#0056b3" stroke-width="1.5" fill="none"/><rect x="10" y="11" width="4" height="3" rx="0.5" fill="#0056b3"/></svg>`;
     const svgDoc = `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#e8f4fd"/><path d="M7 6h10v2H7zM7 10h10v2H7zM7 14h6v2H7z" fill="#0056b3"/><path d="M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="#0056b3" stroke-width="1.5" fill="none"/></svg>`;
 
     // ============================================================
@@ -739,6 +823,7 @@
                             <a href="tel:${t.tel}" class="btn-llamar">${svgTel}</a>
                             <a href="https://wa.me/${tel}" target="_blank" class="btn-wa">${svgWA}</a>
                             <button class="btn-mapa-card" onclick="verUbicacion(${t.lat},${t.lng},'${ns}')">${svgGPS}</button>
+                            <button class="btn-tienda" onclick="visitarTienda('${t.uidVendedor}')" title="Ver tienda">${svgTienda}</button>
                         </div>
                     </div>`);
             } catch(e) { console.error('Error card:', t.id, e); }
@@ -772,8 +857,13 @@
                 pay.fields.lat = { doubleValue: latSel }; pay.fields.lng = { doubleValue: lngSel };
                 return fetch(`${FS}/tiendas/${p.id}?${masks}&key=${API_KEY}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(pay) });
             }));
-            // Actualizar en memoria
-            tiendasData.forEach(t => { if (t.uidVendedor === usuarioUID) { Object.assign(t, campos); t.lat = latSel; t.lng = lngSel; } });
+            // Actualizar en memoria y en local
+            tiendasData.forEach(t => {
+                if (t.uidVendedor === usuarioUID) {
+                    Object.assign(t, campos); t.lat = latSel; t.lng = lngSel;
+                    guardarCambioLocal(t.id, Object.assign({}, campos, { lat: latSel, lng: lngSel }));
+                }
+            });
             renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
             await showMsg('✅ Información guardada.' + MSG10, 'ok');
             btn.innerText = '💾 Guardar Info de Tienda'; btn.disabled = false;
@@ -788,6 +878,7 @@
             const r = await fetch(`${FS}/tiendas/${id}?key=${API_KEY}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
             if (r.ok) {
                 tiendasData = tiendasData.filter(t => t.id !== id);
+                guardarCambioLocal(id, null); // null = eliminado
                 renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
                 await showMsg('✅ Producto eliminado.' + MSG10, 'ok');
             } else { await showMsg('❌ ' + await r.text(), 'error'); }
@@ -802,6 +893,7 @@
             const r = await fetch(`${FS}/tiendas/${id}?updateMask.fieldPaths=estado&key=${API_KEY}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ fields: { estado: { stringValue: 'agotado' } } }) });
             if (r.ok) {
                 const t = tiendasData.find(t => t.id === id); if (t) t.estado = 'agotado';
+                guardarCambioLocal(id, { estado: 'agotado' });
                 renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
                 await showMsg('✅ Marcado como agotado.' + MSG10, 'ok');
             } else { await showMsg('❌ ' + await r.text(), 'error'); }
@@ -816,6 +908,7 @@
             const r = await fetch(`${FS}/tiendas/${id}?updateMask.fieldPaths=estado&key=${API_KEY}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ fields: { estado: { stringValue: 'disponible' } } }) });
             if (r.ok) {
                 const t = tiendasData.find(t => t.id === id); if (t) t.estado = 'disponible';
+                guardarCambioLocal(id, { estado: 'disponible' });
                 renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
                 await showMsg('✅ Producto habilitado.' + MSG10, 'ok');
             } else { await showMsg('❌ ' + await r.text(), 'error'); }
@@ -840,6 +933,7 @@
                 const r = await fetch(`${FS}/tiendas/${id}?updateMask.fieldPaths=fotos&key=${API_KEY}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ fields: { fotos: { arrayValue: { values: fotos.map(u => ({ stringValue: u })) } } } }) });
                 if (r.ok) {
                     anuncio.fotos = fotos;
+                    guardarCambioLocal(id, { fotos: fotos });
                     renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
                     await showMsg('✅ Foto actualizada.' + MSG10, 'ok');
                 } else { await showMsg('❌ ' + await r.text(), 'error'); }
@@ -897,6 +991,7 @@
             const doc = await r.json();
             const nuevo = { id: doc.name.split('/').pop(), uidVendedor: usuarioUID, nombre: document.getElementById('p-nombre').value, nombreTienda: iT.nombreTienda||'', precio: document.getElementById('p-precio').value, moneda: document.getElementById('p-moneda').value, descripcion: document.getElementById('p-desc').value.trim(), fotos: urls, estado: 'disponible', tel: iT.tel||'', direccion: iT.direccion||'', provincia: iT.provincia||'', lat: iT.lat||latSel, lng: iT.lng||lngSel };
             tiendasData.push(nuevo);
+            agregarProductoLocal(nuevo);
             renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
             // Limpiar form
             inp.value = ''; document.getElementById('preview-container').innerHTML = ''; document.getElementById('preview-text').style.display = 'block';
