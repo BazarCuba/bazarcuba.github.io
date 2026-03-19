@@ -125,6 +125,68 @@
 
         #form-nuevo-producto { display: none; margin-top: 12px; border-top: 2px dashed #ddd; padding-top: 14px; }
         #menu-dots { position: absolute; top: 18px; right: 18px; font-size: 28px; cursor: pointer; color: white; z-index: 1001; }
+
+        /* CARRITO */
+        #carrito-btn {
+            position: fixed; bottom: 24px; right: 16px;
+            background: linear-gradient(135deg, #0056b3, #003d82);
+            color: white; border: none; border-radius: 50%;
+            width: 58px; height: 58px; font-size: 24px;
+            cursor: pointer; z-index: 2000;
+            box-shadow: 0 4px 16px rgba(0,86,179,0.5);
+            display: none; align-items: center; justify-content: center;
+        }
+        #carrito-badge {
+            position: absolute; top: -4px; right: -4px;
+            background: #d32f2f; color: white;
+            border-radius: 50%; width: 20px; height: 20px;
+            font-size: 11px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #carrito-panel {
+            display: none; position: fixed; bottom: 90px; right: 16px;
+            width: 300px; max-height: 70vh;
+            background: white; border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            z-index: 2001; overflow: hidden; flex-direction: column;
+        }
+        #carrito-panel.show { display: flex; }
+        #carrito-header {
+            background: linear-gradient(135deg, #0056b3, #003d82);
+            color: white; padding: 14px 16px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        #carrito-header h3 { margin: 0; font-size: 16px; }
+        #carrito-close { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+        #carrito-items { overflow-y: auto; flex: 1; padding: 10px; }
+        .carrito-item {
+            background: #f8fafc; border-radius: 10px;
+            padding: 10px; margin-bottom: 8px;
+            border: 1px solid #e8edf2;
+        }
+        .carrito-item-nombre { font-weight: bold; font-size: 13px; color: #222; }
+        .carrito-item-precio { color: #d32f2f; font-weight: bold; font-size: 13px; margin: 2px 0; }
+        .carrito-item-tienda { font-size: 11px; color: #0056b3; font-weight: bold; }
+        .carrito-item-dir { font-size: 11px; color: #888; margin-bottom: 6px; }
+        .carrito-item-btns { display: flex; gap: 6px; }
+        .carrito-item-btns button {
+            flex: 1; padding: 7px; border: none; border-radius: 8px;
+            font-size: 12px; font-weight: bold; cursor: pointer;
+        }
+        .btn-carrito-wa { background: #25D366; color: white; }
+        .btn-carrito-del { background: #fde8e8; color: red; }
+        #carrito-vacio { text-align: center; padding: 24px; color: #aaa; font-size: 14px; }
+
+        /* BOTÓN AGREGAR AL CARRITO en la foto */
+        .btn-add-carrito {
+            position: absolute; top: 8px; left: 8px;
+            background: rgba(255,255,255,0.92);
+            border: none; border-radius: 50%;
+            width: 30px; height: 30px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 16px; z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
@@ -167,6 +229,22 @@
         <h3 id="modal-desc-titulo"></h3>
         <p id="modal-desc-texto"></p>
         <button id="modal-desc-close" onclick="cerrarDesc()">Cerrar</button>
+    </div>
+</div>
+
+<!-- CARRITO FLOTANTE -->
+<button id="carrito-btn" onclick="toggleCarrito()" style="display:none;">
+    <span>🛒</span>
+    <span id="carrito-badge" style="display:none;">0</span>
+</button>
+
+<div id="carrito-panel">
+    <div id="carrito-header">
+        <h3>🛒 Mi Carrito</h3>
+        <button id="carrito-close" onclick="toggleCarrito()">✕</button>
+    </div>
+    <div id="carrito-items">
+        <div id="carrito-vacio">Tu carrito está vacío</div>
     </div>
 </div>
 
@@ -291,7 +369,7 @@
         <div class="seccion-card" id="seccion-productos">
             <h3>📦 Mis Productos</h3>
             <button class="btn-copiar-link" onclick="copiarLink()">🔗 Copiar link de mi tienda</button>
-            <div id="panel-vistas" style="display:none;background:#f0f4f8;border-radius:10px;padding:12px;margin-bottom:12px;text-align:center;">
+            <div id="panel-vistas" style="background:#f0f4f8;border-radius:10px;padding:12px;margin-bottom:12px;text-align:center;">
                 <p style="margin:0 0 8px;font-weight:bold;color:#0056b3;font-size:14px;">📊 Estadísticas de tu tienda</p>
                 <div style="display:flex;gap:10px;justify-content:center;">
                     <div style="background:white;border-radius:10px;padding:10px 16px;flex:1;">
@@ -351,7 +429,7 @@
     const API_KEY = "AIzaSyD2xDDEwGEJ_86vHxBHPzhQLcWinXUREIc";
     const WORKER = "https://api-bazar.norges763.workers.dev";
     const FS = "https://firestore.googleapis.com/v1/projects/bazarcuba/databases/(default)/documents";
-    const MSG10 = "\n\n⏳ Puede tardar hasta 10 minutos para que los demás usuarios lo vean.";
+    
 
     // ============================================================
     // MODALES BONITOS
@@ -772,7 +850,6 @@
                 document.getElementById('vistas-tienda').textContent = '0';
                 document.getElementById('vistas-total').textContent = '0';
             }
-            panel.style.display = 'block';
         } catch(e) { /* silencioso */ }
     }
 
@@ -833,7 +910,7 @@
             let data;
             try {
                 const r = await Promise.race([
-                    fetch(`${WORKER}/get-anuncios`),
+                    fetch(`${WORKER}/get-anuncios?t=${Date.now()}`, { cache: 'no-store' }),
                     new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
                 ]);
                 if (!r.ok) throw new Error('Worker HTTP ' + r.status);
@@ -956,7 +1033,10 @@
                 const ctrl = t.fotos.length > 1 ? `<button class="prev" onclick="event.stopPropagation();cambiarFoto('${t.id}',-1)">❮</button><button class="next" onclick="event.stopPropagation();cambiarFoto('${t.id}',1)">❯</button>` : '';
                 c.insertAdjacentHTML('beforeend', `
                     <div class="card" id="card-${t.id}" style="opacity:${ag?'0.65':'1'}">
-                        <div class="carousel-container">${imgs}${ctrl}${ag?'<div class="badge-agotado">AGOTADO</div>':''}</div>
+                        <div class="carousel-container">
+                            <button class="btn-add-carrito" onclick="event.stopPropagation();agregarAlCarrito('${t.id}')" title="Agregar al carrito">🛒</button>
+                            ${imgs}${ctrl}${ag?'<div class="badge-agotado">AGOTADO</div>':''}
+                        </div>
                         ${t.nombreTienda ? `<p style="margin:6px 8px 0;font-size:10px;color:#0056b3;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🏪 ${t.nombreTienda}</p>` : ''}
                         <h3>${t.nombre||'Sin nombre'}</h3>
                         <div class="precio-row">
@@ -1011,7 +1091,7 @@
                 }
             });
             renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-            await showMsg('✅ Información guardada.' + MSG10, 'ok');
+            await showMsg('✅ Información guardada.', 'ok');
             btn.innerText = '💾 Guardar Info de Tienda'; btn.disabled = false;
         } catch(e) { await showMsg('❌ ' + e.message, 'error'); btn.innerText = '💾 Guardar Info de Tienda'; btn.disabled = false; }
     };
@@ -1026,7 +1106,7 @@
                 tiendasData = tiendasData.filter(t => t.id !== id);
                 guardarCambioLocal(id, null); // null = eliminado
                 renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-                await showMsg('✅ Producto eliminado.' + MSG10, 'ok');
+                await showMsg('✅ Producto eliminado.', 'ok');
             } else { await showMsg('❌ ' + await r.text(), 'error'); }
         } catch(e) { await showMsg('❌ ' + e.message, 'error'); }
     };
@@ -1041,7 +1121,7 @@
                 const t = tiendasData.find(t => t.id === id); if (t) t.estado = 'agotado';
                 guardarCambioLocal(id, { estado: 'agotado' });
                 renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-                await showMsg('✅ Marcado como agotado.' + MSG10, 'ok');
+                await showMsg('✅ Marcado como agotado.', 'ok');
             } else { await showMsg('❌ ' + await r.text(), 'error'); }
         } catch(e) { await showMsg('❌ ' + e.message, 'error'); }
     };
@@ -1056,7 +1136,7 @@
                 const t = tiendasData.find(t => t.id === id); if (t) t.estado = 'disponible';
                 guardarCambioLocal(id, { estado: 'disponible' });
                 renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-                await showMsg('✅ Producto habilitado.' + MSG10, 'ok');
+                await showMsg('✅ Producto habilitado.', 'ok');
             } else { await showMsg('❌ ' + await r.text(), 'error'); }
         } catch(e) { await showMsg('❌ ' + e.message, 'error'); }
     };
@@ -1081,7 +1161,7 @@
                     anuncio.fotos = fotos;
                     guardarCambioLocal(id, { fotos: fotos });
                     renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-                    await showMsg('✅ Foto actualizada.' + MSG10, 'ok');
+                    await showMsg('✅ Foto actualizada.', 'ok');
                 } else { await showMsg('❌ ' + await r.text(), 'error'); }
             } catch(err) { await showMsg('❌ ' + err.message, 'error'); }
         };
@@ -1161,10 +1241,93 @@
             inp.value = ''; document.getElementById('preview-container').innerHTML = ''; document.getElementById('preview-text').style.display = 'block';
             document.getElementById('p-nombre').value = ''; document.getElementById('p-precio').value = ''; document.getElementById('p-desc').value = '';
             document.getElementById('form-nuevo-producto').style.display = 'none';
-            await showMsg('✅ ¡Producto publicado!' + MSG10, 'ok');
+            await showMsg('✅ ¡Producto publicado!', 'ok');
             btn.innerText = '📤 Publicar Producto'; btn.disabled = false;
         } catch(e) { await showMsg('❌ ' + e.message, 'error'); btn.innerText = '📤 Publicar Producto'; btn.disabled = false; }
     };
+
+    // ============================================================
+    // CARRITO
+    // ============================================================
+    let carrito = JSON.parse(localStorage.getItem('bc_carrito') || '[]');
+
+    function guardarCarrito() {
+        localStorage.setItem('bc_carrito', JSON.stringify(carrito));
+    }
+
+    function actualizarBadge() {
+        const btn = document.getElementById('carrito-btn');
+        const badge = document.getElementById('carrito-badge');
+        if (carrito.length > 0) {
+            btn.style.display = 'flex';
+            badge.style.display = 'flex';
+            badge.textContent = carrito.length;
+        } else {
+            btn.style.display = 'none';
+            badge.style.display = 'none';
+        }
+    }
+
+    window.agregarAlCarrito = function(id) {
+        const t = tiendasData.find(t => t.id === id);
+        if (!t) return;
+        if (carrito.find(c => c.id === id)) {
+            toast('Ya está en el carrito');
+            return;
+        }
+        carrito.push({
+            id: t.id,
+            nombre: t.nombre || 'Sin nombre',
+            precio: t.precio || '',
+            moneda: t.moneda || '',
+            nombreTienda: t.nombreTienda || '',
+            direccion: t.direccion || '',
+            tel: t.tel || '',
+        });
+        guardarCarrito();
+        actualizarBadge();
+        renderizarCarrito();
+        toast('✅ Agregado al carrito');
+    };
+
+    window.eliminarDelCarrito = function(id) {
+        carrito = carrito.filter(c => c.id !== id);
+        guardarCarrito();
+        actualizarBadge();
+        renderizarCarrito();
+    };
+
+    function renderizarCarrito() {
+        const cont = document.getElementById('carrito-items');
+        if (!carrito.length) {
+            cont.innerHTML = '<div id="carrito-vacio">Tu carrito está vacío</div>';
+            return;
+        }
+        cont.innerHTML = carrito.map(item => {
+            const tel = item.tel.replace(/\D/g, '');
+            const msg = encodeURIComponent(`Hola, me interesa el producto: *${item.nombre}* por ${item.precio} ${item.moneda} de la tienda *${item.nombreTienda}*. ¿Está disponible?`);
+            return `<div class="carrito-item">
+                <div class="carrito-item-nombre">${item.nombre}</div>
+                <div class="carrito-item-precio">${item.precio} ${item.moneda}</div>
+                <div class="carrito-item-tienda">🏪 ${item.nombreTienda}</div>
+                ${item.direccion ? `<div class="carrito-item-dir">📍 ${item.direccion}</div>` : ''}
+                <div class="carrito-item-btns">
+                    <button class="btn-carrito-wa" onclick="window.open('https://wa.me/${tel}?text=${msg}','_blank')">💬 Me interesa</button>
+                    <button class="btn-carrito-del" onclick="eliminarDelCarrito('${item.id}')">🗑️</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    window.toggleCarrito = function() {
+        const panel = document.getElementById('carrito-panel');
+        panel.classList.toggle('show');
+        if (panel.classList.contains('show')) renderizarCarrito();
+    };
+
+    // Inicializar carrito al cargar
+    actualizarBadge();
+    renderizarCarrito();
 
     window.filtrarPorProvincia = function() {
         const f = document.getElementById('filtroProvincia').value;
@@ -1187,6 +1350,12 @@
     // ============================================================
     detectarDirecto();
     cargarDatos().then(() => restaurarSesion());
+
+    // Precargar vistas en background si hay sesión guardada
+    const _uid = localStorage.getItem('bc_uid');
+    if (_uid) {
+        cargarVistas(_uid);
+    }
 </script>
 </body>
 </html>
