@@ -247,6 +247,9 @@
 
 <div id="panelVendedor" style="display:none;">
     <div class="vendor-panel">
+        <div style="padding:10px 0 0;">
+            <button onclick="volverDesdePanelVendedor()" style="background:white;color:#0056b3;border:2px solid #0056b3;padding:9px 18px;border-radius:25px;font-weight:bold;font-size:14px;cursor:pointer;margin-bottom:14px;display:flex;align-items:center;gap:6px;">← Volver al catálogo</button>
+        </div>
         <div class="seccion-card">
             <h3>🏪 Información de tu Tienda</h3>
             <div class="form-group"><label>Nombre de la Tienda:</label><input type="text" id="v-nombre" placeholder="Ej. Tienda de Ropa de María"></div>
@@ -538,6 +541,12 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    window.volverDesdePanelVendedor = function() {
+        document.getElementById('panelVendedor').style.display = 'none';
+        document.getElementById('listaTiendas').style.display = 'grid';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     window.volverAlCatalogo = function() {
         tiendaUID = null;
         document.getElementById('banner-tienda').style.display = 'none';
@@ -575,7 +584,8 @@
             localStorage.setItem('bc_p', pass);
             actualizarUI(true);
             document.getElementById('auth-container').style.display = 'none';
-            toggleMenu();
+            document.getElementById('opciones-auth').style.display = 'none';
+            // No cerrar el menú - mostrar botón gestionar negocio
             await showMsg('✅ Sesión iniciada correctamente.', 'ok');
             renderizar(tiendasData);
         } catch(e) {
@@ -832,6 +842,7 @@
                 c.insertAdjacentHTML('beforeend', `
                     <div class="card" id="card-${t.id}" style="opacity:${ag?'0.65':'1'}">
                         <div class="carousel-container">${imgs}${ctrl}${ag?'<div class="badge-agotado">AGOTADO</div>':''}</div>
+                        ${t.nombreTienda ? `<p style="margin:6px 8px 0;font-size:10px;color:#0056b3;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🏪 ${t.nombreTienda}</p>` : ''}
                         <h3>${t.nombre||'Sin nombre'}</h3>
                         <div class="precio-row">
                             <span class="precio-tag">${t.precio}</span>
