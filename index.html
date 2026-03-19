@@ -184,10 +184,13 @@
     </div>
     <div id="auth-container" style="display:none;margin-top:20px;border:1.5px solid #ddd;padding:15px;border-radius:10px;">
         <h3 id="auth-title" style="margin-top:0;font-size:16px;color:#0056b3;"></h3>
-        <p style="font-size:12px;color:#e65100;margin:0 0 10px;">⚠️ Necesitas VPN activado para iniciar sesión</p>
+        <p style="font-size:12px;color:#e65100;margin:0 0 10px;">⚠️ Necesitas VPN activado para esta acción</p>
         <input type="email" id="auth-email" placeholder="Correo electrónico" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;margin-bottom:10px;font-size:14px;">
+        <div id="campo-telefono" style="display:none;margin-bottom:10px;">
+            <input type="tel" id="auth-tel" placeholder="Teléfono (+53 51234567)" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;">
+        </div>
         <input type="password" id="auth-pass" placeholder="Contraseña (mín 6 letras)" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;">
-        <button id="btn-auth-accion" onclick="hacerLogin()" style="width:100%;margin-top:12px;padding:11px;background:linear-gradient(135deg,#0056b3,#003d82);color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:15px;">Continuar</button>
+        <button id="btn-auth-accion" onclick="ejecutarAuth()" style="width:100%;margin-top:12px;padding:11px;background:linear-gradient(135deg,#0056b3,#003d82);color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:15px;">Continuar</button>
     </div>
 </div>
 
@@ -199,7 +202,7 @@
 <div id="header-tienda-directa">
     <h2 id="hd-nombre"></h2>
     <p id="hd-info"></p>
-    <button id="btn-ver-otras-tiendas" onclick="verCatalogoCompleto()">🏪 Ver otras tiendas</button>
+    <button id="btn-ver-otras-tiendas" onclick="verCatalogoCompleto()">🏪 Ver todas las tiendas</button>
 </div>
 
 <div class="filter-container" id="filtro-container">
@@ -288,13 +291,32 @@
         <div class="seccion-card" id="seccion-productos">
             <h3>📦 Mis Productos</h3>
             <button class="btn-copiar-link" onclick="copiarLink()">🔗 Copiar link de mi tienda</button>
+            <div id="panel-vistas" style="display:none;background:#f0f4f8;border-radius:10px;padding:12px;margin-bottom:12px;text-align:center;">
+                <p style="margin:0 0 8px;font-weight:bold;color:#0056b3;font-size:14px;">📊 Estadísticas de tu tienda</p>
+                <div style="display:flex;gap:10px;justify-content:center;">
+                    <div style="background:white;border-radius:10px;padding:10px 16px;flex:1;">
+                        <div id="vistas-link" style="font-size:24px;font-weight:bold;color:#0056b3;">-</div>
+                        <div style="font-size:11px;color:#888;">Visitas por link</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:10px 16px;flex:1;">
+                        <div id="vistas-tienda" style="font-size:24px;font-weight:bold;color:#0056b3;">-</div>
+                        <div style="font-size:11px;color:#888;">Visitas al catálogo</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:10px 16px;flex:1;">
+                        <div id="vistas-total" style="font-size:24px;font-weight:bold;color:#d32f2f;">-</div>
+                        <div style="font-size:11px;color:#888;">Total visitas</div>
+                    </div>
+                </div>
+            </div>
             <div id="lista-mis-productos"><p style="color:#888;text-align:center;font-size:13px;">Cargando...</p></div>
             <button class="btn-secundario" onclick="toggleFormProducto()">➕ Agregar nuevo producto</button>
             <div id="form-nuevo-producto">
-                <div style="border:2px dashed #ccc;padding:14px;text-align:center;margin-bottom:12px;border-radius:10px;cursor:pointer;background:#fafafa;" onclick="document.getElementById('input-fotos').click()">
-                    <p id="preview-text" style="margin:0;color:#888;font-size:13px;">📸 Toca para agregar fotos</p>
-                    <div id="preview-container" style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:8px;"></div>
+                <div style="border:2px dashed #ccc;padding:14px;text-align:center;margin-bottom:12px;border-radius:10px;background:#fafafa;">
+                    <p id="preview-text" style="margin:0 0 8px;color:#888;font-size:13px;">📸 Selecciona las fotos en el orden que quieras mostrarlas</p>
+                    <button type="button" onclick="document.getElementById('input-fotos').click()" style="background:#0056b3;color:white;border:none;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;margin-bottom:8px;">+ Agregar fotos</button>
+                    <div id="preview-container" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:6px;"></div>
                     <input type="file" id="input-fotos" accept="image/*" multiple style="display:none;" onchange="previsualizarFotos(event)">
+                    <p id="preview-count" style="margin:6px 0 0;color:#0056b3;font-size:12px;font-weight:bold;display:none;"></p>
                 </div>
                 <div class="form-group"><label>Nombre del Producto:</label><input type="text" id="p-nombre" placeholder="Ej. Vestido de verano"></div>
                 <div class="form-row">
@@ -455,6 +477,8 @@
 
     function mostrarDirecto() {
         if (!modoDirecto || !tiendaUID) return;
+        // Contar visita por link directo
+        contarVista(tiendaUID, 'link');
         const prods = tiendasData.filter(t => t.uidVendedor === tiendaUID);
         if (!prods.length) { document.getElementById('listaTiendas').innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#888;'>Esta tienda no tiene productos.</p>"; return; }
         const i = prods[0];
@@ -476,6 +500,38 @@
     // ============================================================
     // COPIAR LINK
     // ============================================================
+    // Contar visita en Firestore (no necesita auth, usa regla pública de escritura especial)
+    // Guardamos vistas en una colección separada "vistas/{uidVendedor}
+    async function contarVista(uidVendedor, tipo) {
+        // tipo: 'link' (abrió link directo) o 'tienda' (visitó desde catálogo)
+        try {
+            const docId = uidVendedor;
+            const url = `${FS}/vistas/${docId}?key=${API_KEY}`;
+            // Leer primero para obtener valores actuales
+            const r = await fetch(url);
+            let visitasLink = 0, visitasTienda = 0;
+            if (r.ok) {
+                const data = await r.json();
+                const f = data.fields || {};
+                visitasLink = f.visitasLink?.integerValue ? parseInt(f.visitasLink.integerValue) : 0;
+                visitasTienda = f.visitasTienda?.integerValue ? parseInt(f.visitasTienda.integerValue) : 0;
+            }
+            if (tipo === 'link') visitasLink++;
+            else visitasTienda++;
+            // Escribir con API key (las reglas permiten escritura pública en /vistas)
+            await fetch(`${FS}/vistas/${docId}?key=${API_KEY}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fields: {
+                    uidVendedor: { stringValue: uidVendedor },
+                    visitasLink: { integerValue: visitasLink },
+                    visitasTienda: { integerValue: visitasTienda },
+                    total: { integerValue: visitasLink + visitasTienda }
+                }})
+            });
+        } catch(e) { /* silencioso */ }
+    }
+
     window.copiarLink = function() {
         const uid = tiendaUID || usuarioUID;
         if (!uid) { showMsg('No se pudo obtener el link.', 'warning'); return; }
@@ -526,6 +582,8 @@
     }
 
     window.visitarTienda = function(uid) {
+        // Contar visita desde catálogo/mapa
+        contarVista(uid, 'tienda');
         tiendaUID = uid; vistaActual = 'tiendas';
         document.getElementById('btn-vista-toggle').textContent = '🗺️ Mapa';
         document.getElementById('btn-vista-toggle').classList.remove('activo');
@@ -561,11 +619,19 @@
         m.style.right = m.style.right === '0px' ? '-300px' : '0px';
     };
 
+    let modoAuth = 'login';
     window.mostrarFormAuth = function(tipo) {
+        modoAuth = tipo;
         document.getElementById('opciones-auth').style.display = 'none';
         document.getElementById('auth-container').style.display = 'block';
         document.getElementById('auth-title').innerText = tipo === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta';
         document.getElementById('btn-auth-accion').innerText = tipo === 'login' ? 'Entrar' : 'Registrarse';
+        document.getElementById('campo-telefono').style.display = tipo === 'registro' ? 'block' : 'none';
+    };
+
+    window.ejecutarAuth = function() {
+        if (modoAuth === 'registro') hacerRegistro();
+        else hacerLogin();
     };
 
     window.hacerLogin = async function() {
@@ -591,6 +657,50 @@
         } catch(e) {
             await showMsg('No se pudo iniciar sesión. Verifica tus datos y asegúrate de tener el VPN activado.', 'error');
             btn.innerText = 'Continuar'; btn.disabled = false;
+        }
+    };
+
+    window.hacerRegistro = async function() {
+        const email = document.getElementById('auth-email').value;
+        const tel = document.getElementById('auth-tel').value;
+        const pass = document.getElementById('auth-pass').value;
+        if (!email || !tel || !pass) { await showMsg('Completa todos los campos.', 'warning'); return; }
+        if (pass.length < 6) { await showMsg('La contraseña debe tener al menos 6 caracteres.', 'warning'); return; }
+        const btn = document.getElementById('btn-auth-accion');
+        btn.innerText = 'Creando cuenta...'; btn.disabled = true;
+        try {
+            const { createUserWithEmailAndPassword, updateProfile } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+            const auth = await iniciarFB();
+            const cred = await createUserWithEmailAndPassword(auth, email, pass);
+            // Guardar teléfono en Firestore como perfil de vendedor
+            const token = await auth.currentUser.getIdToken();
+            await fetch(`${FS}/vendedores?key=${API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ fields: {
+                    uid: { stringValue: cred.user.uid },
+                    email: { stringValue: email },
+                    tel: { stringValue: tel },
+                    fecha: { timestampValue: new Date().toISOString() }
+                }})
+            });
+            usuarioUID = cred.user.uid;
+            localStorage.setItem('bc_uid', usuarioUID);
+            localStorage.setItem('bc_t', Date.now().toString());
+            localStorage.setItem('bc_e', email);
+            localStorage.setItem('bc_p', pass);
+            actualizarUI(true);
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('opciones-auth').style.display = 'none';
+            await showMsg('✅ Cuenta creada exitosamente. ¡Bienvenido a BazarCuba!', 'ok');
+            renderizar(tiendasData);
+        } catch(e) {
+            let msg = 'No se pudo crear la cuenta. ';
+            if (e.code === 'auth/email-already-in-use') msg += 'Este correo ya está registrado.';
+            else if (e.code === 'auth/invalid-email') msg += 'El correo no es válido.';
+            else msg += 'Verifica tu VPN y vuelve a intentarlo.';
+            await showMsg(msg, 'error');
+            btn.innerText = 'Registrarse'; btn.disabled = false;
         }
     };
 
@@ -626,6 +736,7 @@
             if (i.lat && i.lng) { latSel = i.lat; lngSel = i.lng; document.getElementById('coords-display').innerText = `📍 Lat: ${i.lat.toFixed(5)}, Lng: ${i.lng.toFixed(5)}`; }
         }
         renderizarMisProductos(mis);
+        cargarVistas(usuarioUID);
         setTimeout(() => { iniciarMapaSelector(); document.getElementById('seccion-productos').scrollIntoView({ behavior: 'smooth' }); }, 300);
     };
 
@@ -660,6 +771,28 @@
         f.style.display = f.style.display === 'block' ? 'none' : 'block';
         if (f.style.display === 'block') f.scrollIntoView({ behavior: 'smooth' });
     };
+
+    async function cargarVistas(uid) {
+        try {
+            const r = await fetch(`${FS}/vistas/${uid}?key=${API_KEY}`);
+            const panel = document.getElementById('panel-vistas');
+            if (r.ok) {
+                const data = await r.json();
+                const f = data.fields || {};
+                const link = f.visitasLink?.integerValue ? parseInt(f.visitasLink.integerValue) : 0;
+                const tienda = f.visitasTienda?.integerValue ? parseInt(f.visitasTienda.integerValue) : 0;
+                const total = link + tienda;
+                document.getElementById('vistas-link').textContent = link;
+                document.getElementById('vistas-tienda').textContent = tienda;
+                document.getElementById('vistas-total').textContent = total;
+            } else {
+                document.getElementById('vistas-link').textContent = '0';
+                document.getElementById('vistas-tienda').textContent = '0';
+                document.getElementById('vistas-total').textContent = '0';
+            }
+            panel.style.display = 'block';
+        } catch(e) { /* silencioso */ }
+    }
 
     function iniciarMapaSelector() {
         if (mapSelector) { mapSelector.invalidateSize(); return; }
@@ -975,10 +1108,28 @@
 
     window.previsualizarFotos = function(e) {
         const c = document.getElementById('preview-container');
-        c.innerHTML = ''; document.getElementById('preview-text').style.display = 'none';
-        Array.from(e.target.files).forEach(f => {
+        c.innerHTML = '';
+        const files = Array.from(e.target.files);
+        if (!files.length) return;
+        document.getElementById('preview-text').style.display = 'none';
+        const countEl = document.getElementById('preview-count');
+        countEl.style.display = 'block';
+        countEl.textContent = `${files.length} foto${files.length > 1 ? 's' : ''} seleccionada${files.length > 1 ? 's' : ''}`;
+        files.forEach((f, i) => {
             const r = new FileReader();
-            r.onload = ev => { const img = document.createElement('img'); img.src = ev.target.result; img.style.cssText = 'width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #0056b3;'; c.appendChild(img); };
+            r.onload = ev => {
+                const wrap = document.createElement('div');
+                wrap.style.cssText = 'position:relative;display:inline-block;';
+                const img = document.createElement('img');
+                img.src = ev.target.result;
+                img.style.cssText = 'width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid #0056b3;display:block;';
+                const num = document.createElement('div');
+                num.textContent = i + 1;
+                num.style.cssText = 'position:absolute;top:3px;left:3px;background:#0056b3;color:white;border-radius:50%;width:20px;height:20px;font-size:11px;font-weight:bold;display:flex;align-items:center;justify-content:center;';
+                wrap.appendChild(img);
+                wrap.appendChild(num);
+                c.appendChild(wrap);
+            };
             r.readAsDataURL(f);
         });
     };
