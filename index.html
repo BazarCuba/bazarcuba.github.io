@@ -144,10 +144,9 @@
             display: flex; align-items: center; justify-content: center;
         }
         #carrito-panel {
-            display: none; position: fixed; bottom: 90px; right: 16px;
-            width: 300px; max-height: 70vh;
-            background: white; border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
             z-index: 2001; overflow: hidden; flex-direction: column;
         }
         #carrito-panel.show { display: flex; }
@@ -160,33 +159,22 @@
         #carrito-close { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
         #carrito-items { overflow-y: auto; flex: 1; padding: 10px; }
         .carrito-item {
-            background: #f8fafc; border-radius: 10px;
-            padding: 10px; margin-bottom: 8px;
-            border: 1px solid #e8edf2;
+            background: white; border-radius: 14px;
+            padding: 14px; margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
-        .carrito-item-nombre { font-weight: bold; font-size: 13px; color: #222; }
-        .carrito-item-precio { color: #d32f2f; font-weight: bold; font-size: 13px; margin: 2px 0; }
-        .carrito-item-tienda { font-size: 11px; color: #0056b3; font-weight: bold; }
-        .carrito-item-dir { font-size: 11px; color: #888; margin-bottom: 6px; }
-        .carrito-item-btns { display: flex; gap: 6px; }
+        .carrito-item-nombre { font-weight: bold; font-size: 15px; color: #222; margin-bottom: 4px; }
+        .carrito-item-precio { color: #d32f2f; font-weight: bold; font-size: 16px; margin: 4px 0; }
+        .carrito-item-tienda { font-size: 13px; color: #0056b3; font-weight: bold; margin-bottom: 2px; }
+        .carrito-item-dir { font-size: 12px; color: #888; margin-bottom: 10px; }
+        .carrito-item-btns { display: flex; gap: 8px; }
         .carrito-item-btns button {
-            flex: 1; padding: 7px; border: none; border-radius: 8px;
-            font-size: 12px; font-weight: bold; cursor: pointer;
+            flex: 1; padding: 10px; border: none; border-radius: 10px;
+            font-size: 14px; font-weight: bold; cursor: pointer;
         }
         .btn-carrito-wa { background: #25D366; color: white; }
         .btn-carrito-del { background: #fde8e8; color: red; }
-        #carrito-vacio { text-align: center; padding: 24px; color: #aaa; font-size: 14px; }
 
-        /* BOTÓN AGREGAR AL CARRITO en la foto */
-        .btn-add-carrito {
-            position: absolute; top: 8px; left: 8px;
-            background: rgba(255,255,255,0.92);
-            border: none; border-radius: 50%;
-            width: 30px; height: 30px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-size: 16px; z-index: 10;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
     </style>
 </head>
 <body>
@@ -239,12 +227,15 @@
 </button>
 
 <div id="carrito-panel">
-    <div id="carrito-header">
-        <h3>🛒 Mi Carrito</h3>
-        <button id="carrito-close" onclick="toggleCarrito()">✕</button>
+    <div id="carrito-header" style="background:linear-gradient(135deg,#0056b3,#003d82);color:white;padding:16px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+        <h3 style="margin:0;font-size:18px;">🛒 Mi Carrito</h3>
+        <button id="carrito-close" onclick="toggleCarrito()" style="background:rgba(255,255,255,0.2);border:none;color:white;font-size:22px;cursor:pointer;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
-    <div id="carrito-items">
-        <div id="carrito-vacio">Tu carrito está vacío</div>
+    <div id="carrito-items" style="overflow-y:auto;flex:1;padding:14px;background:#f0f4f8;">
+        <div id="carrito-vacio" style="text-align:center;padding:60px 20px;color:#aaa;">
+            <div style="font-size:60px;margin-bottom:16px;">🛒</div>
+            <p style="font-size:16px;margin:0;">Tu carrito está vacío</p>
+        </div>
     </div>
 </div>
 
@@ -1033,8 +1024,10 @@
                 const ctrl = t.fotos.length > 1 ? `<button class="prev" onclick="event.stopPropagation();cambiarFoto('${t.id}',-1)">❮</button><button class="next" onclick="event.stopPropagation();cambiarFoto('${t.id}',1)">❯</button>` : '';
                 c.insertAdjacentHTML('beforeend', `
                     <div class="card" id="card-${t.id}" style="opacity:${ag?'0.65':'1'}">
-                        <div class="carousel-container">
-                            <button class="btn-add-carrito" onclick="event.stopPropagation();agregarAlCarrito('${t.id}')" title="Agregar al carrito">🛒</button>
+                        <div class="carousel-container" 
+                            data-id="${t.id}"
+                            ontouchstart="tcStart(event,this)"
+                            ontouchend="tcEnd(event,this)">
                             ${imgs}${ctrl}${ag?'<div class="badge-agotado">AGOTADO</div>':''}
                         </div>
                         ${t.nombreTienda ? `<p style="margin:6px 8px 0;font-size:10px;color:#0056b3;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🏪 ${t.nombreTienda}</p>` : ''}
@@ -1043,6 +1036,7 @@
                             <span class="precio-tag">${t.precio}</span>
                             ${t.moneda?`<span class="moneda-tag">${t.moneda}</span>`:''}
                             ${t.descripcion?`<button class="btn-descripcion" onclick="abrirDesc('${ns}','${ds}')">${svgDoc}</button>`:''}
+                            <button onclick="agregarAlCarrito('${t.id}')" title="Agregar al carrito" style="background:none;border:none;cursor:pointer;font-size:18px;padding:0 2px;line-height:1;">🛒</button>
                         </div>
                         <p class="provincia">📍 ${t.provincia}</p>
                         <div class="card-buttons">
@@ -1062,6 +1056,19 @@
         imgs[idx].classList.remove('active');
         idx = (idx + d + imgs.length) % imgs.length;
         imgs[idx].classList.add('active');
+    };
+
+    // Swipe táctil en carrusel
+    let _tcX = 0;
+    window.tcStart = function(e, el) {
+        _tcX = e.touches[0].clientX;
+    };
+    window.tcEnd = function(e, el) {
+        const diff = _tcX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) < 40) return; // ignorar taps
+        const id = el.dataset.id;
+        if (!id) return;
+        cambiarFoto(id, diff > 0 ? 1 : -1);
     };
 
     // ============================================================
@@ -1249,10 +1256,10 @@
     // ============================================================
     // CARRITO
     // ============================================================
-    let carrito = JSON.parse(localStorage.getItem('bc_carrito') || '[]');
+    let carrito = JSON.parse(sessionStorage.getItem('bc_carrito') || '[]');
 
     function guardarCarrito() {
-        localStorage.setItem('bc_carrito', JSON.stringify(carrito));
+        sessionStorage.setItem('bc_carrito', JSON.stringify(carrito));
     }
 
     function actualizarBadge() {
