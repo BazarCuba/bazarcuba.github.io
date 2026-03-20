@@ -763,7 +763,10 @@
             await showMsg('✅ Sesión iniciada correctamente.', 'ok');
             renderizar(tiendasData);
         } catch(e) {
-            await showMsg('No se pudo iniciar sesión. Verifica tus datos y asegúrate de tener el VPN activado.', 'error');
+            const msg = e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential'
+                ? 'Correo o contraseña incorrectos.'
+                : 'Sin conexión a internet o VPN no activado. Activa el VPN e inténtalo de nuevo.';
+            await showMsg(msg, 'error');
             btn.innerText = 'Continuar'; btn.disabled = false;
         }
     };
@@ -996,12 +999,44 @@
                     body: JSON.stringify({ fields: { esPrincipal: { booleanValue: true } } })
                 });
             }
+            // Recargar datos frescos del servidor para reflejar cambios
+            await cargarDatos();
             renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-            await showMsg('Subproducto publicado.', 'ok');
+            await showMsg('✅ Subproducto publicado correctamente.', 'ok');
         } catch(e) {
-            await showMsg(e.message, 'error', () => pubSubproducto(padreId));
+            await msgError(e, () => pubSubproducto(padreId));
             btn.innerText = 'Publicar subproducto'; btn.disabled = false;
         }
+    };
+
+    window.editarNombreProducto = function(id) {
+        document.getElementById('nombre-label-'+id).parentElement.style.display = 'none';
+        document.getElementById('nombre-edit-'+id).style.display = 'block';
+        document.getElementById('nombre-input-'+id).focus();
+    };
+    window.cancelarEditarNombre = function(id) {
+        document.getElementById('nombre-label-'+id).parentElement.style.display = 'flex';
+        document.getElementById('nombre-edit-'+id).style.display = 'none';
+    };
+    window.guardarNombreProducto = async function(id) {
+        if (!usuarioUID) { await showMsg('Sin conexión o VPN no activado.', 'warning'); return; }
+        const nuevoNombre = document.getElementById('nombre-input-'+id).value.trim();
+        if (!nuevoNombre) { await showMsg('El nombre no puede estar vacío.', 'warning'); return; }
+        try {
+            const token = await getToken();
+            const r = await fetch(`${FS}/tiendas/${id}?updateMask.fieldPaths=nombre&key=${API_KEY}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ fields: { nombre: { stringValue: nuevoNombre } } })
+            });
+            if (!r.ok) throw new Error(await r.text());
+            // Actualizar en memoria
+            const t = tiendasData.find(t => t.id === id);
+            if (t) t.nombre = nuevoNombre;
+            guardarCambioLocal(id, { nombre: nuevoNombre });
+            renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
+            await showMsg('✅ Nombre actualizado.', 'ok');
+        } catch(e) { await msgError(e); }
     };
 
     window.toggleFormProducto = function() {
@@ -1325,7 +1360,7 @@
                 renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
                 await showMsg('✅ Producto eliminado.', 'ok');
             } else { await showMsg('❌ ' + await r.text(), 'error'); }
-        } catch(e) { await showMsg('❌ ' + e.message, 'error'); }
+        } catch(e) { await msgError(e); }
     };
 
     window.marcarAgotado = async function(id) {
@@ -1340,7 +1375,7 @@
                 renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
                 await showMsg('✅ Marcado como agotado.', 'ok');
             } else { await showMsg('❌ ' + await r.text(), 'error'); }
-        } catch(e) { await showMsg('❌ ' + e.message, 'error'); }
+        } catch(e) { await msgError(e); }
     };
 
     window.habilitarProducto = async function(id) {
@@ -1355,7 +1390,7 @@
                 renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
                 await showMsg('✅ Producto habilitado.', 'ok');
             } else { await showMsg('❌ ' + await r.text(), 'error'); }
-        } catch(e) { await showMsg('❌ ' + e.message, 'error'); }
+        } catch(e) { await msgError(e); }
     };
 
     window.gestionarFoto = async function(id, accion) {
@@ -1619,6 +1654,15 @@
     // ============================================================
     // INICIAR
     // ============================================================
+    // Limpiar mensajes de error técnicos de Firebase
+    function msgError(e, accion) {
+        const tecnico = e.message || '';
+        if (tecnico.includes('network') || tecnico.includes('fetch') || tecnico.includes('Failed')) {
+            return showMsg('Sin conexión a internet o VPN no activado. Activa el VPN e inténtalo de nuevo.', 'error', accion);
+        }
+        return showMsg('❌ ' + tecnico, 'error', accion);
+    }
+
     detectarDirecto();
     cargarDatos().then(() => restaurarSesion());
 
