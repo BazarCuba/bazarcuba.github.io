@@ -883,8 +883,10 @@
         });
         const form = document.getElementById('form-sub-'+padreId);
         if (form) { form.style.display = form.style.display === 'block' ? 'none' : 'block'; return; }
-        // Crear form dinámicamente si no existe
-        const prodDiv = document.getElementById('prod-item-'+padreId);
+        // Crear form dinámicamente buscando por el botón que se tocó
+        const btn = document.querySelector('[onclick="mostrarFormSubproducto(\''+padreId+'\')"]');
+        if (!btn) return;
+        const prodDiv = btn.closest('.producto-vendedor');
         if (!prodDiv) return;
         const f = document.createElement('div');
         f.id = 'form-sub-'+padreId;
