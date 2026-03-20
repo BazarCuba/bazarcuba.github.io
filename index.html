@@ -536,6 +536,11 @@
     // DESCRIPCION
     // ============================================================
     window.abrirDesc = function(nombre, desc) {
+        // Soporte para llamada desde data-attributes
+        if (nombre && nombre.dataset) {
+            desc = nombre.dataset.d;
+            nombre = nombre.dataset.n;
+        }
         document.getElementById('modal-desc-titulo').innerText = nombre;
         document.getElementById('modal-desc-texto').innerText = desc;
         document.getElementById('modal-desc').classList.add('active');
@@ -1552,13 +1557,39 @@
             grid.innerHTML = '';
             subs.forEach(t => {
                 const fe = encodeURIComponent(JSON.stringify(t.fotos));
-                const ns2 = (t.nombre||'Sin nombre').replace(/'/g,"\\'"  ).replace(/"/g,'&quot;');
-                const ds2 = (t.descripcion||'').replace(/'/g,"\\'" ).replace(/"/g,'&quot;');
+                const ns2 = (t.nombre||'Sin nombre').replace(/'/g,"\'").replace(/"/g,'&quot;');
+                const ds2 = (t.descripcion||'').replace(/'/g,"\'").replace(/"/g,'&quot;');
                 const ag = t.estado === 'agotado';
                 const tel2 = (t.tel||'').replace(/[^0-9]/g,'');
-                let imgs2 = t.fotos.map((f,i) => '<img src="'+f+'" class="carousel-img '+(i===0?'active':'')+'" onclick="abrirLightbox(''+fe+'','+i+')">').join('');
-                const ctrl2 = t.fotos.length > 1 ? '<button class="prev" onclick="event.stopPropagation();cambiarFoto(''+t.id+'',-1)">&#10094;</button><button class="next" onclick="event.stopPropagation();cambiarFoto(''+t.id+'',1)">&#10095;</button>' : '';
-                grid.insertAdjacentHTML('beforeend', '<div class="card" id="card-'+t.id+'" style="opacity:'+(ag?'0.65':'1')+'"><div class="carousel-container" data-id="'+t.id+'" ontouchstart="tcStart(event,this)" ontouchend="tcEnd(event,this)">'+imgs2+ctrl2+(ag?'<div class="badge-agotado">AGOTADO</div>':'')+'</div><h3>'+(t.nombre||'Sin nombre')+'</h3><div class="precio-row"><span class="precio-tag">'+t.precio+'</span>'+(t.moneda?'<span class="moneda-tag">'+t.moneda+'</span>':'')+(t.descripcion?'<button class="btn-descripcion" onclick="abrirDesc(''+ns2+'',''+ds2+'')">'+svgDoc+'</button>':'')+'<button onclick="agregarAlCarrito(''+t.id+'')" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;">🛒</button></div><p class="provincia">📍 '+t.provincia+'</p><div class="card-buttons"><a href="tel:'+t.tel+'" class="btn-llamar">'+svgTel+'</a><a href="https://wa.me/'+tel2+'" target="_blank" class="btn-wa">'+svgWA+'</a><button class="btn-mapa-card" onclick="verUbicacion('+t.lat+','+t.lng+',''+ns2+'')">'+svgGPS+'</button></div></div>');
+                let fotosHtml = t.fotos.map((foto, idx) =>
+                    `<img src="${foto}" class="carousel-img ${idx===0?'active':''}" onclick="abrirLightbox('${fe}',${idx})">`
+                ).join('');
+                const ctrlHtml = t.fotos.length > 1
+                    ? `<button class="prev" onclick="event.stopPropagation();cambiarFoto('${t.id}',-1)">&#10094;</button><button class="next" onclick="event.stopPropagation();cambiarFoto('${t.id}',1)">&#10095;</button>`
+                    : '';
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.id = 'card-' + t.id;
+                card.style.opacity = ag ? '0.65' : '1';
+                card.innerHTML = `
+                    <div class="carousel-container" data-id="${t.id}" ontouchstart="tcStart(event,this)" ontouchend="tcEnd(event,this)">
+                        ${fotosHtml}${ctrlHtml}
+                        ${ag ? '<div class="badge-agotado">AGOTADO</div>' : ''}
+                    </div>
+                    <h3>${t.nombre||'Sin nombre'}</h3>
+                    <div class="precio-row">
+                        <span class="precio-tag">${t.precio}</span>
+                        ${t.moneda ? '<span class="moneda-tag">'+t.moneda+'</span>' : ''}
+                        ${t.descripcion ? `<button class="btn-descripcion" onclick="abrirDesc(this.dataset.n,this.dataset.d)" data-n="${ns2}" data-d="${ds2}">${svgDoc}</button>` : ''}
+                        <button onclick="agregarAlCarrito('${t.id}')" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;">&#128722;</button>
+                    </div>
+                    <p class="provincia">&#128205; ${t.provincia}</p>
+                    <div class="card-buttons">
+                        <a href="tel:${t.tel}" class="btn-llamar">${svgTel}</a>
+                        <a href="https://wa.me/${tel2}" target="_blank" class="btn-wa">${svgWA}</a>
+                        <button class="btn-mapa-card" onclick="verUbicacion(${t.lat},${t.lng},'${ns2}')">${svgGPS}</button>
+                    </div>`;
+                grid.appendChild(card);
             });
         }
         document.getElementById('pantalla-subproductos').classList.add('show');
