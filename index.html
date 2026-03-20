@@ -126,6 +126,22 @@
         #form-nuevo-producto { display: none; margin-top: 12px; border-top: 2px dashed #ddd; padding-top: 14px; }
         #menu-dots { position: absolute; top: 18px; right: 18px; font-size: 28px; cursor: pointer; color: white; z-index: 1001; }
 
+        #pantalla-subproductos {
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #f0f4f8; z-index: 4000; flex-direction: column; overflow: hidden;
+        }
+        #pantalla-subproductos.show { display: flex; }
+        #subprod-header {
+            background: linear-gradient(135deg, #0056b3, #003d82);
+            color: white; padding: 16px;
+            display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2); flex-shrink: 0;
+        }
+        #subprod-header button { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 20px; cursor: pointer; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
+        #subprod-header h3 { margin: 0; font-size: 17px; flex: 1; }
+        #subprod-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; padding: 12px; overflow-y: auto; flex: 1; }
+
         /* CARRITO */
         #carrito-btn {
             position: fixed; bottom: 24px; right: 16px;
@@ -187,7 +203,10 @@
     <div class="modal-box">
         <div class="modal-icon" id="modal-msg-icon"></div>
         <p class="modal-texto" id="modal-msg-texto"></p>
-        <button class="modal-btn-ok" onclick="cerrarMsg()">Aceptar</button>
+        <div style="display:flex;gap:8px;">
+            <button class="modal-btn-ok" id="modal-btn-reintentar" style="display:none;background:#f0f4f8;color:#0056b3;border:2px solid #0056b3;" onclick="reintentarAccion()">🔄 Reintentar</button>
+            <button class="modal-btn-ok" id="modal-btn-ok" onclick="cerrarMsg()">Aceptar</button>
+        </div>
     </div>
 </div>
 
@@ -218,6 +237,15 @@
         <p id="modal-desc-texto"></p>
         <button id="modal-desc-close" onclick="cerrarDesc()">Cerrar</button>
     </div>
+</div>
+
+<!-- PANTALLA SUBPRODUCTOS -->
+<div id="pantalla-subproductos">
+    <div id="subprod-header">
+        <button onclick="cerrarSubproductos()">&#8592;</button>
+        <h3 id="subprod-titulo">Productos disponibles</h3>
+    </div>
+    <div id="subprod-grid"></div>
 </div>
 
 <!-- CARRITO FLOTANTE -->
@@ -360,6 +388,13 @@
         <div class="seccion-card" id="seccion-productos">
             <h3>📦 Mis Productos</h3>
             <button class="btn-copiar-link" onclick="copiarLink()">🔗 Copiar link de mi tienda</button>
+            <div id="panel-vistas-catalogo" style="display:none;background:#f0f4f8;border-radius:10px;padding:12px;margin-bottom:12px;text-align:center;">
+                <p style="margin:0 0 8px;font-weight:bold;color:#0056b3;font-size:14px;">🌐 Visitas al catálogo principal</p>
+                <div style="background:white;border-radius:10px;padding:12px;">
+                    <div id="vistas-catalogo-num" style="font-size:32px;font-weight:bold;color:#0056b3;">-</div>
+                    <div style="font-size:12px;color:#888;">personas visitaron BazarCuba</div>
+                </div>
+            </div>
             <div id="panel-vistas" style="background:#f0f4f8;border-radius:10px;padding:12px;margin-bottom:12px;text-align:center;">
                 <p style="margin:0 0 8px;font-weight:bold;color:#0056b3;font-size:14px;">📊 Estadísticas de tu tienda</p>
                 <div style="display:flex;gap:10px;justify-content:center;">
@@ -427,18 +462,36 @@
     // ============================================================
     let _msgRes = null, _confirmRes = null;
 
-    function showMsg(texto, tipo) {
+    let _accionPendiente = null;
+
+    function showMsg(texto, tipo, accion) {
         return new Promise(res => {
             _msgRes = res;
             const iconos = { ok: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
             document.getElementById('modal-msg-icon').textContent = iconos[tipo] || 'ℹ️';
             document.getElementById('modal-msg-texto').textContent = texto;
+            const btnReintentar = document.getElementById('modal-btn-reintentar');
+            if (accion) {
+                _accionPendiente = accion;
+                btnReintentar.style.display = 'block';
+            } else {
+                _accionPendiente = null;
+                btnReintentar.style.display = 'none';
+            }
             document.getElementById('modal-msg').classList.add('show');
         });
     }
     window.cerrarMsg = function() {
         document.getElementById('modal-msg').classList.remove('show');
         if (_msgRes) { _msgRes(); _msgRes = null; }
+    };
+    window.reintentarAccion = function() {
+        cerrarMsg();
+        if (_accionPendiente) {
+            const fn = _accionPendiente;
+            _accionPendiente = null;
+            fn();
+        }
     };
 
     function showConfirm(texto) {
@@ -787,6 +840,8 @@
         }
         renderizarMisProductos(mis);
         cargarVistas(usuarioUID);
+        // Solo mostrar vistas del catálogo al desarrollador
+        if (usuarioUID === '2cwkv5VMqiQXEb3ehkqtJHqMmqr2') cargarVistasCatalogo();
         setTimeout(() => { iniciarMapaSelector(); document.getElementById('seccion-productos').scrollIntoView({ behavior: 'smooth' }); }, 300);
     };
 
@@ -810,11 +865,137 @@
                           : `<button class="btn-acc-agotado" onclick="marcarAgotado('${t.id}')">🚫 Agotado</button>`}
                     <button onclick="gestionarFoto('${t.id}','cambiar')">🔄 Foto</button>
                     <button onclick="gestionarFoto('${t.id}','agregar')">➕ Foto</button>
+                    <button onclick="mostrarFormSubproducto('${t.id}')" style="color:#0056b3 !important;">&#10133; Sub</button>
                     <button class="btn-acc-borrar" onclick="borrarAnuncio('${t.id}')">🗑️ Borrar</button>
                 </div>
             </div>`;
         }).join('');
     }
+
+    window.mostrarFormSubproducto = function(padreId) {
+        document.querySelectorAll('[id^="form-sub-"]').forEach(f => {
+            if (f.id !== 'form-sub-'+padreId) f.style.display = 'none';
+        });
+        const form = document.getElementById('form-sub-'+padreId);
+        if (form) { form.style.display = form.style.display === 'block' ? 'none' : 'block'; return; }
+        // Crear form dinámicamente si no existe
+        const prodDiv = document.getElementById('prod-item-'+padreId);
+        if (!prodDiv) return;
+        const f = document.createElement('div');
+        f.id = 'form-sub-'+padreId;
+        f.style.cssText = 'padding:10px;background:#f0f4f8;border-top:1px solid #e8edf2;';
+        f.innerHTML = `
+            <p style="margin:0 0 8px;font-size:12px;font-weight:bold;color:#0056b3;">Nuevo subproducto:</p>
+            <div style="border:1px dashed #ccc;padding:10px;text-align:center;border-radius:8px;cursor:pointer;margin-bottom:6px;background:white;" onclick="document.getElementById('sf-${padreId}').click()">
+                <span id="sft-${padreId}" style="font-size:12px;color:#888;">&#128248; Fotos del subproducto</span>
+                <div id="sfp-${padreId}" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-top:4px;"></div>
+                <input type="file" id="sf-${padreId}" accept="image/*" multiple style="display:none;" onchange="prevSubFotos(event,'${padreId}')">
+            </div>
+            <input type="text" id="sn-${padreId}" placeholder="Nombre del subproducto" style="width:100%;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px;margin-bottom:4px;box-sizing:border-box;">
+            <div style="display:flex;gap:6px;margin-bottom:4px;">
+                <input type="text" id="sp-${padreId}" placeholder="Precio" style="flex:1;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+                <select id="sm-${padreId}" style="width:80px;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px;"><option value="CUP">CUP</option><option value="USD">USD</option></select>
+            </div>
+            <textarea id="sd-${padreId}" placeholder="Descripcion (opcional)" rows="2" style="width:100%;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit;margin-bottom:6px;box-sizing:border-box;"></textarea>
+            <button id="sbtn-${padreId}" onclick="pubSubproducto('${padreId}')" style="width:100%;padding:8px;background:linear-gradient(135deg,#0056b3,#003d82);color:white;border:none;border-radius:8px;font-size:13px;font-weight:bold;cursor:pointer;">Publicar subproducto</button>
+        `;
+        prodDiv.appendChild(f);
+    };
+
+    window.prevSubFotos = function(e, pid) {
+        const c = document.getElementById('sfp-'+pid);
+        c.innerHTML = '';
+        document.getElementById('sft-'+pid).style.display = 'none';
+        Array.from(e.target.files).forEach((f,i) => {
+            const r = new FileReader();
+            r.onload = ev => {
+                const w = document.createElement('div');
+                w.style.cssText = 'position:relative;display:inline-block;';
+                const img = document.createElement('img');
+                img.src = ev.target.result;
+                img.style.cssText = 'width:50px;height:50px;object-fit:cover;border-radius:6px;border:1.5px solid #0056b3;display:block;';
+                const n = document.createElement('div');
+                n.textContent = i+1;
+                n.style.cssText = 'position:absolute;top:2px;left:2px;background:#0056b3;color:white;border-radius:50%;width:16px;height:16px;font-size:10px;font-weight:bold;display:flex;align-items:center;justify-content:center;';
+                w.appendChild(img); w.appendChild(n); c.appendChild(w);
+            };
+            r.readAsDataURL(f);
+        });
+    };
+
+    window.pubSubproducto = async function(padreId) {
+        if (!usuarioUID) { await showMsg('Inicia sesion con VPN para publicar.', 'warning', () => pubSubproducto(padreId)); return; }
+        const inp = document.getElementById('sf-'+padreId);
+        if (!inp || !inp.files.length) { await showMsg('Selecciona al menos una foto.', 'warning'); return; }
+        const btn = document.getElementById('sbtn-'+padreId);
+        btn.innerText = 'Subiendo... '; btn.disabled = true;
+        try {
+            const urls = [];
+            for (let i = 0; i < inp.files.length; i++) {
+                const fd = new FormData();
+                fd.append('file', inp.files[i]); fd.append('upload_preset', 'bazar_present');
+                const ri = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: fd });
+                const di = await ri.json();
+                if (!di.secure_url) throw new Error('Error subiendo foto');
+                urls.push(di.secure_url);
+            }
+            const padre = tiendasData.find(t => t.id === padreId);
+            const token = await getToken();
+            const pay = { fields: {
+                uidVendedor: { stringValue: usuarioUID },
+                correo: { stringValue: fbAuth.currentUser.email },
+                productoPadreId: { stringValue: padreId },
+                esPrincipal: { booleanValue: false },
+                nombre: { stringValue: document.getElementById('sn-'+padreId).value },
+                precio: { stringValue: document.getElementById('sp-'+padreId).value },
+                moneda: { stringValue: document.getElementById('sm-'+padreId).value },
+                descripcion: { stringValue: document.getElementById('sd-'+padreId).value.trim() },
+                fotos: { arrayValue: { values: urls.map(u => ({ stringValue: u })) } },
+                estado: { stringValue: 'disponible' },
+                nombreTienda: { stringValue: padre?.nombreTienda || '' },
+                tel: { stringValue: padre?.tel || '' },
+                direccion: { stringValue: padre?.direccion || '' },
+                provincia: { stringValue: padre?.provincia || '' },
+                lat: { doubleValue: padre?.lat || latSel },
+                lng: { doubleValue: padre?.lng || lngSel },
+                fecha: { timestampValue: new Date().toISOString() }
+            }};
+            const r = await fetch(`${FS}/tiendas?key=${API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(pay)
+            });
+            if (!r.ok) throw new Error(await r.text());
+            const doc = await r.json();
+            const nuevo = {
+                id: doc.name.split('/').pop(), uidVendedor: usuarioUID,
+                productoPadreId: padreId, esPrincipal: false,
+                nombre: document.getElementById('sn-'+padreId).value,
+                precio: document.getElementById('sp-'+padreId).value,
+                moneda: document.getElementById('sm-'+padreId).value,
+                descripcion: document.getElementById('sd-'+padreId).value.trim(),
+                fotos: urls, estado: 'disponible',
+                nombreTienda: padre?.nombreTienda||'', tel: padre?.tel||'',
+                direccion: padre?.direccion||'', provincia: padre?.provincia||'',
+                lat: padre?.lat||latSel, lng: padre?.lng||lngSel
+            };
+            tiendasData.push(nuevo);
+            // Marcar padre como principal
+            if (padre && !padre.esPrincipal) {
+                padre.esPrincipal = true;
+                await fetch(`${FS}/tiendas/${padreId}?updateMask.fieldPaths=esPrincipal&key=${API_KEY}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ fields: { esPrincipal: { booleanValue: true } } })
+                });
+            }
+            renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
+            await showMsg('Subproducto publicado.', 'ok');
+        } catch(e) {
+            await showMsg(e.message, 'error', () => pubSubproducto(padreId));
+            btn.innerText = 'Publicar subproducto'; btn.disabled = false;
+        }
+    };
 
     window.toggleFormProducto = function() {
         const f = document.getElementById('form-nuevo-producto');
@@ -840,6 +1021,19 @@
                 document.getElementById('vistas-link').textContent = '0';
                 document.getElementById('vistas-tienda').textContent = '0';
                 document.getElementById('vistas-total').textContent = '0';
+            }
+        } catch(e) { /* silencioso */ }
+    }
+
+    async function cargarVistasCatalogo() {
+        try {
+            const r = await fetch(`${WORKER}/get-vistas/catalogo-principal`);
+            if (r.ok) {
+                const data = await r.json();
+                const f = data.fields || {};
+                const total = f.visitasCatalogo?.integerValue ? parseInt(f.visitasCatalogo.integerValue) : 0;
+                document.getElementById('vistas-catalogo-num').textContent = total;
+                document.getElementById('panel-vistas-catalogo').style.display = 'block';
             }
         } catch(e) { /* silencioso */ }
     }
@@ -934,7 +1128,9 @@
                         estado: f.estado?.stringValue || 'disponible',
                         tel: f.tel?.stringValue || '',
                         lat: f.lat?.doubleValue || 23.11,
-                        lng: f.lng?.doubleValue || -82.36
+                        lng: f.lng?.doubleValue || -82.36,
+                        esPrincipal: f.esPrincipal?.booleanValue || false,
+                        productoPadreId: f.productoPadreId?.stringValue || ''
                     };
                 });
 
@@ -952,7 +1148,11 @@
 
                 tiendasData = lista;
                 if (modoDirecto) mostrarDirecto();
-                else renderizar(tiendasData);
+                else {
+                    renderizar(tiendasData);
+                    // Contar visita al catálogo principal
+                    contarVista('catalogo-principal', 'catalogo');
+                }
             } else {
                 document.getElementById('listaTiendas').innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#888;'>No hay anuncios disponibles.</p>";
             }
@@ -1033,10 +1233,7 @@
                         ${t.nombreTienda ? `<p style="margin:6px 8px 0;font-size:10px;color:#0056b3;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🏪 ${t.nombreTienda}</p>` : ''}
                         <h3>${t.nombre||'Sin nombre'}</h3>
                         <div class="precio-row">
-                            <span class="precio-tag">${t.precio}</span>
-                            ${t.moneda?`<span class="moneda-tag">${t.moneda}</span>`:''}
-                            ${t.descripcion?`<button class="btn-descripcion" onclick="abrirDesc('${ns}','${ds}')">${svgDoc}</button>`:''}
-                            <button onclick="agregarAlCarrito('${t.id}')" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;line-height:1;display:flex;align-items:center;justify-content:center;">🛒</button>
+                            ${t.esPrincipal ? `<button onclick="abrirSubproductos('${t.id}')" style="background:linear-gradient(135deg,#0056b3,#003d82);color:white;border:none;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;">Seleccionar</button>` : `<span class="precio-tag">${t.precio}</span>${t.moneda?'<span class="moneda-tag">'+t.moneda+'</span>':''}${t.descripcion?'<button class="btn-descripcion" onclick="abrirDesc(''+ns+'',''+ds+'')">'+svgDoc+'</button>':''}<button onclick="agregarAlCarrito('${t.id}')" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;line-height:1;display:flex;align-items:center;justify-content:center;">🛒</button>`}
                         </div>
                         <p class="provincia">📍 ${t.provincia}</p>
                         <div class="card-buttons">
@@ -1104,7 +1301,7 @@
     };
 
     window.borrarAnuncio = async function(id) {
-        if (!usuarioUID) { await showMsg('Inicia sesión con VPN.', 'warning'); return; }
+        if (!usuarioUID) { await showMsg('Inicia sesión con VPN para eliminar.', 'warning', () => borrarAnuncio(id)); return; }
         if (!await showConfirm('¿Seguro que quieres eliminar este producto?')) return;
         try {
             const token = await getToken();
@@ -1119,7 +1316,7 @@
     };
 
     window.marcarAgotado = async function(id) {
-        if (!usuarioUID) { await showMsg('Inicia sesión con VPN.', 'warning'); return; }
+        if (!usuarioUID) { await showMsg('Inicia sesión con VPN para marcar agotado.', 'warning', () => marcarAgotado(id)); return; }
         if (!await showConfirm('¿Marcar este producto como AGOTADO?')) return;
         try {
             const token = await getToken();
@@ -1134,7 +1331,7 @@
     };
 
     window.habilitarProducto = async function(id) {
-        if (!usuarioUID) { await showMsg('Inicia sesión con VPN.', 'warning'); return; }
+        if (!usuarioUID) { await showMsg('Inicia sesión con VPN para habilitar.', 'warning', () => habilitarProducto(id)); return; }
         if (!await showConfirm('¿Habilitar este producto nuevamente?')) return;
         try {
             const token = await getToken();
@@ -1149,7 +1346,7 @@
     };
 
     window.gestionarFoto = async function(id, accion) {
-        if (!usuarioUID) { await showMsg('Inicia sesión con VPN.', 'warning'); return; }
+        if (!usuarioUID) { await showMsg('Inicia sesión con VPN para gestionar fotos.', 'warning', () => gestionarFoto(id, accion)); return; }
         const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
         inp.onchange = async e => {
             const file = e.target.files[0]; if (!file) return;
@@ -1335,6 +1532,34 @@
     // Inicializar carrito al cargar
     actualizarBadge();
     renderizarCarrito();
+
+    // SUBPRODUCTOS
+    window.abrirSubproductos = function(padreId) {
+        const padre = tiendasData.find(t => t.id === padreId);
+        if (!padre) return;
+        const subs = tiendasData.filter(t => t.productoPadreId === padreId);
+        document.getElementById('subprod-titulo').textContent = padre.nombre || 'Productos disponibles';
+        const grid = document.getElementById('subprod-grid');
+        if (!subs.length) {
+            grid.innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#888;padding:40px;'>No hay productos disponibles.</p>";
+        } else {
+            grid.innerHTML = '';
+            subs.forEach(t => {
+                const fe = encodeURIComponent(JSON.stringify(t.fotos));
+                const ns2 = (t.nombre||'Sin nombre').replace(/'/g,"\\'"  ).replace(/"/g,'&quot;');
+                const ds2 = (t.descripcion||'').replace(/'/g,"\\'" ).replace(/"/g,'&quot;');
+                const ag = t.estado === 'agotado';
+                const tel2 = (t.tel||'').replace(/[^0-9]/g,'');
+                let imgs2 = t.fotos.map((f,i) => '<img src="'+f+'" class="carousel-img '+(i===0?'active':'')+'" onclick="abrirLightbox(''+fe+'','+i+')">').join('');
+                const ctrl2 = t.fotos.length > 1 ? '<button class="prev" onclick="event.stopPropagation();cambiarFoto(''+t.id+'',-1)">&#10094;</button><button class="next" onclick="event.stopPropagation();cambiarFoto(''+t.id+'',1)">&#10095;</button>' : '';
+                grid.insertAdjacentHTML('beforeend', '<div class="card" id="card-'+t.id+'" style="opacity:'+(ag?'0.65':'1')+'"><div class="carousel-container" data-id="'+t.id+'" ontouchstart="tcStart(event,this)" ontouchend="tcEnd(event,this)">'+imgs2+ctrl2+(ag?'<div class="badge-agotado">AGOTADO</div>':'')+'</div><h3>'+(t.nombre||'Sin nombre')+'</h3><div class="precio-row"><span class="precio-tag">'+t.precio+'</span>'+(t.moneda?'<span class="moneda-tag">'+t.moneda+'</span>':'')+(t.descripcion?'<button class="btn-descripcion" onclick="abrirDesc(''+ns2+'',''+ds2+'')">'+svgDoc+'</button>':'')+'<button onclick="agregarAlCarrito(''+t.id+'')" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;">🛒</button></div><p class="provincia">📍 '+t.provincia+'</p><div class="card-buttons"><a href="tel:'+t.tel+'" class="btn-llamar">'+svgTel+'</a><a href="https://wa.me/'+tel2+'" target="_blank" class="btn-wa">'+svgWA+'</a><button class="btn-mapa-card" onclick="verUbicacion('+t.lat+','+t.lng+',''+ns2+'')">'+svgGPS+'</button></div></div>');
+            });
+        }
+        document.getElementById('pantalla-subproductos').classList.add('show');
+    };
+    window.cerrarSubproductos = function() {
+        document.getElementById('pantalla-subproductos').classList.remove('show');
+    };
 
     window.filtrarPorProvincia = function() {
         const f = document.getElementById('filtroProvincia').value;
