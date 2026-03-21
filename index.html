@@ -273,7 +273,7 @@
     <button onclick="toggleMenu()" style="background:#ff4444;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;float:right;font-weight:bold;">✕ Cerrar</button>
     <h2 style="margin-top:45px;color:#0056b3;">BazarCuba 🇨🇺</h2>
     <hr style="border-color:#eee;">
-    <button id="btn-add-negocio" onclick="mostrarPanelVendedor()" style="width:100%;padding:14px;background:linear-gradient(135deg,#0056b3,#003d82);color:white;border:none;border-radius:10px;font-weight:bold;cursor:pointer;margin-top:10px;font-size:15px;">➕ Añadir negocio</button>
+    <button id="btn-add-negocio" onclick="mostrarPanelVendedor()" style="width:100%;padding:14px;background:linear-gradient(135deg,#0056b3,#003d82);color:white;border:none;border-radius:10px;font-weight:bold;cursor:pointer;margin-top:10px;font-size:15px;">➕ Añadir tienda</button>
     <button id="btn-cerrar-sesion" onclick="cerrarSesion()" style="display:none;width:100%;padding:10px;background:#f0f0f0;color:#333;border:none;border-radius:10px;font-weight:bold;cursor:pointer;margin-top:10px;">🚪 Cerrar Sesión</button>
     <div id="opciones-auth" style="display:none;margin-top:20px;text-align:center;">
         <button onclick="mostrarFormAuth('login')" style="width:47%;padding:10px;background:#e8f4fd;border:2px solid #0056b3;border-radius:8px;cursor:pointer;font-weight:bold;color:#0056b3;">Entrar</button>
@@ -432,6 +432,15 @@
                     <textarea id="p-desc" rows="2" placeholder="Describe el producto..."></textarea>
                 </div>
                 <button class="btn-guardar" onclick="publicarProducto()">📤 Publicar Producto</button>
+
+                <!-- SUBPRODUCTOS OPCIONALES AL CREAR -->
+                <div style="margin-top:14px;border-top:2px dashed #ddd;padding-top:12px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <span style="font-size:13px;font-weight:bold;color:#0056b3;">📦 Agregar subproductos <span style="color:#aaa;font-weight:normal;">(opcional)</span></span>
+                        <button type="button" onclick="agregarFilaSub()" style="background:#e8f4fd;color:#0056b3;border:1.5px solid #0056b3;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:bold;cursor:pointer;">+ Agregar</button>
+                    </div>
+                    <div id="lista-subs-nuevos"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -590,7 +599,7 @@
     }
 
     function actualizarUI(loggedIn) {
-        document.getElementById('btn-add-negocio').innerText = loggedIn ? '🏪 Gestionar mi Negocio' : '➕ Añadir negocio';
+        document.getElementById('btn-add-negocio').innerText = loggedIn ? '🏪 Gestionar mi Negocio' : '➕ Añadir tienda';
         document.getElementById('btn-cerrar-sesion').style.display = loggedIn ? 'block' : 'none';
     }
 
@@ -1482,6 +1491,54 @@
                 wrap.appendChild(img);
                 wrap.appendChild(num);
                 c.appendChild(wrap);
+            };
+            r.readAsDataURL(f);
+        });
+    };
+
+    let contadorSubs = 0;
+
+    window.agregarFilaSub = function() {
+        const n = contadorSubs++;
+        const lista = document.getElementById('lista-subs-nuevos');
+        const div = document.createElement('div');
+        div.id = 'sub-nuevo-'+n;
+        div.style.cssText = 'background:#f8fafc;border-radius:10px;padding:10px;margin-bottom:8px;border:1px solid #e8edf2;';
+        div.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <span style="font-size:12px;font-weight:bold;color:#0056b3;">Subproducto ${n+1}</span>
+                <button onclick="document.getElementById('sub-nuevo-${n}').remove()" style="background:#fde8e8;border:none;color:red;cursor:pointer;border-radius:6px;padding:3px 8px;font-size:12px;">✕</button>
+            </div>
+            <div style="border:1px dashed #ccc;padding:8px;text-align:center;border-radius:8px;cursor:pointer;margin-bottom:6px;background:white;" onclick="document.getElementById('sub-fotos-nuevo-${n}').click()">
+                <span style="font-size:12px;color:#888;">📸 Fotos</span>
+                <div id="sub-prev-nuevo-${n}" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-top:4px;"></div>
+                <input type="file" id="sub-fotos-nuevo-${n}" accept="image/*" multiple style="display:none;" onchange="prevSubNuevo(event,${n})">
+            </div>
+            <input type="text" id="sub-nombre-nuevo-${n}" placeholder="Nombre del subproducto" style="width:100%;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px;margin-bottom:4px;box-sizing:border-box;">
+            <div style="display:flex;gap:6px;margin-bottom:4px;">
+                <input type="text" id="sub-precio-nuevo-${n}" placeholder="Precio" style="flex:1;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+                <select id="sub-moneda-nuevo-${n}" style="width:80px;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px;"><option value="CUP">CUP</option><option value="USD">USD</option></select>
+            </div>
+            <textarea id="sub-desc-nuevo-${n}" placeholder="Descripción (opcional)" rows="2" style="width:100%;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;"></textarea>
+        `;
+        lista.appendChild(div);
+    };
+
+    window.prevSubNuevo = function(e, n) {
+        const c = document.getElementById('sub-prev-nuevo-'+n);
+        c.innerHTML = '';
+        Array.from(e.target.files).forEach((f,i) => {
+            const r = new FileReader();
+            r.onload = ev => {
+                const w = document.createElement('div');
+                w.style.cssText = 'position:relative;display:inline-block;';
+                const img = document.createElement('img');
+                img.src = ev.target.result;
+                img.style.cssText = 'width:45px;height:45px;object-fit:cover;border-radius:6px;border:1.5px solid #0056b3;display:block;';
+                const num = document.createElement('div');
+                num.textContent = i+1;
+                num.style.cssText = 'position:absolute;top:2px;left:2px;background:#0056b3;color:white;border-radius:50%;width:14px;height:14px;font-size:9px;font-weight:bold;display:flex;align-items:center;justify-content:center;';
+                w.appendChild(img); w.appendChild(num); c.appendChild(w);
             };
             r.readAsDataURL(f);
         });
