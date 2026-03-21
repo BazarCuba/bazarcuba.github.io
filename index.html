@@ -853,31 +853,68 @@
         setTimeout(() => { iniciarMapaSelector(); document.getElementById('seccion-productos').scrollIntoView({ behavior: 'smooth' }); }, 300);
     };
 
+    function tarjetaProducto(t, esSub) {
+        const foto = (t.fotos && t.fotos[0]) || 'https://via.placeholder.com/60';
+        const ag = t.estado === 'agotado';
+        const indentStyle = esSub ? 'margin-left:16px;border-left:3px solid #0056b3;border-radius:0 10px 10px 0;' : '';
+        return `<div class="producto-vendedor" style="${indentStyle}">
+            <div class="producto-vendedor-top">
+                <img src="${foto}" alt="">
+                <div class="producto-vendedor-info">
+                    <div style="display:flex;align-items:center;gap:4px;">
+                        ${esSub ? '<span style="font-size:10px;background:#e8f4fd;color:#0056b3;padding:1px 5px;border-radius:6px;font-weight:bold;">SUB</span>' : ''}
+                        <strong id="nombre-label-${t.id}" style="font-size:13px;color:#222;">${t.nombre || 'Sin nombre'}</strong>
+                        <button onclick="editarNombreProducto('${t.id}')" style="background:none;border:none;cursor:pointer;font-size:12px;color:#0056b3;padding:0;">✏️</button>
+                    </div>
+                    <div id="nombre-edit-${t.id}" style="display:none;margin-top:4px;">
+                        <input type="text" id="nombre-input-${t.id}" value="${t.nombre || ''}" style="width:100%;padding:4px 6px;border:1.5px solid #0056b3;border-radius:6px;font-size:12px;">
+                        <div style="display:flex;gap:4px;margin-top:3px;">
+                            <button onclick="guardarNombreProducto('${t.id}')" style="flex:1;padding:4px;background:#0056b3;color:white;border:none;border-radius:6px;font-size:11px;cursor:pointer;">Guardar</button>
+                            <button onclick="cancelarEditarNombre('${t.id}')" style="flex:1;padding:4px;background:#f0f0f0;color:#333;border:none;border-radius:6px;font-size:11px;cursor:pointer;">Cancelar</button>
+                        </div>
+                    </div>
+                    <span style="font-size:12px;color:#d32f2f;font-weight:bold;">${t.precio || ''} ${t.moneda || ''}</span>
+                    ${ag ? '<br><small style="color:#e65100;font-weight:bold;">AGOTADO</small>' : ''}
+                </div>
+            </div>
+            <div class="producto-acciones">
+                ${ag ? `<button class="btn-acc-habilitar" onclick="habilitarProducto('${t.id}')">✅ Habilitar</button>`
+                      : `<button class="btn-acc-agotado" onclick="marcarAgotado('${t.id}')">🚫 Agotado</button>`}
+                <button onclick="gestionarFoto('${t.id}','cambiar')">🔄 Foto</button>
+                <button onclick="gestionarFoto('${t.id}','agregar')">➕ Foto</button>
+                ${!esSub ? `<button onclick="mostrarFormSubproducto('${t.id}')" style="color:#0056b3 !important;">&#10133; Sub</button>` : ''}
+                <button class="btn-acc-borrar" onclick="borrarAnuncio('${t.id}')">🗑️ Borrar</button>
+            </div>
+        </div>`;
+    }
+
     function renderizarMisProductos(lista) {
         const c = document.getElementById('lista-mis-productos');
         if (!lista.length) { c.innerHTML = '<p style="color:#888;text-align:center;font-size:13px;">Aún no tienes productos.</p>'; return; }
-        c.innerHTML = lista.map(t => {
-            const foto = (t.fotos && t.fotos[0]) || 'https://via.placeholder.com/60';
-            const ag = t.estado === 'agotado';
-            return `<div class="producto-vendedor">
-                <div class="producto-vendedor-top">
-                    <img src="${foto}" alt="">
-                    <div class="producto-vendedor-info">
-                        <strong>${t.nombre || 'Sin nombre'}</strong>
-                        <span>${t.precio || ''} ${t.moneda || ''}</span>
-                        ${ag ? '<br><small style="color:#e65100;font-weight:bold;">AGOTADO</small>' : ''}
-                    </div>
-                </div>
-                <div class="producto-acciones">
-                    ${ag ? `<button class="btn-acc-habilitar" onclick="habilitarProducto('${t.id}')">✅ Habilitar</button>`
-                          : `<button class="btn-acc-agotado" onclick="marcarAgotado('${t.id}')">🚫 Agotado</button>`}
-                    <button onclick="gestionarFoto('${t.id}','cambiar')">🔄 Foto</button>
-                    <button onclick="gestionarFoto('${t.id}','agregar')">➕ Foto</button>
-                    <button onclick="mostrarFormSubproducto('${t.id}')" style="color:#0056b3 !important;">&#10133; Sub</button>
-                    <button class="btn-acc-borrar" onclick="borrarAnuncio('${t.id}')">🗑️ Borrar</button>
-                </div>
-            </div>`;
-        }).join('');
+
+        // Separar padres y subproductos
+        const padres = lista.filter(t => !t.productoPadreId);
+        const subs = lista.filter(t => t.productoPadreId);
+
+        let html = '';
+        padres.forEach(padre => {
+            // Card del padre
+            html += tarjetaProducto(padre, false);
+            // Subproductos de este padre
+            const misSubs = subs.filter(s => s.productoPadreId === padre.id);
+            if (misSubs.length) {
+                html += `<div style="margin:4px 0 8px;">`;
+                html += `<div style="margin-left:16px;font-size:11px;color:#0056b3;font-weight:bold;padding:4px 0;">📦 ${misSubs.length} subproducto${misSubs.length > 1 ? 's' : ''}</div>`;
+                misSubs.forEach(sub => { html += tarjetaProducto(sub, true); });
+                html += `</div>`;
+            }
+        });
+
+        // Productos sin padre conocido (huérfanos, por si acaso)
+        const huerfanos = subs.filter(s => !padres.find(p => p.id === s.productoPadreId));
+        huerfanos.forEach(h => { html += tarjetaProducto(h, false); });
+
+        c.innerHTML = html;
     }
 
     window.mostrarFormSubproducto = function(padreId) {
@@ -1251,7 +1288,9 @@
     function renderizar(lista) {
         const c = document.getElementById('listaTiendas');
         c.innerHTML = '';
-        if (!lista || !lista.length) {
+        // Filtrar subproductos del catálogo principal (solo mostrar productos raíz)
+        lista = (lista || []).filter(t => !t.productoPadreId);
+        if (!lista.length) {
             c.innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#888;'>No hay productos disponibles.</p>";
             return;
         }
