@@ -1003,6 +1003,9 @@
     document.addEventListener('click', () => {
         document.querySelectorAll('[id^="menu-gest-"]').forEach(m => m.style.display = 'none');
     });
+    window.addEventListener('scroll', () => {
+        document.querySelectorAll('[id^="menu-gest-"]').forEach(m => m.style.display = 'none');
+    }, true);
 
     function renderizarMisProductos(lista) {
         const c = document.getElementById('lista-mis-productos');
