@@ -1002,7 +1002,7 @@
             // Recargar datos frescos del servidor para reflejar cambios
             await cargarDatos();
             renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-            await showMsg('✅ Subproducto publicado correctamente.', 'ok');
+            await showMsg('✅ Subproducto publicado.\n\nPuede tardar unos minutos en que los demás lo vean.', 'ok');
         } catch(e) {
             await msgError(e, () => pubSubproducto(padreId));
             btn.innerText = 'Publicar subproducto'; btn.disabled = false;
@@ -1035,7 +1035,7 @@
             if (t) t.nombre = nuevoNombre;
             guardarCambioLocal(id, { nombre: nuevoNombre });
             renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-            await showMsg('✅ Nombre actualizado.', 'ok');
+            await showMsg('✅ Nombre actualizado.\n\nPuede tardar unos minutos en que los demás lo vean.', 'ok');
         } catch(e) { await msgError(e); }
     };
 
@@ -1276,7 +1276,7 @@
                         <h3>${t.nombre||'Sin nombre'}</h3>
                         <div class="precio-row">
                             ${t.esPrincipal
-                                ? `<button onclick="abrirSubproductos('${t.id}')" style="background:linear-gradient(135deg,#0056b3,#003d82);color:white;border:none;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;">Seleccionar</button>`
+                                ? `<button onclick="abrirSubproductos('${t.id}')" style="background:#fde8e8;color:#d32f2f;border:1.5px solid #d32f2f;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;">Seleccionar</button>`
                                 : `<span class="precio-tag">${t.precio}</span>
                                    ${t.moneda ? '<span class="moneda-tag">'+t.moneda+'</span>' : ''}
                                    ${t.descripcion ? '<button class="btn-descripcion" onclick="abrirDesc(\''+ns+'\',\''+ds+'\')">'+svgDoc+'</button>' : ''}
@@ -1358,7 +1358,7 @@
                 tiendasData = tiendasData.filter(t => t.id !== id);
                 guardarCambioLocal(id, null); // null = eliminado
                 renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-                await showMsg('✅ Producto eliminado.', 'ok');
+                await showMsg('✅ Producto eliminado.\n\nPuede tardar unos minutos en que los demás lo vean.', 'ok');
             } else { await showMsg('❌ ' + await r.text(), 'error'); }
         } catch(e) { await msgError(e); }
     };
@@ -1373,7 +1373,7 @@
                 const t = tiendasData.find(t => t.id === id); if (t) t.estado = 'agotado';
                 guardarCambioLocal(id, { estado: 'agotado' });
                 renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-                await showMsg('✅ Marcado como agotado.', 'ok');
+                await showMsg('✅ Marcado como agotado.\n\nPuede tardar unos minutos en que los demás lo vean.', 'ok');
             } else { await showMsg('❌ ' + await r.text(), 'error'); }
         } catch(e) { await msgError(e); }
     };
@@ -1388,7 +1388,7 @@
                 const t = tiendasData.find(t => t.id === id); if (t) t.estado = 'disponible';
                 guardarCambioLocal(id, { estado: 'disponible' });
                 renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-                await showMsg('✅ Producto habilitado.', 'ok');
+                await showMsg('✅ Producto habilitado.\n\nPuede tardar unos minutos en que los demás lo vean.', 'ok');
             } else { await showMsg('❌ ' + await r.text(), 'error'); }
         } catch(e) { await msgError(e); }
     };
@@ -1413,7 +1413,7 @@
                     anuncio.fotos = fotos;
                     guardarCambioLocal(id, { fotos: fotos });
                     renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-                    await showMsg('✅ Foto actualizada.', 'ok');
+                    await showMsg('✅ Foto actualizada.\n\nPuede tardar unos minutos en que los demás lo vean.', 'ok');
                 } else { await showMsg('❌ ' + await r.text(), 'error'); }
             } catch(err) { await showMsg('❌ ' + err.message, 'error'); }
         };
@@ -1493,7 +1493,7 @@
             inp.value = ''; document.getElementById('preview-container').innerHTML = ''; document.getElementById('preview-text').style.display = 'block';
             document.getElementById('p-nombre').value = ''; document.getElementById('p-precio').value = ''; document.getElementById('p-desc').value = '';
             document.getElementById('form-nuevo-producto').style.display = 'none';
-            await showMsg('✅ ¡Producto publicado!', 'ok');
+            await showMsg('✅ ¡Producto publicado!\n\n⏳ Puede tardar unos minutos en que los demás usuarios vean los cambios.', 'ok');
             btn.innerText = '📤 Publicar Producto'; btn.disabled = false;
         } catch(e) { await showMsg('❌ ' + e.message, 'error'); btn.innerText = '📤 Publicar Producto'; btn.disabled = false; }
     };
