@@ -599,7 +599,7 @@
     }
 
     function actualizarUI(loggedIn) {
-        document.getElementById('btn-add-negocio').innerText = loggedIn ? '🏪 Gestionar mi Negocio' : '➕ Añadir tienda';
+        document.getElementById('btn-add-negocio').innerText = loggedIn ? '🏪 Gestionar mi Tienda' : '➕ Añadir tienda';
         document.getElementById('btn-cerrar-sesion').style.display = loggedIn ? 'block' : 'none';
     }
 
@@ -768,7 +768,7 @@
             actualizarUI(true);
             document.getElementById('auth-container').style.display = 'none';
             document.getElementById('opciones-auth').style.display = 'none';
-            // No cerrar el menú - mostrar botón gestionar negocio
+            // No cerrar el menú - mostrar botón gestionar tienda
             await showMsg('✅ Sesión iniciada correctamente.', 'ok');
             renderizar(tiendasData);
         } catch(e) {
