@@ -352,6 +352,18 @@
         </div>
         <div class="seccion-card">
             <h3>🏪 Información de tu Tienda</h3>
+            <div class="form-group">
+                <label>Foto de la Tienda <span style="color:#aaa;font-weight:normal;">(opcional)</span>:</label>
+                <div style="display:flex;align-items:center;gap:12px;padding:10px;background:#f8fafc;border-radius:10px;border:1px solid #e8edf2;">
+                    <img id="foto-tienda-preview" src="" alt="" style="width:70px;height:70px;object-fit:cover;border-radius:10px;border:2px solid #ddd;display:none;">
+                    <div id="foto-tienda-placeholder" style="width:70px;height:70px;border-radius:10px;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center;font-size:28px;color:#ccc;">🏪</div>
+                    <div>
+                        <button type="button" onclick="document.getElementById('input-foto-tienda').click()" style="background:#0056b3;color:white;border:none;padding:8px 14px;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;display:block;margin-bottom:6px;">📷 Cambiar foto</button>
+                        <span style="font-size:11px;color:#888;">Foto principal de tu tienda</span>
+                        <input type="file" id="input-foto-tienda" accept="image/*" style="display:none;" onchange="previsualizarFotoTienda(event)">
+                    </div>
+                </div>
+            </div>
             <div class="form-group"><label>Nombre de la Tienda:</label><input type="text" id="v-nombre" placeholder="Ej. Tienda de Ropa de María"></div>
             <div class="form-group"><label>Teléfono / WhatsApp:</label><input type="tel" id="v-tel" placeholder="+53 51234567"></div>
             <div class="form-group"><label>Dirección:</label><input type="text" id="v-dir" placeholder="Ej. Calle 23 #456, Vedado"></div>
@@ -853,6 +865,14 @@
             document.getElementById('v-tel').value = i.tel || '';
             document.getElementById('v-dir').value = i.direccion || '';
             document.getElementById('v-prov').value = i.provincia || '';
+            // Precargar foto de tienda si existe
+            if (i.fotoTienda) {
+                const preview = document.getElementById('foto-tienda-preview');
+                const placeholder = document.getElementById('foto-tienda-placeholder');
+                preview.src = i.fotoTienda;
+                preview.style.display = 'block';
+                placeholder.style.display = 'none';
+            }
             if (i.lat && i.lng) { latSel = i.lat; lngSel = i.lng; document.getElementById('coords-display').innerText = `📍 Lat: ${i.lat.toFixed(5)}, Lng: ${i.lng.toFixed(5)}`; }
         }
         renderizarMisProductos(mis);
@@ -863,63 +883,112 @@
     };
 
     function tarjetaProducto(t, esSub) {
-        const foto = (t.fotos && t.fotos[0]) || 'https://via.placeholder.com/60';
         const ag = t.estado === 'agotado';
-        const indentStyle = esSub ? 'margin-left:16px;border-left:3px solid #0056b3;border-radius:0 10px 10px 0;' : '';
-        return `<div class="producto-vendedor" style="${indentStyle}">
-            <div class="producto-vendedor-top">
-                <img src="${foto}" alt="">
-                <div class="producto-vendedor-info">
-                    <div style="display:flex;align-items:center;gap:4px;">
-                        ${esSub ? '<span style="font-size:10px;background:#e8f4fd;color:#0056b3;padding:1px 5px;border-radius:6px;font-weight:bold;">SUB</span>' : ''}
-                        <strong id="nombre-label-${t.id}" style="font-size:13px;color:#222;">${t.nombre || 'Sin nombre'}</strong>
-                        <button onclick="editarNombreProducto('${t.id}')" style="background:none;border:none;cursor:pointer;font-size:12px;color:#0056b3;padding:0;">✏️</button>
-                    </div>
-                    <div id="nombre-edit-${t.id}" style="display:none;margin-top:4px;">
-                        <input type="text" id="nombre-input-${t.id}" value="${t.nombre || ''}" style="width:100%;padding:4px 6px;border:1.5px solid #0056b3;border-radius:6px;font-size:12px;">
-                        <div style="display:flex;gap:4px;margin-top:3px;">
-                            <button onclick="guardarNombreProducto('${t.id}')" style="flex:1;padding:4px;background:#0056b3;color:white;border:none;border-radius:6px;font-size:11px;cursor:pointer;">Guardar</button>
-                            <button onclick="cancelarEditarNombre('${t.id}')" style="flex:1;padding:4px;background:#f0f0f0;color:#333;border:none;border-radius:6px;font-size:11px;cursor:pointer;">Cancelar</button>
-                        </div>
-                    </div>
-                    <span style="font-size:12px;color:#d32f2f;font-weight:bold;">${t.precio || ''} ${t.moneda || ''}</span>
-                    ${ag ? '<br><small style="color:#e65100;font-weight:bold;">AGOTADO</small>' : ''}
+        const fotosEncoded = encodeURIComponent(JSON.stringify(t.fotos));
+        const ns = (t.nombre||'Sin nombre').replace(/'/g,"\'").replace(/"/g,'&quot;');
+        const ds = (t.descripcion||'').replace(/'/g,"\'").replace(/"/g,'&quot;');
+        const tel = (t.tel||'').replace(/[^0-9]/g,'');
+        let imgs = t.fotos.map((f,i) => `<img src="${f}" class="carousel-img ${i===0?'active':''}" onclick="abrirLightbox('${fotosEncoded}',${i})">`).join('');
+        const ctrl = t.fotos.length > 1 ? `<button class="prev" onclick="event.stopPropagation();cambiarFoto('${t.id}',-1)">&#10094;</button><button class="next" onclick="event.stopPropagation();cambiarFoto('${t.id}',1)">&#10095;</button>` : '';
+        const indentStyle = esSub ? 'margin-left:12px;border-left:3px solid #0056b3;border-radius:0 14px 14px 0;' : '';
+
+        // Menú 3 puntos con todas las opciones
+        const menuId = 'menu-gest-'+t.id;
+        const opcionesMenu = `
+            <div id="${menuId}" style="display:none;position:absolute;top:40px;right:8px;background:white;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,0.2);z-index:500;width:180px;overflow:hidden;">
+                ${ag
+                    ? `<button onclick="habilitarProducto('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;color:#2e7d32;">✅ Habilitar</button>`
+                    : `<button onclick="marcarAgotado('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;color:#e65100;">🚫 Marcar agotado</button>`
+                }
+                <button onclick="editarNombreProducto('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">✏️ Editar nombre</button>
+                <button onclick="editarPrecioProducto('${t.id}','${t.precio||''}','${t.moneda||'CUP'}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">💰 Editar precio</button>
+                <button onclick="gestionarFoto('${t.id}','cambiar');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">🔄 Cambiar foto</button>
+                <button onclick="gestionarFoto('${t.id}','agregar');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">➕ Agregar foto</button>
+                ${!esSub ? `<button onclick="mostrarFormSubproducto('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;color:#0056b3;">📦 Agregar sub</button>` : ''}
+                <button onclick="borrarAnuncio('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;cursor:pointer;font-size:13px;color:red;font-weight:bold;">🗑️ Borrar</button>
+            </div>`;
+
+        return `<div class="card" id="card-gest-${t.id}" style="${indentStyle}opacity:${ag?'0.7':'1'}">
+            <!-- 3 Puntos -->
+            <div style="position:absolute;top:8px;right:8px;z-index:100;">
+                <button onclick="event.stopPropagation();toggleMenuGest('${t.id}')" style="background:rgba(255,255,255,0.92);border:none;border-radius:50%;width:30px;height:30px;font-size:18px;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;">⋮</button>
+                ${opcionesMenu}
+            </div>
+            ${esSub ? '<div style="position:absolute;top:8px;left:8px;background:#0056b3;color:white;font-size:10px;font-weight:bold;padding:2px 7px;border-radius:10px;z-index:10;">SUB</div>' : ''}
+            <div class="carousel-container" data-id="${t.id}" ontouchstart="tcStart(event,this)" ontouchend="tcEnd(event,this)">
+                ${imgs}${ctrl}
+                ${ag ? '<div class="badge-agotado">AGOTADO</div>' : ''}
+            </div>
+            <h3 id="nombre-label-${t.id}">${t.nombre||'Sin nombre'}</h3>
+            <div id="nombre-edit-${t.id}" style="display:none;padding:0 8px 6px;">
+                <input type="text" id="nombre-input-${t.id}" value="${t.nombre||''}" style="width:100%;padding:6px;border:1.5px solid #0056b3;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                <div style="display:flex;gap:4px;margin-top:4px;">
+                    <button onclick="guardarNombreProducto('${t.id}')" style="flex:1;padding:5px;background:#0056b3;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">Guardar</button>
+                    <button onclick="cancelarEditarNombre('${t.id}')" style="flex:1;padding:5px;background:#f0f0f0;color:#333;border:none;border-radius:6px;font-size:12px;cursor:pointer;">Cancelar</button>
                 </div>
             </div>
-            <div class="producto-acciones">
-                ${ag ? `<button class="btn-acc-habilitar" onclick="habilitarProducto('${t.id}')">✅ Habilitar</button>`
-                      : `<button class="btn-acc-agotado" onclick="marcarAgotado('${t.id}')">🚫 Agotado</button>`}
-                <button onclick="gestionarFoto('${t.id}','cambiar')">🔄 Foto</button>
-                <button onclick="gestionarFoto('${t.id}','agregar')">➕ Foto</button>
-                ${!esSub ? `<button onclick="mostrarFormSubproducto('${t.id}')" style="color:#0056b3 !important;">&#10133; Sub</button>` : ''}
-                <button class="btn-acc-borrar" onclick="borrarAnuncio('${t.id}')">🗑️ Borrar</button>
+            <div class="precio-row">
+                <span id="precio-label-${t.id}" class="precio-tag">${t.precio||''}</span>
+                ${t.moneda ? '<span class="moneda-tag">'+t.moneda+'</span>' : ''}
+                ${t.descripcion ? '<button class="btn-descripcion" onclick="abrirDesc(this.dataset.n,this.dataset.d)" data-n="'+ns+'" data-d="'+ds+'">'+svgDoc+'</button>' : ''}
+            </div>
+            <div id="precio-edit-${t.id}" style="display:none;padding:0 8px 6px;">
+                <div style="display:flex;gap:4px;">
+                    <input type="text" id="precio-input-${t.id}" style="flex:1;padding:6px;border:1.5px solid #d32f2f;border-radius:6px;font-size:13px;">
+                    <select id="moneda-input-${t.id}" style="width:70px;padding:6px;border:1.5px solid #d32f2f;border-radius:6px;font-size:13px;"><option value="CUP">CUP</option><option value="USD">USD</option></select>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:4px;">
+                    <button onclick="guardarPrecioProducto('${t.id}')" style="flex:1;padding:5px;background:#d32f2f;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">Guardar</button>
+                    <button onclick="cancelarEditarPrecio('${t.id}')" style="flex:1;padding:5px;background:#f0f0f0;color:#333;border:none;border-radius:6px;font-size:12px;cursor:pointer;">Cancelar</button>
+                </div>
+            </div>
+            <p class="provincia">📍 ${t.provincia}</p>
+            <div class="card-buttons">
+                <a href="tel:${t.tel}" class="btn-llamar">${svgTel}</a>
+                <a href="https://wa.me/${tel}" target="_blank" class="btn-wa">${svgWA}</a>
+                <button class="btn-mapa-card" onclick="verUbicacion(${t.lat},${t.lng},'${ns}')">${svgGPS}</button>
             </div>
         </div>`;
     }
 
+    window.toggleMenuGest = function(id) {
+        const menu = document.getElementById('menu-gest-'+id);
+        // Cerrar otros menús abiertos
+        document.querySelectorAll('[id^="menu-gest-"]').forEach(m => {
+            if (m.id !== 'menu-gest-'+id) m.style.display = 'none';
+        });
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    };
+    document.addEventListener('click', () => {
+        document.querySelectorAll('[id^="menu-gest-"]').forEach(m => m.style.display = 'none');
+    });
+
     function renderizarMisProductos(lista) {
         const c = document.getElementById('lista-mis-productos');
-        if (!lista.length) { c.innerHTML = '<p style="color:#888;text-align:center;font-size:13px;">Aún no tienes productos.</p>'; return; }
+        c.style.cssText = 'display:grid;grid-template-columns:repeat(2,1fr);gap:10px;';
+        if (!lista.length) {
+            c.style.cssText = '';
+            c.innerHTML = '<p style="color:#888;text-align:center;font-size:13px;">Aún no tienes productos.</p>';
+            return;
+        }
 
-        // Separar padres y subproductos
         const padres = lista.filter(t => !t.productoPadreId);
         const subs = lista.filter(t => t.productoPadreId);
 
         let html = '';
         padres.forEach(padre => {
-            // Card del padre
             html += tarjetaProducto(padre, false);
-            // Subproductos de este padre
             const misSubs = subs.filter(s => s.productoPadreId === padre.id);
             if (misSubs.length) {
-                html += `<div style="margin:4px 0 8px;">`;
-                html += `<div style="margin-left:16px;font-size:11px;color:#0056b3;font-weight:bold;padding:4px 0;">📦 ${misSubs.length} subproducto${misSubs.length > 1 ? 's' : ''}</div>`;
+                // Los subproductos ocupan el ancho completo con etiqueta
+                html += `<div style="grid-column:1/-1;">`;
+                html += `<div style="font-size:11px;color:#0056b3;font-weight:bold;padding:4px 4px 6px;">📦 ${misSubs.length} subproducto${misSubs.length>1?'s':''} de "${padre.nombre||'este producto'}"</div>`;
+                html += `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">`;
                 misSubs.forEach(sub => { html += tarjetaProducto(sub, true); });
-                html += `</div>`;
+                html += `</div></div>`;
             }
         });
 
-        // Productos sin padre conocido (huérfanos, por si acaso)
         const huerfanos = subs.filter(s => !padres.find(p => p.id === s.productoPadreId));
         huerfanos.forEach(h => { html += tarjetaProducto(h, false); });
 
@@ -1053,6 +1122,62 @@
             await msgError(e, () => pubSubproducto(padreId));
             btn.innerText = 'Publicar subproducto'; btn.disabled = false;
         }
+    };
+
+    // ============================================================
+    // EDITAR PRECIO
+    // ============================================================
+    window.editarPrecioProducto = function(id, precioActual, monedaActual) {
+        document.getElementById('precio-label-'+id).parentElement.style.display = 'none';
+        const edit = document.getElementById('precio-edit-'+id);
+        edit.style.display = 'block';
+        document.getElementById('precio-input-'+id).value = precioActual;
+        document.getElementById('moneda-input-'+id).value = monedaActual || 'CUP';
+        document.getElementById('precio-input-'+id).focus();
+    };
+    window.cancelarEditarPrecio = function(id) {
+        document.getElementById('precio-label-'+id).parentElement.style.display = 'flex';
+        document.getElementById('precio-edit-'+id).style.display = 'none';
+    };
+    window.guardarPrecioProducto = async function(id) {
+        if (!usuarioUID) { await showMsg('Sin conexión o VPN no activado.', 'warning'); return; }
+        const nuevoPrecio = document.getElementById('precio-input-'+id).value.trim();
+        const nuevaMoneda = document.getElementById('moneda-input-'+id).value;
+        if (!nuevoPrecio) { await showMsg('El precio no puede estar vacío.', 'warning'); return; }
+        try {
+            const token = await getToken();
+            const r = await fetch(`${FS}/tiendas/${id}?updateMask.fieldPaths=precio&updateMask.fieldPaths=moneda&key=${API_KEY}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ fields: {
+                    precio: { stringValue: nuevoPrecio },
+                    moneda: { stringValue: nuevaMoneda }
+                }})
+            });
+            if (!r.ok) throw new Error(await r.text());
+            const t = tiendasData.find(t => t.id === id);
+            if (t) { t.precio = nuevoPrecio; t.moneda = nuevaMoneda; }
+            guardarCambioLocal(id, { precio: nuevoPrecio, moneda: nuevaMoneda });
+            renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
+            await showMsg('✅ Precio actualizado.', 'ok');
+        } catch(e) { await msgError(e); }
+    };
+
+    // ============================================================
+    // FOTO DE TIENDA
+    // ============================================================
+    window.previsualizarFotoTienda = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+            const preview = document.getElementById('foto-tienda-preview');
+            const placeholder = document.getElementById('foto-tienda-placeholder');
+            preview.src = ev.target.result;
+            preview.style.display = 'block';
+            placeholder.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
     };
 
     window.editarNombreProducto = function(id) {
@@ -1217,6 +1342,7 @@
                         tel: f.tel?.stringValue || '',
                         lat: f.lat?.doubleValue || 23.11,
                         lng: f.lng?.doubleValue || -82.36,
+                        fotoTienda: f.fotoTienda?.stringValue || '',
                         esPrincipal: f.esPrincipal?.booleanValue || false,
                         productoPadreId: f.productoPadreId?.stringValue || ''
                     };
@@ -1297,8 +1423,8 @@
     function renderizar(lista) {
         const c = document.getElementById('listaTiendas');
         c.innerHTML = '';
-        // Filtrar subproductos del catálogo principal (solo mostrar productos raíz)
-        lista = (lista || []).filter(t => !t.productoPadreId);
+        // Filtrar subproductos Y agotados del catálogo principal
+        lista = (lista || []).filter(t => !t.productoPadreId && t.estado !== 'agotado');
         if (!lista.length) {
             c.innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#888;'>No hay productos disponibles.</p>";
             return;
@@ -1376,7 +1502,7 @@
         const campos = { nombreTienda: document.getElementById('v-nombre').value, tel: document.getElementById('v-tel').value, direccion: document.getElementById('v-dir').value, provincia: document.getElementById('v-prov').value };
         try {
             const token = await getToken();
-            const masks = Object.keys(campos).map(k => `updateMask.fieldPaths=${k}`).join('&') + '&updateMask.fieldPaths=lat&updateMask.fieldPaths=lng';
+            const masks = Object.keys(campos).map(k => `updateMask.fieldPaths=${k}`).join('&') + '&updateMask.fieldPaths=lat&updateMask.fieldPaths=lng&updateMask.fieldPaths=fotoTienda';
             await Promise.all(mis.map(p => {
                 const pay = { fields: {} };
                 Object.entries(campos).forEach(([k,v]) => { pay.fields[k] = { stringValue: v }; });
