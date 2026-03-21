@@ -895,13 +895,14 @@
         // Menú 3 puntos con todas las opciones
         const menuId = 'menu-gest-'+t.id;
         const opcionesMenu = `
-            <div id="${menuId}" style="display:none;position:absolute;top:40px;right:8px;background:white;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,0.2);z-index:500;width:180px;overflow:hidden;">
+            <div id="${menuId}" style="display:none;position:absolute;top:40px;right:0;background:white;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,0.2);z-index:500;width:200px;overflow:hidden;">
                 ${ag
                     ? `<button onclick="habilitarProducto('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;color:#2e7d32;">✅ Habilitar</button>`
                     : `<button onclick="marcarAgotado('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;color:#e65100;">🚫 Marcar agotado</button>`
                 }
                 <button onclick="editarNombreProducto('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">✏️ Editar nombre</button>
                 <button onclick="editarPrecioProducto('${t.id}','${t.precio||''}','${t.moneda||'CUP'}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">💰 Editar precio</button>
+                <button onclick="editarDescProducto('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">📝 Editar descripción</button>
                 <button onclick="gestionarFoto('${t.id}','cambiar');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">🔄 Cambiar foto</button>
                 <button onclick="gestionarFoto('${t.id}','agregar');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">➕ Agregar foto</button>
                 ${!esSub ? `<button onclick="mostrarFormSubproducto('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;color:#0056b3;">📦 Agregar sub</button>` : ''}
@@ -942,6 +943,13 @@
                     <button onclick="cancelarEditarPrecio('${t.id}')" style="flex:1;padding:5px;background:#f0f0f0;color:#333;border:none;border-radius:6px;font-size:12px;cursor:pointer;">Cancelar</button>
                 </div>
             </div>
+            <div id="desc-edit-${t.id}" style="display:none;padding:0 8px 6px;">
+                <textarea id="desc-input-${t.id}" rows="2" placeholder="Descripción..." style="width:100%;padding:6px;border:1.5px solid #0056b3;border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">${t.descripcion||''}</textarea>
+                <div style="display:flex;gap:4px;margin-top:4px;">
+                    <button onclick="guardarDescProducto('${t.id}')" style="flex:1;padding:5px;background:#0056b3;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">Guardar</button>
+                    <button onclick="document.getElementById('desc-edit-${t.id}').style.display='none'" style="flex:1;padding:5px;background:#f0f0f0;color:#333;border:none;border-radius:6px;font-size:12px;cursor:pointer;">Cancelar</button>
+                </div>
+            </div>
             <p class="provincia">📍 ${t.provincia}</p>
             <div class="card-buttons">
                 <a href="tel:${t.tel}" class="btn-llamar">${svgTel}</a>
@@ -950,6 +958,30 @@
             </div>
         </div>`;
     }
+
+    window.editarDescProducto = function(id) {
+        const el = document.getElementById('desc-edit-'+id);
+        if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    };
+    window.guardarDescProducto = async function(id) {
+        if (!usuarioUID) { await showMsg('Sin conexión o VPN no activado.', 'warning'); return; }
+        const nuevaDesc = document.getElementById('desc-input-'+id).value.trim();
+        try {
+            const token = await getToken();
+            const r = await fetch(`${FS}/tiendas/${id}?updateMask.fieldPaths=descripcion&key=${API_KEY}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ fields: { descripcion: { stringValue: nuevaDesc } } })
+            });
+            if (!r.ok) throw new Error(await r.text());
+            const t = tiendasData.find(t => t.id === id);
+            if (t) t.descripcion = nuevaDesc;
+            guardarCambioLocal(id, { descripcion: nuevaDesc });
+            document.getElementById('desc-edit-'+id).style.display = 'none';
+            renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
+            await showMsg('✅ Descripción actualizada.', 'ok');
+        } catch(e) { await msgError(e); }
+    };
 
     window.toggleMenuGest = function(id) {
         const menu = document.getElementById('menu-gest-'+id);
@@ -1457,7 +1489,14 @@
                                    <button onclick="agregarAlCarrito('${t.id}')" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;line-height:1;display:flex;align-items:center;justify-content:center;">🛒</button>`
                             }
                         </div>
-                        <p class="provincia">📍 ${t.provincia}</p>
+                        <div id="desc-edit-${t.id}" style="display:none;padding:0 8px 6px;">
+                <textarea id="desc-input-${t.id}" rows="2" placeholder="Descripción..." style="width:100%;padding:6px;border:1.5px solid #0056b3;border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">${t.descripcion||''}</textarea>
+                <div style="display:flex;gap:4px;margin-top:4px;">
+                    <button onclick="guardarDescProducto('${t.id}')" style="flex:1;padding:5px;background:#0056b3;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">Guardar</button>
+                    <button onclick="document.getElementById('desc-edit-${t.id}').style.display='none'" style="flex:1;padding:5px;background:#f0f0f0;color:#333;border:none;border-radius:6px;font-size:12px;cursor:pointer;">Cancelar</button>
+                </div>
+            </div>
+            <p class="provincia">📍 ${t.provincia}</p>
                         <div class="card-buttons">
                             <a href="tel:${t.tel}" class="btn-llamar">${svgTel}</a>
                             <a href="https://wa.me/${tel}" target="_blank" class="btn-wa">${svgWA}</a>
