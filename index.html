@@ -895,7 +895,7 @@
         // Menú 3 puntos con todas las opciones
         const menuId = 'menu-gest-'+t.id;
         const opcionesMenu = `
-            <div id="${menuId}" style="display:none;position:absolute;top:40px;right:0;background:white;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,0.2);z-index:500;width:200px;overflow:hidden;">
+            <div id="${menuId}" style="display:none;position:fixed;background:white;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,0.2);z-index:5000;width:200px;overflow:hidden;">
                 ${ag
                     ? `<button onclick="habilitarProducto('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;color:#2e7d32;">✅ Habilitar</button>`
                     : `<button onclick="marcarAgotado('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;color:#e65100;">🚫 Marcar agotado</button>`
@@ -912,7 +912,7 @@
         return `<div class="card" id="card-gest-${t.id}" style="${indentStyle}opacity:${ag?'0.7':'1'}">
             <!-- 3 Puntos -->
             <div style="position:absolute;top:8px;right:8px;z-index:100;">
-                <button onclick="event.stopPropagation();toggleMenuGest('${t.id}')" style="background:rgba(255,255,255,0.92);border:none;border-radius:50%;width:30px;height:30px;font-size:18px;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;">⋮</button>
+                <button onclick="event.stopPropagation();toggleMenuGest('${t.id}',this)" style="background:rgba(255,255,255,0.92);border:none;border-radius:50%;width:30px;height:30px;font-size:18px;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;">⋮</button>
                 ${opcionesMenu}
             </div>
             ${esSub ? '<div style="position:absolute;top:8px;left:8px;background:#0056b3;color:white;font-size:10px;font-weight:bold;padding:2px 7px;border-radius:10px;z-index:10;">SUB</div>' : ''}
@@ -983,13 +983,22 @@
         } catch(e) { await msgError(e); }
     };
 
-    window.toggleMenuGest = function(id) {
+    window.toggleMenuGest = function(id, btn) {
         const menu = document.getElementById('menu-gest-'+id);
         // Cerrar otros menús abiertos
         document.querySelectorAll('[id^="menu-gest-"]').forEach(m => {
             if (m.id !== 'menu-gest-'+id) m.style.display = 'none';
         });
-        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        if (menu.style.display === 'block') { menu.style.display = 'none'; return; }
+        // Calcular posición en pantalla
+        const rect = btn.getBoundingClientRect();
+        const menuWidth = 200;
+        let left = rect.right - menuWidth;
+        if (left < 8) left = 8;
+        if (left + menuWidth > window.innerWidth - 8) left = window.innerWidth - menuWidth - 8;
+        menu.style.top = (rect.bottom + 4) + 'px';
+        menu.style.left = left + 'px';
+        menu.style.display = 'block';
     };
     document.addEventListener('click', () => {
         document.querySelectorAll('[id^="menu-gest-"]').forEach(m => m.style.display = 'none');
