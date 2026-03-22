@@ -3,14 +3,14 @@
     {
       "name": "projects/bazarcuba/databases/(default)/documents/tiendas/C3wDCOneqDcwJcPF6kFq",
       "fields": {
+        "estado": {
+          "stringValue": "disponible"
+        },
         "moneda": {
           "stringValue": "CUP"
         },
-        "lng": {
-          "doubleValue": -75.832260847091689
-        },
-        "estado": {
-          "stringValue": "disponible"
+        "lat": {
+          "doubleValue": 20.033641696930172
         },
         "fotos": {
           "arrayValue": {
@@ -24,35 +24,35 @@
         "descripcion": {
           "stringValue": ""
         },
-        "direccion": {
-          "stringValue": "Carretera de Bacardi"
+        "nombre": {
+          "stringValue": "Dulces de leche"
+        },
+        "lng": {
+          "doubleValue": -75.832260847091689
         },
         "uidVendedor": {
           "stringValue": "2cwkv5VMqiQXEb3ehkqtJHqMmqr2"
         },
-        "tel": {
-          "stringValue": "58811896"
-        },
-        "correo": {
-          "stringValue": "norges763@gmail.com"
-        },
-        "nombre": {
-          "stringValue": "Dulces de leche"
-        },
         "fecha": {
           "timestampValue": "2026-03-19T01:52:13.931Z"
         },
-        "lat": {
-          "doubleValue": 20.033641696930172
+        "direccion": {
+          "stringValue": "Carretera de Bacardi"
+        },
+        "tel": {
+          "stringValue": "58811896"
+        },
+        "precio": {
+          "stringValue": "550"
         },
         "provincia": {
           "stringValue": "Santiago de Cuba"
         },
+        "correo": {
+          "stringValue": "norges763@gmail.com"
+        },
         "nombreTienda": {
           "stringValue": "De todo"
-        },
-        "precio": {
-          "stringValue": "550"
         }
       },
       "createTime": "2026-03-19T01:52:18.576774Z",
@@ -61,32 +61,17 @@
     {
       "name": "projects/bazarcuba/databases/(default)/documents/tiendas/abn3H2jzoJjoMPCLhXTf",
       "fields": {
-        "precio": {
-          "stringValue": "23"
+        "moneda": {
+          "stringValue": "CUP"
         },
-        "provincia": {
-          "stringValue": "Santiago de Cuba"
-        },
-        "nombreTienda": {
-          "stringValue": "De todo"
-        },
-        "tel": {
-          "stringValue": "58811896"
-        },
-        "correo": {
-          "stringValue": "norges763@gmail.com"
-        },
-        "fecha": {
-          "timestampValue": "2026-03-21T16:30:02.192Z"
-        },
-        "nombre": {
-          "stringValue": "perros"
+        "estado": {
+          "stringValue": "disponible"
         },
         "lat": {
           "doubleValue": 20.033641696930172
         },
-        "estado": {
-          "stringValue": "disponible"
+        "esPrincipal": {
+          "booleanValue": true
         },
         "fotos": {
           "arrayValue": {
@@ -97,23 +82,38 @@
             ]
           }
         },
-        "uidVendedor": {
-          "stringValue": "2cwkv5VMqiQXEb3ehkqtJHqMmqr2"
-        },
         "descripcion": {
           "stringValue": ""
+        },
+        "nombre": {
+          "stringValue": "perros"
+        },
+        "lng": {
+          "doubleValue": -75.832260847091689
+        },
+        "uidVendedor": {
+          "stringValue": "2cwkv5VMqiQXEb3ehkqtJHqMmqr2"
         },
         "direccion": {
           "stringValue": "Carretera de Bacardi"
         },
-        "moneda": {
-          "stringValue": "CUP"
+        "fecha": {
+          "timestampValue": "2026-03-21T16:30:02.192Z"
         },
-        "esPrincipal": {
-          "booleanValue": true
+        "tel": {
+          "stringValue": "58811896"
         },
-        "lng": {
-          "doubleValue": -75.832260847091689
+        "precio": {
+          "stringValue": "23"
+        },
+        "nombreTienda": {
+          "stringValue": "De todo"
+        },
+        "correo": {
+          "stringValue": "norges763@gmail.com"
+        },
+        "provincia": {
+          "stringValue": "Santiago de Cuba"
         }
       },
       "createTime": "2026-03-21T16:30:03.958083Z",
@@ -122,8 +122,47 @@
     {
       "name": "projects/bazarcuba/databases/(default)/documents/tiendas/j9F57YretgtL8j6KR7fj",
       "fields": {
+        "uidVendedor": {
+          "stringValue": "2cwkv5VMqiQXEb3ehkqtJHqMmqr2"
+        },
+        "lng": {
+          "doubleValue": -75.832260847091689
+        },
+        "productoPadreId": {
+          "stringValue": "abn3H2jzoJjoMPCLhXTf"
+        },
+        "direccion": {
+          "stringValue": "Carretera de Bacardi"
+        },
+        "fecha": {
+          "timestampValue": "2026-03-21T16:31:10.906Z"
+        },
+        "tel": {
+          "stringValue": "58811896"
+        },
+        "precio": {
+          "stringValue": "25"
+        },
+        "correo": {
+          "stringValue": "norges763@gmail.com"
+        },
+        "nombreTienda": {
+          "stringValue": "De todo"
+        },
+        "provincia": {
+          "stringValue": "Santiago de Cuba"
+        },
+        "moneda": {
+          "stringValue": "CUP"
+        },
         "estado": {
           "stringValue": "disponible"
+        },
+        "lat": {
+          "doubleValue": 20.033641696930172
+        },
+        "esPrincipal": {
+          "booleanValue": false
         },
         "fotos": {
           "arrayValue": {
@@ -134,50 +173,11 @@
             ]
           }
         },
-        "productoPadreId": {
-          "stringValue": "abn3H2jzoJjoMPCLhXTf"
-        },
         "descripcion": {
           "stringValue": ""
         },
-        "direccion": {
-          "stringValue": "Carretera de Bacardi"
-        },
-        "uidVendedor": {
-          "stringValue": "2cwkv5VMqiQXEb3ehkqtJHqMmqr2"
-        },
-        "moneda": {
-          "stringValue": "CUP"
-        },
-        "esPrincipal": {
-          "booleanValue": false
-        },
-        "lng": {
-          "doubleValue": -75.832260847091689
-        },
-        "provincia": {
-          "stringValue": "Santiago de Cuba"
-        },
-        "nombreTienda": {
-          "stringValue": "De todo"
-        },
-        "precio": {
-          "stringValue": "25"
-        },
-        "correo": {
-          "stringValue": "norges763@gmail.com"
-        },
-        "tel": {
-          "stringValue": "58811896"
-        },
-        "fecha": {
-          "timestampValue": "2026-03-21T16:31:10.906Z"
-        },
         "nombre": {
           "stringValue": "perritos"
-        },
-        "lat": {
-          "doubleValue": 20.033641696930172
         }
       },
       "createTime": "2026-03-21T16:31:12.406089Z",
@@ -186,35 +186,35 @@
     {
       "name": "projects/bazarcuba/databases/(default)/documents/tiendas/q68ZeB2gIwQnCLl2C1ww",
       "fields": {
-        "lat": {
-          "doubleValue": 20.021612258682445
-        },
-        "fotoUrl": {
-          "stringValue": "https://res.cloudinary.com/dmeczxbyh/image/upload/v1773349555/hdm0r7tygjtgjssm8swi.jpg"
-        },
-        "lng": {
-          "doubleValue": -75.826969016987292
-        },
         "tel": {
           "stringValue": "54725589"
-        },
-        "correo": {
-          "stringValue": "demianherrero1961@gmail.com"
-        },
-        "fecha": {
-          "timestampValue": "2026-03-12T21:05:55.156Z"
-        },
-        "nombre": {
-          "stringValue": "El po po"
         },
         "precio": {
           "stringValue": "500"
         },
+        "provincia": {
+          "stringValue": "Santiago de Cuba"
+        },
+        "nombre": {
+          "stringValue": "El po po"
+        },
+        "correo": {
+          "stringValue": "demianherrero1961@gmail.com"
+        },
         "uidVendedor": {
           "stringValue": "VxwJoH43BrPq21BNv9R4JgOts393"
         },
-        "provincia": {
-          "stringValue": "Santiago de Cuba"
+        "lng": {
+          "doubleValue": -75.826969016987292
+        },
+        "fecha": {
+          "timestampValue": "2026-03-12T21:05:55.156Z"
+        },
+        "fotoUrl": {
+          "stringValue": "https://res.cloudinary.com/dmeczxbyh/image/upload/v1773349555/hdm0r7tygjtgjssm8swi.jpg"
+        },
+        "lat": {
+          "doubleValue": 20.021612258682445
         }
       },
       "createTime": "2026-03-12T21:05:57.642538Z",
@@ -223,38 +223,17 @@
     {
       "name": "projects/bazarcuba/databases/(default)/documents/tiendas/rFz0afqDbulB7jC5sCXn",
       "fields": {
-        "fecha": {
-          "timestampValue": "2026-03-19T02:43:01.164Z"
-        },
-        "nombre": {
-          "stringValue": "jeje"
-        },
-        "tel": {
-          "stringValue": "58811896"
-        },
-        "correo": {
-          "stringValue": "norges763@gmail.com"
-        },
-        "lat": {
-          "doubleValue": 20.033641696930172
-        },
-        "precio": {
-          "stringValue": "1000"
-        },
-        "nombreTienda": {
-          "stringValue": "De todo"
-        },
-        "provincia": {
-          "stringValue": "Santiago de Cuba"
-        },
-        "esPrincipal": {
-          "booleanValue": true
+        "estado": {
+          "stringValue": "agotado"
         },
         "moneda": {
           "stringValue": "CUP"
         },
-        "lng": {
-          "doubleValue": -75.832260847091689
+        "esPrincipal": {
+          "booleanValue": true
+        },
+        "lat": {
+          "doubleValue": 20.033641696930172
         },
         "fotos": {
           "arrayValue": {
@@ -277,17 +256,38 @@
             ]
           }
         },
-        "estado": {
-          "stringValue": "agotado"
+        "descripcion": {
+          "stringValue": ""
+        },
+        "nombre": {
+          "stringValue": "jeje"
         },
         "uidVendedor": {
           "stringValue": "2cwkv5VMqiQXEb3ehkqtJHqMmqr2"
         },
+        "lng": {
+          "doubleValue": -75.832260847091689
+        },
+        "fecha": {
+          "timestampValue": "2026-03-19T02:43:01.164Z"
+        },
         "direccion": {
           "stringValue": "Carretera de Bacardi"
         },
-        "descripcion": {
-          "stringValue": ""
+        "tel": {
+          "stringValue": "58811896"
+        },
+        "precio": {
+          "stringValue": "1000"
+        },
+        "provincia": {
+          "stringValue": "Santiago de Cuba"
+        },
+        "nombreTienda": {
+          "stringValue": "De todo"
+        },
+        "correo": {
+          "stringValue": "norges763@gmail.com"
         }
       },
       "createTime": "2026-03-19T02:43:05.976930Z",
