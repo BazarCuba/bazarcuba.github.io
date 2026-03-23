@@ -897,16 +897,16 @@
         const opcionesMenu = `
             <div id="${menuId}" style="display:none;position:fixed;background:white;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,0.2);z-index:5000;width:200px;overflow:hidden;">
                 ${ag
-                    ? `<button onclick="habilitarProducto('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;color:#2e7d32;">✅ Habilitar</button>`
-                    : `<button onclick="marcarAgotado('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;color:#e65100;">🚫 Marcar agotado</button>`
+                    ? `<button onclick="event.stopPropagation();document.getElementById('${menuId}').style.display='none';habilitarProducto('${t.id}');" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;color:#2e7d32;">✅ Habilitar</button>`
+                    : `<button onclick="event.stopPropagation();document.getElementById('${menuId}').style.display='none';marcarAgotado('${t.id}');" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;color:#e65100;">🚫 Marcar agotado</button>`
                 }
-                <button onclick="editarNombreProducto('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">✏️ Editar nombre</button>
-                <button onclick="editarPrecioProducto('${t.id}','${t.precio||''}','${t.moneda||'CUP'}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">💰 Editar precio</button>
-                <button onclick="editarDescProducto('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">📝 Editar descripción</button>
-                <button onclick="gestionarFoto('${t.id}','cambiar');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">🔄 Cambiar foto</button>
-                <button onclick="gestionarFoto('${t.id}','agregar');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">➕ Agregar foto</button>
-                ${!esSub ? `<button onclick="mostrarFormSubproducto('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;color:#0056b3;">📦 Agregar sub</button>` : ''}
-                <button onclick="borrarAnuncio('${t.id}');document.getElementById('${menuId}').style.display='none';" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;cursor:pointer;font-size:13px;color:red;font-weight:bold;">🗑️ Borrar</button>
+                <button onclick="event.stopPropagation();document.getElementById('${menuId}').style.display='none';editarNombreProducto('${t.id}');" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">✏️ Editar nombre</button>
+                <button onclick="event.stopPropagation();document.getElementById('${menuId}').style.display='none';editarPrecioProducto('${t.id}','${t.precio||''}','${t.moneda||'CUP'}');" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">💰 Editar precio</button>
+                <button onclick="event.stopPropagation();document.getElementById('${menuId}').style.display='none';editarDescProducto('${t.id}');" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">📝 Editar descripción</button>
+                <button onclick="event.stopPropagation();document.getElementById('${menuId}').style.display='none';gestionarFoto('${t.id}','cambiar');" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">🔄 Cambiar foto</button>
+                <button onclick="event.stopPropagation();document.getElementById('${menuId}').style.display='none';gestionarFoto('${t.id}','agregar');" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;">➕ Agregar foto</button>
+                ${!esSub ? `<button onclick="event.stopPropagation();document.getElementById('${menuId}').style.display='none';mostrarFormSubproducto('${t.id}');" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px;color:#0056b3;">📦 Agregar sub</button>` : ''}
+                <button onclick="event.stopPropagation();document.getElementById('${menuId}').style.display='none';borrarAnuncio('${t.id}');" style="width:100%;padding:11px 14px;text-align:left;background:none;border:none;cursor:pointer;font-size:13px;color:red;font-weight:bold;">🗑️ Borrar</button>
             </div>`;
 
         return `<div class="card" id="card-gest-${t.id}" style="${indentStyle}opacity:${ag?'0.7':'1'}">
@@ -1024,12 +1024,10 @@
             html += tarjetaProducto(padre, false);
             const misSubs = subs.filter(s => s.productoPadreId === padre.id);
             if (misSubs.length) {
-                // Los subproductos ocupan el ancho completo con etiqueta
-                html += `<div style="grid-column:1/-1;">`;
-                html += `<div style="font-size:11px;color:#0056b3;font-weight:bold;padding:4px 4px 6px;">📦 ${misSubs.length} subproducto${misSubs.length>1?'s':''} de "${padre.nombre||'este producto'}"</div>`;
-                html += `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">`;
+                // Etiqueta full width
+                html += `<div style="grid-column:1/-1;font-size:11px;color:#0056b3;font-weight:bold;padding:2px 4px;">📦 ${misSubs.length} subproducto${misSubs.length>1?'s':''} de "${padre.nombre||'este producto'}"</div>`;
+                // Subproductos directo en el grid padre (mismo tamaño que los demás)
                 misSubs.forEach(sub => { html += tarjetaProducto(sub, true); });
-                html += `</div></div>`;
             }
         });
 
