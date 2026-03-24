@@ -21,7 +21,8 @@
 
         .grid-tiendas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 10px 20px; max-width: 1200px; margin: 0 auto; }
 
-        .card { background: white; border-radius: 14px; box-shadow: 0 3px 12px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
+        .card { background: white; border-radius: 14px; box-shadow: 0 3px 12px rgba(0,0,0,0.1); position: relative; overflow: visible; }
+        .card .carousel-container { border-radius: 14px 14px 0 0; }
         .card h3 { margin: 8px 8px 2px; color: #222; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card p.provincia { margin: 0 8px 4px; color: #888; font-size: 11px; font-weight: bold; }
         .precio-row { display: flex; align-items: center; gap: 5px; margin: 0 8px 6px; flex-wrap: wrap; }
@@ -140,7 +141,7 @@
         }
         #subprod-header button { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 20px; cursor: pointer; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
         #subprod-header h3 { margin: 0; font-size: 17px; flex: 1; }
-        #subprod-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; padding: 12px; overflow-y: auto; flex: 1; }
+        #subprod-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; padding: 10px; overflow-y: auto; flex: 1; }
 
         /* CARRITO */
         #carrito-btn {
@@ -973,10 +974,23 @@
 
     window.toggleMenuGest = function(id, btn) {
         const menu = document.getElementById('menu-gest-'+id);
+        // Cerrar otros menús y resetear z-index de otras cards
         document.querySelectorAll('[id^="menu-gest-"]').forEach(m => {
-            if (m.id !== 'menu-gest-'+id) m.style.display = 'none';
+            if (m.id !== 'menu-gest-'+id) {
+                m.style.display = 'none';
+                const otroCard = document.getElementById('card-gest-' + m.id.replace('menu-gest-',''));
+                if (otroCard) otroCard.style.zIndex = '';
+            }
         });
-        if (menu.style.display === 'block') { menu.style.display = 'none'; return; }
+        if (menu.style.display === 'block') {
+            menu.style.display = 'none';
+            const card = btn.closest('.card');
+            if (card) card.style.zIndex = '';
+            return;
+        }
+        // Elevar z-index de la card activa para que quede encima de las vecinas
+        const card = btn.closest('.card');
+        if (card) card.style.zIndex = '200';
         const rect = btn.getBoundingClientRect();
         const menuWidth = 200;
         let left = rect.right - menuWidth;
@@ -987,15 +1001,23 @@
         menu.style.display = 'block';
     };
     document.addEventListener('click', () => {
-        document.querySelectorAll('[id^="menu-gest-"]').forEach(m => m.style.display = 'none');
+        document.querySelectorAll('[id^="menu-gest-"]').forEach(m => {
+            m.style.display = 'none';
+            const card = document.getElementById('card-gest-' + m.id.replace('menu-gest-',''));
+            if (card) card.style.zIndex = '';
+        });
     });
     window.addEventListener('scroll', () => {
-        document.querySelectorAll('[id^="menu-gest-"]').forEach(m => m.style.display = 'none');
+        document.querySelectorAll('[id^="menu-gest-"]').forEach(m => {
+            m.style.display = 'none';
+            const card = document.getElementById('card-gest-' + m.id.replace('menu-gest-',''));
+            if (card) card.style.zIndex = '';
+        });
     }, true);
 
     function renderizarMisProductos(lista) {
         const c = document.getElementById('lista-mis-productos');
-        c.style.cssText = 'display:grid;grid-template-columns:repeat(2,1fr);gap:10px;';
+        c.style.cssText = 'display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:0 -8px;';
         if (!lista.length) {
             c.style.cssText = '';
             c.innerHTML = '<p style="color:#888;text-align:center;font-size:13px;">Aún no tienes productos.</p>';
