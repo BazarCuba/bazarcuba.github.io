@@ -557,7 +557,6 @@
     // DESCRIPCION
     // ============================================================
     window.abrirDesc = function(nombre, desc) {
-        // Soporte para llamada desde data-attributes
         if (nombre && nombre.dataset) {
             desc = nombre.dataset.d;
             nombre = nombre.dataset.n;
@@ -577,13 +576,12 @@
         const uid = localStorage.getItem('bc_uid');
         const t = parseInt(localStorage.getItem('bc_t') || '0');
         if (!uid) return;
-        if (Date.now() - t > 86400000) { // 24h
+        if (Date.now() - t > 86400000) {
             localStorage.clear();
             return;
         }
         usuarioUID = uid;
         actualizarUI(true);
-        // Reconectar Firebase en background para poder escribir
         const email = localStorage.getItem('bc_e');
         const pass = localStorage.getItem('bc_p');
         if (email && pass) {
@@ -625,7 +623,6 @@
 
     function mostrarDirecto() {
         if (!modoDirecto || !tiendaUID) return;
-        // Contar visita por link directo
         contarVista(tiendaUID, 'link');
         const prods = tiendasData.filter(t => t.uidVendedor === tiendaUID);
         if (!prods.length) { document.getElementById('listaTiendas').innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#888;'>Esta tienda no tiene productos.</p>"; return; }
@@ -648,10 +645,7 @@
     // ============================================================
     // COPIAR LINK
     // ============================================================
-    // Contar visita en Firestore (no necesita auth, usa regla pública de escritura especial)
-    // Guardamos vistas en una colección separada "vistas/{uidVendedor}
     async function contarVista(uidVendedor, tipo) {
-        // Usar el worker (funciona sin VPN en Cuba)
         try {
             await fetch(`${WORKER}/registrar-vista`, {
                 method: 'POST',
@@ -711,7 +705,6 @@
     }
 
     window.visitarTienda = function(uid) {
-        // Contar visita desde catálogo/mapa
         contarVista(uid, 'tienda');
         tiendaUID = uid; vistaActual = 'tiendas';
         document.getElementById('btn-vista-toggle').textContent = '🗺️ Mapa';
@@ -780,7 +773,6 @@
             actualizarUI(true);
             document.getElementById('auth-container').style.display = 'none';
             document.getElementById('opciones-auth').style.display = 'none';
-            // No cerrar el menú - mostrar botón gestionar tienda
             await showMsg('✅ Sesión iniciada correctamente.', 'ok');
             renderizar(tiendasData);
         } catch(e) {
@@ -804,7 +796,6 @@
             const { createUserWithEmailAndPassword, updateProfile } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
             const auth = await iniciarFB();
             const cred = await createUserWithEmailAndPassword(auth, email, pass);
-            // Guardar teléfono en Firestore como perfil de vendedor
             const token = await auth.currentUser.getIdToken();
             await fetch(`${FS}/vendedores?key=${API_KEY}`, {
                 method: 'POST',
@@ -865,7 +856,6 @@
             document.getElementById('v-tel').value = i.tel || '';
             document.getElementById('v-dir').value = i.direccion || '';
             document.getElementById('v-prov').value = i.provincia || '';
-            // Precargar foto de tienda si existe
             if (i.fotoTienda) {
                 const preview = document.getElementById('foto-tienda-preview');
                 const placeholder = document.getElementById('foto-tienda-placeholder');
@@ -877,7 +867,6 @@
         }
         renderizarMisProductos(mis);
         cargarVistas(usuarioUID);
-        // Solo mostrar vistas del catálogo al desarrollador
         if (usuarioUID === '2cwkv5VMqiQXEb3ehkqtJHqMmqr2') cargarVistasCatalogo();
         setTimeout(() => { iniciarMapaSelector(); document.getElementById('seccion-productos').scrollIntoView({ behavior: 'smooth' }); }, 300);
     };
@@ -892,7 +881,6 @@
         const ctrl = t.fotos.length > 1 ? `<button class="prev" onclick="event.stopPropagation();cambiarFoto('${t.id}',-1)">&#10094;</button><button class="next" onclick="event.stopPropagation();cambiarFoto('${t.id}',1)">&#10095;</button>` : '';
         const indentStyle = esSub ? 'margin-left:12px;border-left:3px solid #0056b3;border-radius:0 14px 14px 0;' : '';
 
-        // Menú 3 puntos con todas las opciones
         const menuId = 'menu-gest-'+t.id;
         const opcionesMenu = `
             <div id="${menuId}" style="display:none;position:fixed;background:white;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,0.2);z-index:5000;width:200px;overflow:hidden;">
@@ -985,12 +973,10 @@
 
     window.toggleMenuGest = function(id, btn) {
         const menu = document.getElementById('menu-gest-'+id);
-        // Cerrar otros menús abiertos
         document.querySelectorAll('[id^="menu-gest-"]').forEach(m => {
             if (m.id !== 'menu-gest-'+id) m.style.display = 'none';
         });
         if (menu.style.display === 'block') { menu.style.display = 'none'; return; }
-        // Calcular posición en pantalla
         const rect = btn.getBoundingClientRect();
         const menuWidth = 200;
         let left = rect.right - menuWidth;
@@ -1024,9 +1010,7 @@
             html += tarjetaProducto(padre, false);
             const misSubs = subs.filter(s => s.productoPadreId === padre.id);
             if (misSubs.length) {
-                // Etiqueta full width
                 html += `<div style="grid-column:1/-1;font-size:11px;color:#0056b3;font-weight:bold;padding:2px 4px;">📦 ${misSubs.length} subproducto${misSubs.length>1?'s':''} de "${padre.nombre||'este producto'}"</div>`;
-                // Subproductos directo en el grid padre (mismo tamaño que los demás)
                 misSubs.forEach(sub => { html += tarjetaProducto(sub, true); });
             }
         });
@@ -1043,7 +1027,6 @@
         });
         const form = document.getElementById('form-sub-'+padreId);
         if (form) { form.style.display = form.style.display === 'block' ? 'none' : 'block'; return; }
-        // Crear form dinámicamente buscando por el botón que se tocó
         const btn = document.querySelector('[onclick="mostrarFormSubproducto(\''+padreId+'\')"]');
         if (!btn) return;
         const prodDiv = btn.closest('.producto-vendedor');
@@ -1147,7 +1130,6 @@
                 lat: padre?.lat||latSel, lng: padre?.lng||lngSel
             };
             tiendasData.push(nuevo);
-            // Marcar padre como principal
             if (padre && !padre.esPrincipal) {
                 padre.esPrincipal = true;
                 await fetch(`${FS}/tiendas/${padreId}?updateMask.fieldPaths=esPrincipal&key=${API_KEY}`, {
@@ -1156,7 +1138,6 @@
                     body: JSON.stringify({ fields: { esPrincipal: { booleanValue: true } } })
                 });
             }
-            // Recargar datos frescos del servidor para reflejar cambios
             await cargarDatos();
             renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
             await showMsg('✅ Subproducto publicado.\n\nPuede tardar unos minutos en que los demás lo vean.', 'ok');
@@ -1222,15 +1203,19 @@
         reader.readAsDataURL(file);
     };
 
+    // ============================================================
+    // ✅ BUG CORREGIDO: Editar nombre sin ocultar la tarjeta entera
+    // ============================================================
     window.editarNombreProducto = function(id) {
-        document.getElementById('nombre-label-'+id).parentElement.style.display = 'none';
+        document.getElementById('nombre-label-'+id).style.display = 'none';   // oculta solo el <h3>
         document.getElementById('nombre-edit-'+id).style.display = 'block';
         document.getElementById('nombre-input-'+id).focus();
     };
     window.cancelarEditarNombre = function(id) {
-        document.getElementById('nombre-label-'+id).parentElement.style.display = 'flex';
+        document.getElementById('nombre-label-'+id).style.display = 'block';  // muestra solo el <h3>
         document.getElementById('nombre-edit-'+id).style.display = 'none';
     };
+
     window.guardarNombreProducto = async function(id) {
         if (!usuarioUID) { await showMsg('Sin conexión o VPN no activado.', 'warning'); return; }
         const nuevoNombre = document.getElementById('nombre-input-'+id).value.trim();
@@ -1243,7 +1228,6 @@
                 body: JSON.stringify({ fields: { nombre: { stringValue: nuevoNombre } } })
             });
             if (!r.ok) throw new Error(await r.text());
-            // Actualizar en memoria
             const t = tiendasData.find(t => t.id === id);
             if (t) t.nombre = nuevoNombre;
             guardarCambioLocal(id, { nombre: nuevoNombre });
@@ -1259,7 +1243,6 @@
     };
 
     async function cargarVistas(uid) {
-        // Usar el worker para leer vistas (funciona sin VPN)
         try {
             const r = await fetch(`${WORKER}/get-vistas/${uid}`);
             const panel = document.getElementById('panel-vistas');
@@ -1309,13 +1292,9 @@
     // ============================================================
     // CARGAR DATOS
     // ============================================================
-    // ============================================================
-    // CAMBIOS LOCALES PENDIENTES (localStorage)
-    // ============================================================
     function guardarCambioLocal(id, cambios) {
         const locales = JSON.parse(localStorage.getItem('bc_cambios') || '{}');
         if (cambios === null) {
-            // null = eliminado
             locales[id] = { _eliminado: true };
         } else {
             locales[id] = Object.assign(locales[id] || {}, cambios);
@@ -1326,7 +1305,6 @@
     function aplicarCambiosLocales(lista) {
         const locales = JSON.parse(localStorage.getItem('bc_cambios') || '{}');
         if (!Object.keys(locales).length) return lista;
-        // Filtrar eliminados y aplicar cambios
         return lista
             .filter(t => !locales[t.id]?._eliminado)
             .map(t => locales[t.id] ? Object.assign({}, t, locales[t.id]) : t);
@@ -1344,9 +1322,6 @@
 
     async function cargarDatos() {
         try {
-            // 1. Intentar Worker (rápido, sin VPN)
-            // 2. Si falla, intentar datos.json de GitHub (sin VPN, puede estar desactualizado)
-            // 3. Si falla, intentar Firestore directo (necesita VPN)
             let data;
             try {
                 const r = await Promise.race([
@@ -1390,23 +1365,18 @@
                     };
                 });
 
-                // Aplicar cambios locales pendientes
                 lista = aplicarCambiosLocales(lista);
 
-                // Agregar productos nuevos locales que aún no están en datos.json
                 const nuevos = obtenerNuevosLocales();
                 const idsExistentes = new Set(lista.map(t => t.id));
                 nuevos.forEach(n => { if (!idsExistentes.has(n.id)) lista.push(n); });
 
-                // Limpiar locales cuyos IDs ya están en datos.json con los cambios aplicados
-                // (significa que el workflow ya los actualizó)
                 limpiarLocalesObsoletos(lista, data.documents);
 
                 tiendasData = lista;
                 if (modoDirecto) mostrarDirecto();
                 else {
                     renderizar(tiendasData);
-                    // Contar visita al catálogo principal
                     contarVista('catalogo-principal', 'catalogo');
                 }
             } else {
@@ -1418,13 +1388,10 @@
     }
 
     function limpiarLocalesObsoletos(listaFinal, docsOriginales) {
-        // Si un cambio local ya está reflejado en datos.json, eliminarlo
         const locales = JSON.parse(localStorage.getItem('bc_cambios') || '{}');
         const nuevos = JSON.parse(localStorage.getItem('bc_nuevos') || '[]');
         const idsEnServer = new Set(docsOriginales.map(d => d.name.split('/').pop()));
 
-        // Limpiar cambios de IDs que ya existen en el servidor
-        // (significa el workflow ya sincronizó)
         let hayLocales = false;
         Object.keys(locales).forEach(id => {
             if (idsEnServer.has(id)) {
@@ -1433,7 +1400,6 @@
                     const fServer = docServer.fields || {};
                     const estadoServer = fServer.estado?.stringValue || 'disponible';
                     const localCambio = locales[id];
-                    // Si el estado en servidor ya coincide con el local, limpiar
                     if (localCambio.estado && localCambio.estado === estadoServer) {
                         delete locales[id];
                     } else if (localCambio._eliminado && !idsEnServer.has(id)) {
@@ -1445,7 +1411,6 @@
             }
         });
 
-        // Limpiar nuevos que ya están en el servidor
         const nuevosActualizados = nuevos.filter(n => !idsEnServer.has(n.id));
 
         localStorage.setItem('bc_cambios', JSON.stringify(locales));
@@ -1465,7 +1430,6 @@
     function renderizar(lista) {
         const c = document.getElementById('listaTiendas');
         c.innerHTML = '';
-        // Filtrar subproductos Y agotados del catálogo principal
         lista = (lista || []).filter(t => !t.productoPadreId && t.estado !== 'agotado');
         if (!lista.length) {
             c.innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#888;'>No hay productos disponibles.</p>";
@@ -1526,14 +1490,13 @@
         imgs[idx].classList.add('active');
     };
 
-    // Swipe táctil en carrusel
     let _tcX = 0;
     window.tcStart = function(e, el) {
         _tcX = e.touches[0].clientX;
     };
     window.tcEnd = function(e, el) {
         const diff = _tcX - e.changedTouches[0].clientX;
-        if (Math.abs(diff) < 40) return; // ignorar taps
+        if (Math.abs(diff) < 40) return;
         const id = el.dataset.id;
         if (!id) return;
         cambiarFoto(id, diff > 0 ? 1 : -1);
@@ -1558,7 +1521,6 @@
                 pay.fields.lat = { doubleValue: latSel }; pay.fields.lng = { doubleValue: lngSel };
                 return fetch(`${FS}/tiendas/${p.id}?${masks}&key=${API_KEY}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(pay) });
             }));
-            // Actualizar en memoria y en local
             tiendasData.forEach(t => {
                 if (t.uidVendedor === usuarioUID) {
                     Object.assign(t, campos); t.lat = latSel; t.lng = lngSel;
@@ -1579,7 +1541,7 @@
             const r = await fetch(`${FS}/tiendas/${id}?key=${API_KEY}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
             if (r.ok) {
                 tiendasData = tiendasData.filter(t => t.id !== id);
-                guardarCambioLocal(id, null); // null = eliminado
+                guardarCambioLocal(id, null);
                 renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
                 await showMsg('✅ Producto eliminado.\n\nPuede tardar unos minutos en que los demás lo vean.', 'ok');
             } else { await showMsg('❌ ' + await r.text(), 'error'); }
@@ -1760,7 +1722,6 @@
             tiendasData.push(nuevo);
             agregarProductoLocal(nuevo);
             renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-            // Limpiar form
             inp.value = ''; document.getElementById('preview-container').innerHTML = ''; document.getElementById('preview-text').style.display = 'block';
             document.getElementById('p-nombre').value = ''; document.getElementById('p-precio').value = ''; document.getElementById('p-desc').value = '';
             document.getElementById('form-nuevo-producto').style.display = 'none';
@@ -1848,7 +1809,6 @@
         if (panel.classList.contains('show')) renderizarCarrito();
     };
 
-    // Inicializar carrito al cargar
     actualizarBadge();
     renderizarCarrito();
 
@@ -1925,7 +1885,6 @@
     // ============================================================
     // INICIAR
     // ============================================================
-    // Limpiar mensajes de error técnicos de Firebase
     function msgError(e, accion) {
         const tecnico = e.message || '';
         if (tecnico.includes('network') || tecnico.includes('fetch') || tecnico.includes('Failed')) {
@@ -1937,7 +1896,6 @@
     detectarDirecto();
     cargarDatos().then(() => restaurarSesion());
 
-    // Precargar vistas en background si hay sesión guardada
     const _uid = localStorage.getItem('bc_uid');
     if (_uid) {
         cargarVistas(_uid);
