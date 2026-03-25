@@ -971,14 +971,15 @@
         const ns = (t.nombre||'Sin nombre').replace(/'/g,"\'").replace(/"/g,'&quot;');
         const ds = (t.descripcion||'').replace(/'/g,"\'").replace(/"/g,'&quot;');
         const tel = (t.tel||'').replace(/[^0-9]/g,'');
-        let imgs = t.fotos.map((f,i) => `<img src="${f}" class="carousel-img ${i===0?'active':''}" onclick="event.stopPropagation();abrirLightbox('${fotosEncoded}',${i})">`).join('');
+        // Sin onclick en imágenes — el click del card abre edición
+        let imgs = t.fotos.map((f,i) => `<img src="${f}" class="carousel-img ${i===0?'active':''}" style="pointer-events:none;">`).join('');
         const ctrl = t.fotos.length > 1 ? `<button class="prev" onclick="event.stopPropagation();cambiarFotoGest('${t.id}',-1)">&#10094;</button><button class="next" onclick="event.stopPropagation();cambiarFotoGest('${t.id}',1)">&#10095;</button>` : '';
         const subBadge = esSub ? '<div style="position:absolute;top:8px;left:8px;background:#0056b3;color:white;font-size:10px;font-weight:bold;padding:2px 7px;border-radius:10px;z-index:10;">SUB</div>' : '';
 
-        return `<div onclick="abrirEdicion('${t.id}')" style="cursor:pointer;">
+        return `<div onclick="if(!_swipedGest)abrirEdicion('${t.id}')" style="cursor:pointer;">
             <div class="card" id="card-gest-${t.id}" style="opacity:${ag?'0.7':'1'};">
                 ${subBadge}
-                <div class="carousel-container" data-id-gest="${t.id}" ontouchstart="tcStart(event,this)" ontouchend="tcEndGest(event,this)" style="border-radius:14px 14px 0 0;">
+                <div class="carousel-container" data-id-gest="${t.id}" ontouchstart="tcStartGest(event,this)" ontouchend="tcEndGest(event,this)" style="border-radius:14px 14px 0 0;">
                     ${imgs}${ctrl}
                     ${ag ? '<div class="badge-agotado">AGOTADO</div>' : ''}
                     <div class="card-gest-badge-edit">✏️ Editar</div>
@@ -1234,6 +1235,13 @@
     };
 
     // Swipe carrusel en grid de gestión
+    let _tcXGest = 0;
+    let _swipedGest = false;
+
+    window.tcStartGest = function(e, el) {
+        _tcXGest = e.touches[0].clientX;
+        _swipedGest = false;
+    };
     window.cambiarFotoGest = function(id, d) {
         const imgs = document.querySelectorAll(`#card-gest-${id} .carousel-img`);
         let idx = Array.from(imgs).findIndex(i => i.classList.contains('active'));
@@ -1242,11 +1250,14 @@
         imgs[idx].classList.add('active');
     };
     window.tcEndGest = function(e, el) {
-        const diff = _tcX - e.changedTouches[0].clientX;
-        if (Math.abs(diff) < 40) return;
+        const diff = _tcXGest - e.changedTouches[0].clientX;
+        if (Math.abs(diff) < 40) { _swipedGest = false; return; }
+        _swipedGest = true;
         const id = el.dataset.idGest;
         if (!id) return;
         cambiarFotoGest(id, diff > 0 ? 1 : -1);
+        // Resetear flag después de un momento para no bloquear clicks futuros
+        setTimeout(() => { _swipedGest = false; }, 300);
     };
 
     // ============================================================
