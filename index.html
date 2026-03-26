@@ -37,6 +37,7 @@
         .btn-mapa-card { background-color: #fff3e0; }
         .btn-tienda { background-color: #e8f4fd; }
         .btn-llamar svg, .btn-wa svg, .btn-mapa-card svg { width: 26px; height: 26px; }
+        .btn-disabled { opacity: 0.35; pointer-events: none; cursor: default; }
 
         .carousel-container { position: relative; width: 100%; height: 130px; background-color: #e8edf2; overflow: hidden; }
         .carousel-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 0.5s; cursor: pointer; z-index: 1; pointer-events: none; }
@@ -1066,32 +1067,30 @@
                 </div>
             </div>
 
-            <!-- NOMBRE -->
+            <!-- DATOS EDITABLES - un solo guardar -->
             <div class="edit-seccion">
                 <h4>✏️ Nombre</h4>
-                <input type="text" id="edit-nombre-input" value="${(t.nombre||'').replace(/"/g,'&quot;')}" style="width:100%;padding:10px;border:1.5px solid #0056b3;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box;">
-                <button onclick="guardarNombreDesdeEdicion('${id}')" class="edit-btn-accion edit-btn-guardar" style="margin-top:8px;">💾 Guardar nombre</button>
+                <input type="text" id="edit-nombre-input" value="${(t.nombre||'').replace(/"/g,'&quot;')}" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box;">
             </div>
 
-            <!-- PRECIO -->
             <div class="edit-seccion">
                 <h4>💰 Precio</h4>
                 <div style="display:flex;gap:8px;">
-                    <input type="text" id="edit-precio-input" value="${t.precio||''}" style="flex:1;padding:10px;border:1.5px solid #d32f2f;border-radius:8px;font-size:14px;font-family:inherit;">
-                    <select id="edit-moneda-input" style="width:80px;padding:10px;border:1.5px solid #d32f2f;border-radius:8px;font-size:14px;">
+                    <input type="text" id="edit-precio-input" value="${t.precio||''}" style="flex:1;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;">
+                    <select id="edit-moneda-input" style="width:80px;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;">
                         <option value="CUP" ${t.moneda==='CUP'?'selected':''}>CUP</option>
                         <option value="USD" ${t.moneda==='USD'?'selected':''}>USD</option>
                     </select>
                 </div>
-                <button onclick="guardarPrecioDesdeEdicion('${id}')" class="edit-btn-accion edit-btn-guardar" style="margin-top:8px;">💾 Guardar precio</button>
             </div>
 
-            <!-- DESCRIPCION -->
             <div class="edit-seccion">
-                <h4>📝 Descripción</h4>
-                <textarea id="edit-desc-input" rows="3" style="width:100%;padding:10px;border:1.5px solid #0056b3;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box;">${t.descripcion||''}</textarea>
-                <button onclick="guardarDescDesdeEdicion('${id}')" class="edit-btn-accion edit-btn-guardar" style="margin-top:8px;">💾 Guardar descripción</button>
+                <h4>📝 Descripción <span style="color:#aaa;font-weight:normal;font-size:12px;">(opcional)</span></h4>
+                <textarea id="edit-desc-input" rows="3" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box;">${t.descripcion||''}</textarea>
             </div>
+
+            <!-- BOTÓN ÚNICO GUARDAR -->
+            <button onclick="guardarTodoDesdeEdicion('${id}')" style="width:100%;padding:14px;background:linear-gradient(135deg,#ffcc00,#ffaa00);color:#333;border:none;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:14px;">💾 Guardar cambios</button>
 
             <!-- ACCIONES -->
             <div class="edit-seccion">
@@ -1100,25 +1099,23 @@
                     ? `<button onclick="habilitarProducto('${id}')" class="edit-btn-accion edit-btn-habilitar">✅ Habilitar producto</button>`
                     : `<button onclick="marcarAgotado('${id}')" class="edit-btn-accion edit-btn-agotado">🚫 Marcar como agotado</button>`
                 }
-                ${!esSub ? `<button onclick="abrirFormSubDesdeEdicion('${id}')" class="edit-btn-accion edit-btn-sub">📦 Agregar subproducto</button>` : ''}
-                <button onclick="borrarAnuncio('${id}')" class="edit-btn-accion edit-btn-borrar">🗑️ Eliminar producto</button>
-            </div>
-
-            <!-- FORM SUBPRODUCTO -->
-            <div id="form-sub-edicion-${id}" style="display:none;" class="edit-seccion">
-                <h4>📦 Nuevo subproducto</h4>
-                <div style="border:1px dashed #ccc;padding:10px;text-align:center;border-radius:8px;cursor:pointer;margin-bottom:8px;background:#f8fafc;" onclick="document.getElementById('sf-edit-${id}').click()">
-                    <span id="sft-edit-${id}" style="font-size:12px;color:#888;">📸 Fotos del subproducto</span>
-                    <div id="sfp-edit-${id}" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-top:4px;"></div>
-                    <input type="file" id="sf-edit-${id}" accept="image/*" multiple style="display:none;" onchange="prevSubFotos(event,'edit-${id}')">
-                </div>
-                <input type="text" id="sn-edit-${id}" placeholder="Nombre" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:6px;box-sizing:border-box;">
-                <div style="display:flex;gap:8px;margin-bottom:6px;">
-                    <input type="text" id="sp-edit-${id}" placeholder="Precio" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
-                    <select id="sm-edit-${id}" style="width:80px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;"><option value="CUP">CUP</option><option value="USD">USD</option></select>
-                </div>
-                <textarea id="sd-edit-${id}" placeholder="Descripción (opcional)" rows="2" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box;margin-bottom:8px;"></textarea>
-                <button id="sbtn-edit-${id}" onclick="pubSubproductoDesdeEdicion('${id}')" class="edit-btn-accion edit-btn-guardar">📤 Publicar subproducto</button>
+                ${!esSub ? `
+                <button onclick="toggleFormSubEdicion('${id}')" class="edit-btn-accion edit-btn-sub" id="btn-toggle-sub-${id}">📦 Agregar subproducto</button>
+                <div id="form-sub-edicion-${id}" style="display:none;border-top:1px dashed #ddd;margin-top:10px;padding-top:10px;">
+                    <div style="border:1px dashed #ccc;padding:10px;text-align:center;border-radius:8px;cursor:pointer;margin-bottom:8px;background:#f8fafc;" onclick="document.getElementById('sf-edit-${id}').click()">
+                        <span id="sft-edit-${id}" style="font-size:12px;color:#888;">📸 Fotos del subproducto</span>
+                        <div id="sfp-edit-${id}" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-top:4px;"></div>
+                        <input type="file" id="sf-edit-${id}" accept="image/*" multiple style="display:none;" onchange="prevSubFotos(event,'edit-${id}')">
+                    </div>
+                    <input type="text" id="sn-edit-${id}" placeholder="Nombre" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:6px;box-sizing:border-box;">
+                    <div style="display:flex;gap:8px;margin-bottom:6px;">
+                        <input type="text" id="sp-edit-${id}" placeholder="Precio" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+                        <select id="sm-edit-${id}" style="width:80px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;"><option value="CUP">CUP</option><option value="USD">USD</option></select>
+                    </div>
+                    <textarea id="sd-edit-${id}" placeholder="Descripción (opcional)" rows="2" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box;margin-bottom:8px;"></textarea>
+                    <button id="sbtn-edit-${id}" onclick="pubSubproductoDesdeEdicion('${id}')" class="edit-btn-accion edit-btn-guardar">📤 Publicar subproducto</button>
+                </div>` : ''}
+                <button onclick="borrarAnuncio('${id}')" class="edit-btn-accion edit-btn-borrar" style="margin-top:8px;">🗑️ Eliminar producto</button>
             </div>
         `;
         document.getElementById('pantalla-edicion').classList.add('show');
@@ -1130,7 +1127,49 @@
         renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
     };
 
-    window.guardarNombreDesdeEdicion = async function(id) {
+    window.guardarTodoDesdeEdicion = async function(id) {
+        const nuevoNombre = document.getElementById('edit-nombre-input').value.trim();
+        const nuevoPrecio = document.getElementById('edit-precio-input').value.trim();
+        const nuevaMoneda = document.getElementById('edit-moneda-input').value;
+        const nuevaDesc = document.getElementById('edit-desc-input').value.trim();
+        if (!nuevoNombre) { await showMsg('El nombre no puede estar vacío.', 'warning'); return; }
+        if (!nuevoPrecio) { await showMsg('El precio no puede estar vacío.', 'warning'); return; }
+        const btn = document.querySelector(`[onclick="guardarTodoDesdeEdicion('${id}')"]`);
+        if (btn) { btn.textContent = '⏳ Guardando...'; btn.disabled = true; }
+        try {
+            const token = await getToken();
+            const r = await fetch(`${FS}/tiendas/${id}?updateMask.fieldPaths=nombre&updateMask.fieldPaths=precio&updateMask.fieldPaths=moneda&updateMask.fieldPaths=descripcion&key=${API_KEY}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ fields: {
+                    nombre: { stringValue: nuevoNombre },
+                    precio: { stringValue: nuevoPrecio },
+                    moneda: { stringValue: nuevaMoneda },
+                    descripcion: { stringValue: nuevaDesc }
+                }})
+            });
+            if (!r.ok) throw new Error(await r.text());
+            const t = tiendasData.find(t => t.id === id);
+            if (t) { t.nombre = nuevoNombre; t.precio = nuevoPrecio; t.moneda = nuevaMoneda; t.descripcion = nuevaDesc; }
+            guardarCambioLocal(id, { nombre: nuevoNombre, precio: nuevoPrecio, moneda: nuevaMoneda, descripcion: nuevaDesc });
+            document.getElementById('edit-titulo').textContent = nuevoNombre;
+            await showMsg('✅ Cambios guardados correctamente.', 'ok');
+            if (btn) { btn.textContent = '💾 Guardar cambios'; btn.disabled = false; }
+        } catch(e) {
+            await msgError(e);
+            if (btn) { btn.textContent = '💾 Guardar cambios'; btn.disabled = false; }
+        }
+    };
+
+    window.toggleFormSubEdicion = function(id) {
+        const f = document.getElementById('form-sub-edicion-'+id);
+        if (!f) return;
+        const visible = f.style.display === 'block';
+        f.style.display = visible ? 'none' : 'block';
+        const btn = document.getElementById('btn-toggle-sub-'+id);
+        if (btn) btn.textContent = visible ? '📦 Agregar subproducto' : '✕ Cancelar subproducto';
+        if (!visible) f.scrollIntoView({ behavior: 'smooth' });
+    };
         const nuevoNombre = document.getElementById('edit-nombre-input').value.trim();
         if (!nuevoNombre) { await showMsg('El nombre no puede estar vacío.', 'warning'); return; }
         try {
@@ -1337,9 +1376,9 @@
                 <div class="precio-row">${precioHtml}</div>
                 <p class="provincia">📍 ${t.provincia}</p>
                 <div class="card-buttons">
-                    <a href="tel:${t.tel}" class="btn-llamar">${svgTel}</a>
-                    <a href="https://wa.me/${tel2}" target="_blank" class="btn-wa">${svgWA}</a>
-                    <button class="btn-mapa-card" onclick="verUbicacionPreview(${t.lat},${t.lng},'${ns2}')">${svgGPS}</button>
+                    <a href="${ag?'':'tel:'+t.tel}" class="btn-llamar${ag?' btn-disabled':''}">${svgTel}</a>
+                    <a href="${ag?'':'https://wa.me/'+tel2}" ${ag?'':'target="_blank"'} class="btn-wa${ag?' btn-disabled':''}">${svgWA}</a>
+                    <button class="btn-mapa-card${ag?' btn-disabled':''}" ${ag?'':` onclick="verUbicacionPreview(${t.lat},${t.lng},'${ns2}')"`}>${svgGPS}</button>
                 </div>`;
             grid.appendChild(card);
         });
@@ -1366,8 +1405,9 @@
     };
 
     window.abrirSubproductosPreview = function(padreId) {
-        // Reutilizar la pantalla de subproductos existente
-        abrirSubproductos(padreId);
+        // Cerrar preview primero para evitar conflicto de z-index
+        document.getElementById('pantalla-preview').classList.remove('show');
+        setTimeout(() => abrirSubproductos(padreId), 100);
     };
 
     window.cerrarPreview = function() {
@@ -1919,10 +1959,10 @@
             </div>
             <p class="provincia">📍 ${t.provincia}</p>
                         <div class="card-buttons">
-                            <a href="tel:${t.tel}" class="btn-llamar">${svgTel}</a>
-                            <a href="https://wa.me/${tel}" target="_blank" class="btn-wa">${svgWA}</a>
-                            <button class="btn-mapa-card" onclick="verUbicacion(${t.lat},${t.lng},'${ns}')">${svgGPS}</button>
-                            <button class="btn-tienda" onclick="visitarTienda('${t.uidVendedor}')" title="Ver tienda">${svgTienda}</button>
+                            <a href="${ag?'':'tel:'+t.tel}" class="btn-llamar${ag?' btn-disabled':''}">${svgTel}</a>
+                            <a href="${ag?'':'https://wa.me/'+tel}" ${ag?'':' target="_blank"'} class="btn-wa${ag?' btn-disabled':''}">${svgWA}</a>
+                            <button class="btn-mapa-card${ag?' btn-disabled':''}" ${ag?'':' onclick="verUbicacion('+t.lat+','+t.lng+',\''+ns+'\')"'}>${svgGPS}</button>
+                            <button class="btn-tienda${ag?' btn-disabled':''}" ${ag?'':' onclick="visitarTienda(\''+t.uidVendedor+'\')"'} title="Ver tienda">${svgTienda}</button>
                         </div>
                     </div>`);
             } catch(e) { console.error('Error card:', t.id, e); }
