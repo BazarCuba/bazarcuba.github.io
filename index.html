@@ -84,7 +84,6 @@
         #lightbox-prev, #lightbox-next { position: fixed; top: 50%; transform: translateY(-50%); color: white; font-size: 28px; cursor: pointer; background: rgba(255,255,255,0.18); border: none; padding: 12px 16px; border-radius: 10px; z-index: 10000; }
         #lightbox-prev { left: 10px; }
         #lightbox-next { right: 10px; }
-
         #modal-desc { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 8000; align-items: center; justify-content: center; padding: 20px; }
         #modal-desc.active { display: flex; }
         #modal-desc-box { background: white; border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; }
@@ -276,7 +275,8 @@
 </div>
 
 <!-- LIGHTBOX -->
-<div id="lightbox" onclick="if(event.target===this)cerrarLightbox()">
+<div id="lightbox" onclick="if(event.target===this)cerrarLightbox()"
+     ontouchstart="lbTouchStart(event)" ontouchend="lbTouchEnd(event)">
     <span id="lightbox-close" onclick="cerrarLightbox()">✕</span>
     <button id="lightbox-prev" onclick="lightboxNav(-1)">❮</button>
     <img id="lightbox-img" src="" alt="">
@@ -315,6 +315,10 @@
             <p id="preview-info" style="margin:0;font-size:13px;opacity:0.85;"></p>
         </div>
         <div id="preview-grid"></div>
+        <div id="preview-mapa-container" style="display:none;margin-top:12px;">
+            <h3 style="color:#0056b3;margin:0 0 8px 0;font-size:14px;">📍 Ubicación:</h3>
+            <div id="preview-mapa" style="height:280px;width:100%;border:3px solid #0056b3;border-radius:12px;z-index:1;"></div>
+        </div>
     </div>
 </div>
 
@@ -645,6 +649,13 @@
     window.lightboxNav = function(d) {
         lbIdx = (lbIdx + d + lbFotos.length) % lbFotos.length;
         document.getElementById('lightbox-img').src = lbFotos[lbIdx];
+    };
+    let _lbTouchX = 0;
+    window.lbTouchStart = function(e) { _lbTouchX = e.touches[0].clientX; };
+    window.lbTouchEnd = function(e) {
+        const diff = _lbTouchX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) < 40) return;
+        lightboxNav(diff > 0 ? 1 : -1);
     };
 
     // ============================================================
@@ -1281,44 +1292,87 @@
     // ============================================================
     // VISTA PREVIA
     // ============================================================
+    let mapPreview = null, marcadorPreview = null;
+
     window.abrirVistaPrevia = function() {
-        const mis = tiendasData.filter(t => t.uidVendedor === usuarioUID && !t.productoPadreId && t.estado !== 'agotado');
+        // Incluir todos los productos (agotados también), solo sin subproductos
+        const mis = tiendasData.filter(t => t.uidVendedor === usuarioUID && !t.productoPadreId);
+        const todosLosMios = tiendasData.filter(t => t.uidVendedor === usuarioUID);
         const i = mis[0] || {};
         document.getElementById('preview-nombre').textContent = i.nombreTienda || 'Mi Tienda';
         const p = [i.tel && '📞 '+i.tel, i.direccion && '📍 '+i.direccion, i.provincia].filter(Boolean);
         document.getElementById('preview-info').textContent = p.join('  ·  ');
+        document.getElementById('preview-mapa-container').style.display = 'none';
+
         const grid = document.getElementById('preview-grid');
         grid.innerHTML = '';
+
         mis.forEach(t => {
+            const ag = t.estado === 'agotado';
+            const subs = todosLosMios.filter(s => s.productoPadreId === t.id);
             const fe = encodeURIComponent(JSON.stringify(t.fotos));
             const ns2 = (t.nombre||'Sin nombre').replace(/'/g,"\\'").replace(/"/g,'&quot;');
             const ds2 = (t.descripcion||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
             const tel2 = (t.tel||'').replace(/\D/g,'');
             let imgs = t.fotos.map((f,idx) => `<img src="${f}" class="carousel-img ${idx===0?'active':''}" onclick="abrirLightbox('${fe}',${idx})">`).join('');
             const ctrl = t.fotos.length > 1 ? `<button class="prev" onclick="event.stopPropagation();cambiarFoto('${t.id}',-1)">❮</button><button class="next" onclick="event.stopPropagation();cambiarFoto('${t.id}',1)">❯</button>` : '';
+
+            // Precio o botón Seleccionar si tiene subproductos
+            const precioHtml = t.esPrincipal && subs.length
+                ? `<button onclick="abrirSubproductosPreview('${t.id}')" style="background:#fde8e8;color:#d32f2f;border:1.5px solid #d32f2f;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;">Seleccionar</button>`
+                : `<span class="precio-tag">${t.precio}</span>
+                   ${t.moneda ? '<span class="moneda-tag">'+t.moneda+'</span>' : ''}
+                   ${t.descripcion ? '<button class="btn-descripcion" onclick="abrirDesc(\''+ns2+'\',\''+ds2+'\')">'+svgDoc+'</button>' : ''}`;
+
             const card = document.createElement('div');
-            card.className = 'card'; card.id = 'card-'+t.id;
+            card.className = 'card'; card.id = 'card-prev-'+t.id;
+            card.style.opacity = ag ? '0.65' : '1';
             card.innerHTML = `
-                <div class="carousel-container" data-id="${t.id}" ontouchstart="tcStart(event,this)" ontouchend="tcEnd(event,this)" style="border-radius:14px 14px 0 0;">${imgs}${ctrl}</div>
-                ${t.nombreTienda ? `<p style="margin:6px 8px 0;font-size:10px;color:#0056b3;font-weight:bold;">🏪 ${t.nombreTienda}</p>` : ''}
-                <h3 style="margin:8px 8px 2px;color:#222;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.nombre||'Sin nombre'}</h3>
-                <div class="precio-row">
-                    <span class="precio-tag">${t.precio}</span>
-                    ${t.moneda ? '<span class="moneda-tag">'+t.moneda+'</span>' : ''}
-                    ${t.descripcion ? '<button class="btn-descripcion" onclick="abrirDesc(\''+ns2+'\',\''+ds2+'\')">'+svgDoc+'</button>' : ''}
+                <div class="carousel-container" data-id="${t.id}" ontouchstart="tcStart(event,this)" ontouchend="tcEnd(event,this)" style="border-radius:14px 14px 0 0;">
+                    ${imgs}${ctrl}
+                    ${ag ? '<div class="badge-agotado">AGOTADO</div>' : ''}
                 </div>
+                ${t.nombreTienda ? `<p style="margin:6px 8px 0;font-size:10px;color:#0056b3;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🏪 ${t.nombreTienda}</p>` : ''}
+                <h3 style="margin:8px 8px 2px;color:#222;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.nombre||'Sin nombre'}</h3>
+                <div class="precio-row">${precioHtml}</div>
                 <p class="provincia">📍 ${t.provincia}</p>
                 <div class="card-buttons">
                     <a href="tel:${t.tel}" class="btn-llamar">${svgTel}</a>
                     <a href="https://wa.me/${tel2}" target="_blank" class="btn-wa">${svgWA}</a>
-                    <button class="btn-mapa-card" onclick="verUbicacion(${t.lat},${t.lng},'${ns2}')">${svgGPS}</button>
+                    <button class="btn-mapa-card" onclick="verUbicacionPreview(${t.lat},${t.lng},'${ns2}')">${svgGPS}</button>
                 </div>`;
             grid.appendChild(card);
         });
-        if (!mis.length) grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888;padding:40px;">No tienes productos disponibles.</p>';
+
+        if (!mis.length) grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888;padding:40px;">No tienes productos.</p>';
         document.getElementById('pantalla-preview').classList.add('show');
     };
-    window.cerrarPreview = function() { document.getElementById('pantalla-preview').classList.remove('show'); };
+
+    window.verUbicacionPreview = function(lat, lng, nombre) {
+        const cont = document.getElementById('preview-mapa-container');
+        cont.style.display = 'block';
+        cont.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => {
+            if (!mapPreview) {
+                mapPreview = L.map('preview-mapa').setView([lat, lng], 14);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapPreview);
+            } else {
+                mapPreview.setView([lat, lng], 14);
+                mapPreview.invalidateSize();
+            }
+            if (marcadorPreview) mapPreview.removeLayer(marcadorPreview);
+            marcadorPreview = L.marker([lat, lng]).addTo(mapPreview).bindPopup(`<b>${nombre}</b>`).openPopup();
+        }, 200);
+    };
+
+    window.abrirSubproductosPreview = function(padreId) {
+        // Reutilizar la pantalla de subproductos existente
+        abrirSubproductos(padreId);
+    };
+
+    window.cerrarPreview = function() {
+        document.getElementById('pantalla-preview').classList.remove('show');
+    };
 
     function renderizarMisProductos(lista) {
         const c = document.getElementById('lista-mis-productos');
