@@ -1212,21 +1212,6 @@
         if (btn) btn.textContent = visible ? '📦 Agregar subproducto' : '✕ Cancelar subproducto';
         if (!visible) f.scrollIntoView({ behavior: 'smooth' });
     };
-        const nuevoNombre = document.getElementById('edit-nombre-input').value.trim();
-        if (!nuevoNombre) { await showMsg('El nombre no puede estar vacío.', 'warning'); return; }
-        try {
-            const token = await getToken();
-            const r = await fetch(`${FS}/tiendas/${id}?updateMask.fieldPaths=nombre&key=${API_KEY}`, {
-                method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ fields: { nombre: { stringValue: nuevoNombre } } })
-            });
-            if (!r.ok) throw new Error(await r.text());
-            const t = tiendasData.find(t => t.id === id); if (t) t.nombre = nuevoNombre;
-            guardarCambioLocal(id, { nombre: nuevoNombre });
-            document.getElementById('edit-titulo').textContent = nuevoNombre;
-            toast('✅ Nombre guardado');
-        } catch(e) { await msgError(e); }
-    };
 
     window.guardarPrecioDesdeEdicion = async function(id) {
         const nuevoPrecio = document.getElementById('edit-precio-input').value.trim();
@@ -1851,43 +1836,27 @@
 
     async function cargarDatos() {
         try {
-            let docs = null;
-
-            // 1. Intentar Worker (sin VPN en Cuba)
+            let data;
             try {
                 const r = await Promise.race([
                     fetch(`${WORKER}/get-anuncios?t=${Date.now()}`, { cache: 'no-store' }),
-                    new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000))
+                    new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
                 ]);
                 if (!r.ok) throw new Error('Worker HTTP ' + r.status);
-                const data = await r.json();
-                // El worker puede devolver array directo o {documents:[...]}
-                if (Array.isArray(data)) {
-                    docs = data; // ya son objetos mapeados
-                } else if (data.documents) {
-                    docs = mapearDocumentos(data.documents);
-                }
+                data = await r.json();
             } catch(e1) {
-                // 2. Fallback: Firestore directo (necesita VPN)
-                try {
-                    const r3 = await Promise.race([
-                        fetch(`${FS}/tiendas?key=${API_KEY}&pageSize=300`),
-                        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 12000))
-                    ]);
-                    if (!r3.ok) throw new Error('Firestore HTTP ' + r3.status);
-                    const data3 = await r3.json();
-                    if (data3.documents) docs = mapearDocumentos(data3.documents);
-                } catch(e2) {
-                    document.getElementById('listaTiendas').innerHTML =
-                        `<p style='grid-column:1/-1;text-align:center;color:#888;padding:20px;'>
-                            Sin conexión. Activa tu VPN e intenta de nuevo.<br>
-                            <button onclick="cargarDatos()" style="margin-top:12px;padding:10px 20px;background:#0056b3;color:white;border:none;border-radius:20px;font-weight:bold;cursor:pointer;">🔄 Reintentar</button>
-                        </p>`;
-                    return;
-                }
+                const r3 = await fetch(`${FS}/tiendas?key=${API_KEY}&pageSize=300`);
+                if (!r3.ok) throw new Error('No se pudieron cargar los datos.');
+                data = await r3.json();
             }
 
-            if (!docs || !docs.length) {
+            // El worker puede devolver array directo o {documents:[...]}
+            let docs;
+            if (Array.isArray(data)) {
+                docs = data;
+            } else if (data.documents) {
+                docs = mapearDocumentos(data.documents);
+            } else {
                 document.getElementById('listaTiendas').innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#888;'>No hay anuncios disponibles.</p>";
                 return;
             }
@@ -1904,9 +1873,7 @@
                 contarVista('catalogo-principal', 'catalogo');
             }
         } catch(e) {
-            document.getElementById('listaTiendas').innerHTML =
-                `<p style='grid-column:1/-1;text-align:center;color:#888;padding:20px;'>Error: ${e.message}<br>
-                <button onclick="cargarDatos()" style="margin-top:12px;padding:10px 20px;background:#0056b3;color:white;border:none;border-radius:20px;font-weight:bold;cursor:pointer;">🔄 Reintentar</button></p>`;
+            document.getElementById('listaTiendas').innerHTML = `<p style='grid-column:1/-1;text-align:center;color:#888;'>Error al cargar: ${e.message}<br><button onclick="cargarDatos()" style="margin-top:12px;padding:10px 20px;background:#0056b3;color:white;border:none;border-radius:20px;font-weight:bold;cursor:pointer;">🔄 Reintentar</button></p>`;
         }
     }
 
