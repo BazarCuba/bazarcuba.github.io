@@ -127,7 +127,34 @@
         #form-nuevo-producto { display: none; margin-top: 12px; border-top: 2px dashed #ddd; padding-top: 14px; }
         #menu-dots { position: absolute; top: 18px; right: 18px; font-size: 28px; cursor: pointer; color: white; z-index: 1001; }
 
-        /* PANTALLA EDICION PRODUCTO */
+        /* PANEL ADMIN */
+        #pantalla-admin {
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #0d1117; z-index: 5000; flex-direction: column; overflow: hidden;
+        }
+        #pantalla-admin.show { display: flex; }
+        #admin-header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white; padding: 14px 16px;
+            display: flex; align-items: center; gap: 12px;
+            border-bottom: 1px solid #30363d; flex-shrink: 0;
+        }
+        #admin-header h3 { margin: 0; font-size: 16px; flex: 1; color: #58a6ff; }
+        #admin-body { overflow-y: auto; flex: 1; padding: 14px; }
+        .admin-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+        .admin-card h4 { margin: 0 0 12px; color: #58a6ff; font-size: 14px; }
+        .admin-vendedor { background: #0d1117; border: 1px solid #30363d; border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+        .admin-vendedor-nombre { color: #e6edf3; font-weight: bold; font-size: 14px; margin-bottom: 4px; }
+        .admin-vendedor-info { color: #8b949e; font-size: 12px; margin-bottom: 8px; }
+        .admin-vendedor-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+        .admin-vendedor-btns button { padding: 5px 12px; border: none; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .btn-admin-activar { background: #238636; color: white; }
+        .btn-admin-vencer { background: #b91c1c; color: white; }
+        .btn-admin-renovar { background: #1d6fa4; color: white; }
+        .badge-activo { background: #238636; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: bold; }
+        .badge-vencido { background: #b91c1c; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: bold; }
+        .badge-pendiente { background: #9e6a03; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: bold; }
         #pantalla-edicion {
             display: none; position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -293,6 +320,18 @@
     </div>
 </div>
 
+<!-- PANEL ADMIN -->
+<div id="pantalla-admin">
+    <div id="admin-header">
+        <button onclick="cerrarPanelAdmin()" style="background:rgba(255,255,255,0.1);border:none;color:white;font-size:20px;cursor:pointer;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;">&#8592;</button>
+        <h3>🛠️ Panel Administrador</h3>
+        <button onclick="cargarPanelAdmin()" style="background:#1d6fa4;border:none;color:white;font-size:12px;font-weight:bold;cursor:pointer;border-radius:20px;padding:5px 12px;">🔄 Actualizar</button>
+    </div>
+    <div id="admin-body">
+        <p style="color:#8b949e;text-align:center;padding:40px;">Cargando...</p>
+    </div>
+</div>
+
 <!-- PANTALLA EDICION PRODUCTO -->
 <div id="pantalla-edicion">
     <div id="edit-header">
@@ -359,6 +398,7 @@
     <hr style="border-color:#eee;">
     <button id="btn-add-negocio" onclick="mostrarPanelVendedor()" style="width:100%;padding:14px;background:linear-gradient(135deg,#0056b3,#003d82);color:white;border:none;border-radius:10px;font-weight:bold;cursor:pointer;margin-top:10px;font-size:15px;">➕ Añadir tienda</button>
     <button id="btn-cerrar-sesion" onclick="cerrarSesion()" style="display:none;width:100%;padding:10px;background:#f0f0f0;color:#333;border:none;border-radius:10px;font-weight:bold;cursor:pointer;margin-top:10px;">🚪 Cerrar Sesión</button>
+    <button id="btn-panel-admin" onclick="abrirPanelAdmin()" style="display:none;width:100%;padding:10px;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;border:none;border-radius:10px;font-weight:bold;cursor:pointer;margin-top:8px;font-size:13px;">🛠️ Panel Administrador</button>
     <div id="opciones-auth" style="display:none;margin-top:20px;text-align:center;">
         <button onclick="mostrarFormAuth('login')" style="width:47%;padding:10px;background:#e8f4fd;border:2px solid #0056b3;border-radius:8px;cursor:pointer;font-weight:bold;color:#0056b3;">Entrar</button>
         <button onclick="mostrarFormAuth('registro')" style="width:47%;padding:10px;background:#fff3e0;border:2px solid #ffaa00;border-radius:8px;cursor:pointer;font-weight:bold;color:#e65100;">Registrarse</button>
@@ -717,6 +757,8 @@
     function actualizarUI(loggedIn) {
         document.getElementById('btn-add-negocio').innerText = loggedIn ? '🏪 Gestionar mi Tienda' : '➕ Añadir tienda';
         document.getElementById('btn-cerrar-sesion').style.display = loggedIn ? 'block' : 'none';
+        const btnAdmin = document.getElementById('btn-panel-admin');
+        if (btnAdmin) btnAdmin.style.display = (loggedIn && usuarioUID === '2cwkv5VMqiQXEb3ehkqtJHqMmqr2') ? 'block' : 'none';
     }
 
     // ============================================================
@@ -1809,69 +1851,89 @@
 
     async function cargarDatos() {
         try {
-            let data;
+            let docs = null;
+
+            // 1. Intentar Worker (sin VPN en Cuba)
             try {
                 const r = await Promise.race([
                     fetch(`${WORKER}/get-anuncios?t=${Date.now()}`, { cache: 'no-store' }),
-                    new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+                    new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000))
                 ]);
                 if (!r.ok) throw new Error('Worker HTTP ' + r.status);
-                data = await r.json();
+                const data = await r.json();
+                // El worker puede devolver array directo o {documents:[...]}
+                if (Array.isArray(data)) {
+                    docs = data; // ya son objetos mapeados
+                } else if (data.documents) {
+                    docs = mapearDocumentos(data.documents);
+                }
             } catch(e1) {
+                // 2. Fallback: Firestore directo (necesita VPN)
                 try {
-                    const r2 = await fetch('/datos.json?v=' + Date.now());
-                    if (!r2.ok) throw new Error('datos.json HTTP ' + r2.status);
-                    data = await r2.json();
+                    const r3 = await Promise.race([
+                        fetch(`${FS}/tiendas?key=${API_KEY}&pageSize=300`),
+                        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 12000))
+                    ]);
+                    if (!r3.ok) throw new Error('Firestore HTTP ' + r3.status);
+                    const data3 = await r3.json();
+                    if (data3.documents) docs = mapearDocumentos(data3.documents);
                 } catch(e2) {
-                    const r3 = await fetch(`${FS}/tiendas?key=${API_KEY}&pageSize=300`);
-                    if (!r3.ok) throw new Error('No se pudieron cargar los datos.');
-                    data = await r3.json();
+                    document.getElementById('listaTiendas').innerHTML =
+                        `<p style='grid-column:1/-1;text-align:center;color:#888;padding:20px;'>
+                            Sin conexión. Activa tu VPN e intenta de nuevo.<br>
+                            <button onclick="cargarDatos()" style="margin-top:12px;padding:10px 20px;background:#0056b3;color:white;border:none;border-radius:20px;font-weight:bold;cursor:pointer;">🔄 Reintentar</button>
+                        </p>`;
+                    return;
                 }
             }
-            if (data.documents) {
-                let lista = data.documents.map(doc => {
-                    const f = doc.fields || {};
-                    return {
-                        id: doc.name.split('/').pop(),
-                        uidVendedor: f.uidVendedor?.stringValue || '',
-                        nombre: f.nombre?.stringValue || 'Sin nombre',
-                        nombreTienda: f.nombreTienda?.stringValue || '',
-                        precio: f.precio?.stringValue || 'N/A',
-                        moneda: f.moneda?.stringValue || '',
-                        descripcion: f.descripcion?.stringValue || '',
-                        direccion: f.direccion?.stringValue || '',
-                        provincia: f.provincia?.stringValue || 'N/A',
-                        fotos: f.fotos?.arrayValue?.values?.map(v => v.stringValue) || [f.fotoUrl?.stringValue || 'https://via.placeholder.com/300'],
-                        estado: f.estado?.stringValue || 'disponible',
-                        tel: f.tel?.stringValue || '',
-                        lat: f.lat?.doubleValue || 23.11,
-                        lng: f.lng?.doubleValue || -82.36,
-                        fotoTienda: f.fotoTienda?.stringValue || '',
-                        esPrincipal: f.esPrincipal?.booleanValue || false,
-                        productoPadreId: f.productoPadreId?.stringValue || ''
-                    };
-                });
 
-                lista = aplicarCambiosLocales(lista);
-
-                const nuevos = obtenerNuevosLocales();
-                const idsExistentes = new Set(lista.map(t => t.id));
-                nuevos.forEach(n => { if (!idsExistentes.has(n.id)) lista.push(n); });
-
-                limpiarLocalesObsoletos(lista, data.documents);
-
-                tiendasData = lista;
-                if (modoDirecto) mostrarDirecto();
-                else {
-                    renderizar(tiendasData);
-                    contarVista('catalogo-principal', 'catalogo');
-                }
-            } else {
+            if (!docs || !docs.length) {
                 document.getElementById('listaTiendas').innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#888;'>No hay anuncios disponibles.</p>";
+                return;
+            }
+
+            let lista = aplicarCambiosLocales(docs);
+            const nuevos = obtenerNuevosLocales();
+            const idsExistentes = new Set(lista.map(t => t.id));
+            nuevos.forEach(n => { if (!idsExistentes.has(n.id)) lista.push(n); });
+
+            tiendasData = lista;
+            if (modoDirecto) mostrarDirecto();
+            else {
+                renderizar(tiendasData);
+                contarVista('catalogo-principal', 'catalogo');
             }
         } catch(e) {
-            document.getElementById('listaTiendas').innerHTML = `<p style='grid-column:1/-1;text-align:center;color:#888;'>Error al cargar: ${e.message}</p>`;
+            document.getElementById('listaTiendas').innerHTML =
+                `<p style='grid-column:1/-1;text-align:center;color:#888;padding:20px;'>Error: ${e.message}<br>
+                <button onclick="cargarDatos()" style="margin-top:12px;padding:10px 20px;background:#0056b3;color:white;border:none;border-radius:20px;font-weight:bold;cursor:pointer;">🔄 Reintentar</button></p>`;
         }
+    }
+
+    // Mapear documentos Firestore al formato interno
+    function mapearDocumentos(documents) {
+        return documents.map(doc => {
+            const f = doc.fields || {};
+            return {
+                id: doc.name.split('/').pop(),
+                uidVendedor: f.uidVendedor?.stringValue || '',
+                nombre: f.nombre?.stringValue || 'Sin nombre',
+                nombreTienda: f.nombreTienda?.stringValue || '',
+                precio: f.precio?.stringValue || 'N/A',
+                moneda: f.moneda?.stringValue || '',
+                descripcion: f.descripcion?.stringValue || '',
+                direccion: f.direccion?.stringValue || '',
+                provincia: f.provincia?.stringValue || 'N/A',
+                fotos: f.fotos?.arrayValue?.values?.map(v => v.stringValue) || [f.fotoUrl?.stringValue || 'https://via.placeholder.com/300'],
+                estado: f.estado?.stringValue || 'disponible',
+                tel: f.tel?.stringValue || '',
+                lat: f.lat?.doubleValue || 23.11,
+                lng: f.lng?.doubleValue || -82.36,
+                fotoTienda: f.fotoTienda?.stringValue || '',
+                esPrincipal: f.esPrincipal?.booleanValue || false,
+                productoPadreId: f.productoPadreId?.stringValue || ''
+            };
+        });
     }
 
     function limpiarLocalesObsoletos(listaFinal, docsOriginales) {
@@ -2370,8 +2432,165 @@
     };
 
     // ============================================================
-    // INICIAR
+    // PANEL ADMINISTRADOR
     // ============================================================
+    window.abrirPanelAdmin = function() {
+        toggleMenu();
+        document.getElementById('pantalla-admin').classList.add('show');
+        cargarPanelAdmin();
+    };
+    window.cerrarPanelAdmin = function() {
+        document.getElementById('pantalla-admin').classList.remove('show');
+    };
+
+    window.cargarPanelAdmin = async function() {
+        const body = document.getElementById('admin-body');
+        body.innerHTML = '<p style="color:#8b949e;text-align:center;padding:40px;">Cargando vendedores...</p>';
+        try {
+            // Obtener todos los vendedores únicos de tiendasData
+            const vendedoresMap = {};
+            tiendasData.forEach(t => {
+                if (!t.uidVendedor) return;
+                if (!vendedoresMap[t.uidVendedor]) {
+                    vendedoresMap[t.uidVendedor] = {
+                        uid: t.uidVendedor,
+                        nombre: t.nombreTienda || '(Sin nombre)',
+                        tel: t.tel || '',
+                        provincia: t.provincia || '',
+                        productos: 0
+                    };
+                }
+                vendedoresMap[t.uidVendedor].productos++;
+            });
+
+            // Cargar estados de suscripción desde Firestore
+            let suscripciones = {};
+            try {
+                const token = await getToken();
+                const r = await fetch(`${FS}/suscripciones?key=${API_KEY}&pageSize=200`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (r.ok) {
+                    const data = await r.json();
+                    (data.documents || []).forEach(doc => {
+                        const f = doc.fields || {};
+                        const uid = doc.name.split('/').pop();
+                        suscripciones[uid] = {
+                            estado: f.estado?.stringValue || 'pendiente',
+                            vencimiento: f.vencimiento?.stringValue || '',
+                            notas: f.notas?.stringValue || ''
+                        };
+                    });
+                }
+            } catch(e) { /* sin suscripciones guardadas aún */ }
+
+            const vendedores = Object.values(vendedoresMap);
+            if (!vendedores.length) {
+                body.innerHTML = '<p style="color:#8b949e;text-align:center;padding:40px;">No hay vendedores registrados.</p>';
+                return;
+            }
+
+            // Stats globales
+            const totalProductos = tiendasData.length;
+            const totalVendedores = vendedores.length;
+            const activos = Object.values(suscripciones).filter(s => s.estado === 'activo').length;
+
+            let html = `
+                <div class="admin-card">
+                    <h4>📊 Resumen general</h4>
+                    <div style="display:flex;gap:10px;">
+                        <div style="flex:1;background:#0d1117;border-radius:8px;padding:10px;text-align:center;">
+                            <div style="font-size:24px;font-weight:bold;color:#58a6ff;">${totalVendedores}</div>
+                            <div style="font-size:11px;color:#8b949e;">Tiendas</div>
+                        </div>
+                        <div style="flex:1;background:#0d1117;border-radius:8px;padding:10px;text-align:center;">
+                            <div style="font-size:24px;font-weight:bold;color:#3fb950;">${totalProductos}</div>
+                            <div style="font-size:11px;color:#8b949e;">Productos</div>
+                        </div>
+                        <div style="flex:1;background:#0d1117;border-radius:8px;padding:10px;text-align:center;">
+                            <div style="font-size:24px;font-weight:bold;color:#f78166;">${activos}</div>
+                            <div style="font-size:11px;color:#8b949e;">Activos</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-card">
+                    <h4>🏪 Vendedores</h4>
+                    ${vendedores.map(v => {
+                        const sus = suscripciones[v.uid] || { estado: 'pendiente', vencimiento: '' };
+                        const badgeClass = sus.estado === 'activo' ? 'badge-activo' : sus.estado === 'vencido' ? 'badge-vencido' : 'badge-pendiente';
+                        const badgeText = sus.estado === 'activo' ? '✅ Activo' : sus.estado === 'vencido' ? '❌ Vencido' : '⏳ Pendiente';
+                        return `<div class="admin-vendedor">
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+                                <div class="admin-vendedor-nombre">${v.nombre}</div>
+                                <span class="${badgeClass}">${badgeText}</span>
+                            </div>
+                            <div class="admin-vendedor-info">
+                                ${v.tel ? '📞 '+v.tel+'  ' : ''}${v.provincia ? '📍 '+v.provincia+'  ' : ''}📦 ${v.productos} producto${v.productos!==1?'s':''}
+                                ${sus.vencimiento ? '<br>📅 Vence: '+sus.vencimiento : ''}
+                                ${sus.notas ? '<br>📝 '+sus.notas : ''}
+                            </div>
+                            <div class="admin-vendedor-btns">
+                                <button class="btn-admin-activar" onclick="adminSetSuscripcion('${v.uid}','activo')">✅ Activar</button>
+                                <button class="btn-admin-vencer" onclick="adminSetSuscripcion('${v.uid}','vencido')">❌ Vencer</button>
+                                <button class="btn-admin-renovar" onclick="adminRenovar('${v.uid}')">🔄 +30 días</button>
+                                <button style="background:#30363d;color:#e6edf3;" onclick="adminNota('${v.uid}')">📝 Nota</button>
+                            </div>
+                        </div>`;
+                    }).join('')}
+                </div>`;
+            body.innerHTML = html;
+        } catch(e) {
+            body.innerHTML = `<p style="color:#f85149;text-align:center;padding:40px;">Error: ${e.message}</p>`;
+        }
+    };
+
+    window.adminSetSuscripcion = async function(uid, estado) {
+        try {
+            const token = await getToken();
+            await fetch(`${FS}/suscripciones/${uid}?updateMask.fieldPaths=estado&key=${API_KEY}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ fields: { estado: { stringValue: estado } } })
+            });
+            toast('✅ Estado actualizado');
+            cargarPanelAdmin();
+        } catch(e) { await showMsg('❌ ' + e.message, 'error'); }
+    };
+
+    window.adminRenovar = async function(uid) {
+        try {
+            const token = await getToken();
+            // Calcular fecha +30 días desde hoy
+            const fecha = new Date();
+            fecha.setDate(fecha.getDate() + 30);
+            const venc = fecha.toISOString().split('T')[0]; // YYYY-MM-DD
+            await fetch(`${FS}/suscripciones/${uid}?updateMask.fieldPaths=estado&updateMask.fieldPaths=vencimiento&key=${API_KEY}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ fields: {
+                    estado: { stringValue: 'activo' },
+                    vencimiento: { stringValue: venc }
+                }})
+            });
+            toast('✅ Renovado hasta ' + venc);
+            cargarPanelAdmin();
+        } catch(e) { await showMsg('❌ ' + e.message, 'error'); }
+    };
+
+    window.adminNota = async function(uid) {
+        const nota = prompt('Escribe una nota para este vendedor:');
+        if (nota === null) return;
+        try {
+            const token = await getToken();
+            await fetch(`${FS}/suscripciones/${uid}?updateMask.fieldPaths=notas&key=${API_KEY}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ fields: { notas: { stringValue: nota } } })
+            });
+            toast('✅ Nota guardada');
+            cargarPanelAdmin();
+        } catch(e) { await showMsg('❌ ' + e.message, 'error'); }
+    };
     function msgError(e, accion) {
         const tecnico = e.message || '';
         if (tecnico.includes('network') || tecnico.includes('fetch') || tecnico.includes('Failed')) {
