@@ -9,6 +9,7 @@
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f4f8; }
+        body.no-scroll { overflow: hidden; }
 
         header { background: linear-gradient(135deg, #0056b3 0%, #003d82 100%); padding: 18px 15px 14px; color: white; text-align: center; position: relative; box-shadow: 0 3px 10px rgba(0,0,0,0.3); }
         header h1 { margin: 0; font-size: 26px; letter-spacing: 1px; }
@@ -42,8 +43,17 @@
         .carousel-container { position: relative; width: 100%; height: 130px; background-color: #e8edf2; overflow: hidden; }
         .carousel-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 0.5s; cursor: pointer; z-index: 1; pointer-events: none; }
         .carousel-img.active { opacity: 1; z-index: 2; pointer-events: auto; }
-        .prev, .next { cursor: pointer; position: absolute; top: 50%; width: auto; padding: 5px 9px; margin-top: -16px; color: white; font-weight: bold; font-size: 13px; border-radius: 0 3px 3px 0; user-select: none; background-color: rgba(0,0,0,0.45); border: none; z-index: 5; }
-        .next { right: 0; border-radius: 3px 0 0 3px; }
+        .prev, .next { display: none; }
+        .next { display: none; }
+        .foto-counter { position: absolute; bottom: 6px; right: 8px; background: rgba(0,0,0,0.55); color: white; font-size: 10px; font-weight: bold; padding: 2px 7px; border-radius: 20px; z-index: 6; pointer-events: none; letter-spacing: 0.5px; }
+
+        /* OVERLAY DE CARGA */
+        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.6); z-index: 99990; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        #loading-overlay.show { display: flex; }
+        #loading-spinner { background: white; border-radius: 20px; padding: 24px 32px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+        #loading-spinner div:first-child { font-size: 32px; margin-bottom: 8px; animation: spin 1s linear infinite; display: inline-block; }
+        #loading-spinner p { margin: 0; color: #0056b3; font-weight: bold; font-size: 14px; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .badge-agotado { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.75); color: white; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 12px; z-index: 6; text-transform: uppercase; letter-spacing: 1px; }
 
         #vista-mapa { display: none; padding: 10px; }
@@ -187,7 +197,8 @@
         .card-gest-wrap { cursor: pointer; }
         .card-gest-wrap .card { overflow: hidden; }
         .card-gest-wrap .card .carousel-container { border-radius: 14px 14px 0 0; }
-        .card-gest-badge-edit { position: absolute; bottom: 8px; right: 8px; background: rgba(0,86,179,0.85); color: white; font-size: 11px; font-weight: bold; padding: 3px 9px; border-radius: 20px; z-index: 10; pointer-events: none; }
+        .card-gest-badge-edit { display: none; position: absolute; bottom: 8px; right: 8px; background: rgba(0,86,179,0.85); color: white; font-size: 11px; font-weight: bold; padding: 3px 9px; border-radius: 20px; z-index: 10; pointer-events: none; }
+        .modo-edicion .card-gest-badge-edit { display: block; }
 
         /* VISTA PREVIA */
         #pantalla-preview {
@@ -287,6 +298,14 @@
 </head>
 <body>
 
+<!-- OVERLAY DE CARGA -->
+<div id="loading-overlay">
+    <div id="loading-spinner">
+        <div>⚙️</div>
+        <p>Procesando...</p>
+    </div>
+</div>
+
 <!-- TOAST -->
 <div id="toast"></div>
 
@@ -321,6 +340,7 @@
     <button id="lightbox-prev" onclick="lightboxNav(-1)">❮</button>
     <img id="lightbox-img" src="" alt="">
     <button id="lightbox-next" onclick="lightboxNav(1)">❯</button>
+    <div id="lightbox-counter" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.5);color:white;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:bold;"></div>
 </div>
 
 <!-- MODAL DESCRIPCION -->
@@ -542,6 +562,7 @@
                 <button class="btn-copiar-link" style="flex:1;margin-bottom:0;" onclick="copiarLink()">🔗 Copiar link</button>
                 <button onclick="abrirVistaPrevia()" style="flex:1;padding:10px;background:#e8f5e9;color:#2e7d32;border:2px solid #2e7d32;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">👁️ Vista previa</button>
             </div>
+            <button id="btn-modo-edicion" onclick="toggleModoEdicion()" style="width:100%;padding:10px;background:#fff3e0;color:#e65100;border:2px solid #e65100;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;margin-bottom:12px;">✏️ Editar productos</button>
             <div id="panel-vistas-catalogo" style="display:none;background:#f0f4f8;border-radius:10px;padding:12px;margin-bottom:12px;text-align:center;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                     <p style="margin:0;font-weight:bold;color:#0056b3;font-size:14px;">🌐 Visitas al catálogo principal</p>
@@ -595,6 +616,10 @@
                     <textarea id="p-desc" rows="2" placeholder="Describe el producto..."></textarea>
                 </div>
                 <button class="btn-guardar" onclick="publicarProducto()">📤 Publicar Producto</button>
+                <label style="display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px;background:#fff3e0;border-radius:8px;cursor:pointer;">
+                    <input type="checkbox" id="p-agotado" style="width:18px;height:18px;cursor:pointer;">
+                    <span style="font-size:14px;font-weight:bold;color:#e65100;">🚫 Publicar como agotado</span>
+                </label>
 
                 <!-- SUBPRODUCTOS OPCIONALES AL CREAR -->
                 <div style="margin-top:14px;border-top:2px dashed #ddd;padding-top:12px;">
@@ -685,6 +710,9 @@
         setTimeout(() => t.classList.remove('show'), 2500);
     }
 
+    function showLoading() { document.getElementById('loading-overlay').classList.add('show'); document.body.classList.add('no-scroll'); }
+    function hideLoading() { document.getElementById('loading-overlay').classList.remove('show'); document.body.classList.remove('no-scroll'); }
+
     // ============================================================
     // LIGHTBOX
     // ============================================================
@@ -695,13 +723,21 @@
         lbIdx = idx;
         document.getElementById('lightbox-img').src = lbFotos[lbIdx];
         document.getElementById('lightbox').classList.add('active');
-        document.getElementById('lightbox-prev').style.display = lbFotos.length > 1 ? 'block' : 'none';
-        document.getElementById('lightbox-next').style.display = lbFotos.length > 1 ? 'block' : 'none';
+        const prev = document.getElementById('lightbox-prev');
+        const next = document.getElementById('lightbox-next');
+        const counter = document.getElementById('lightbox-counter');
+        const multi = lbFotos.length > 1;
+        prev.style.display = multi ? 'block' : 'none';
+        next.style.display = multi ? 'block' : 'none';
+        counter.style.display = multi ? 'block' : 'none';
+        if (multi) counter.textContent = `${lbIdx+1} / ${lbFotos.length}`;
     };
     window.cerrarLightbox = function() { document.getElementById('lightbox').classList.remove('active'); };
     window.lightboxNav = function(d) {
+        if (lbFotos.length < 2) return;
         lbIdx = (lbIdx + d + lbFotos.length) % lbFotos.length;
         document.getElementById('lightbox-img').src = lbFotos[lbIdx];
+        document.getElementById('lightbox-counter').textContent = `${lbIdx+1} / ${lbFotos.length}`;
     };
     let _lbTouchX = 0;
     window.lbTouchStart = function(e) { _lbTouchX = e.touches[0].clientX; };
@@ -877,7 +913,7 @@
         document.getElementById('banner-nombre').textContent = i.nombreTienda || 'Tienda';
         const p = [i.tel && '📞 '+i.tel, i.direccion && '📍 '+i.direccion, i.provincia].filter(Boolean);
         document.getElementById('banner-info').textContent = p.join('  ·  ');
-        renderizar(prods);
+        renderizarConAgotados(prods);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -1037,9 +1073,8 @@
         const ns = (t.nombre||'Sin nombre').replace(/'/g,"\'").replace(/"/g,'&quot;');
         const ds = (t.descripcion||'').replace(/'/g,"\'").replace(/"/g,'&quot;');
         const tel = (t.tel||'').replace(/[^0-9]/g,'');
-        // Sin onclick en imágenes — el click del card abre edición
         let imgs = t.fotos.map((f,i) => `<img src="${f}" class="carousel-img ${i===0?'active':''}" style="pointer-events:none;">`).join('');
-        const ctrl = t.fotos.length > 1 ? `<button class="prev" onclick="event.stopPropagation();cambiarFotoGest('${t.id}',-1)">&#10094;</button><button class="next" onclick="event.stopPropagation();cambiarFotoGest('${t.id}',1)">&#10095;</button>` : '';
+        const ctrl = t.fotos.length > 1 ? `<div class="foto-counter" id="counter-gest-${t.id}">1/${t.fotos.length}</div>` : '';
         const subBadge = esSub ? '<div style="position:absolute;top:8px;left:8px;background:#0056b3;color:white;font-size:10px;font-weight:bold;padding:2px 7px;border-radius:10px;z-index:10;">SUB</div>' : '';
 
         return `<div onclick="if(!_swipedGest)abrirEdicion('${t.id}')" style="cursor:pointer;">
@@ -1167,16 +1202,22 @@
                         <select id="sm-edit-${id}" style="width:80px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;"><option value="CUP">CUP</option><option value="USD">USD</option></select>
                     </div>
                     <textarea id="sd-edit-${id}" placeholder="Descripción (opcional)" rows="2" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box;margin-bottom:8px;"></textarea>
+                    <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px;background:#fff3e0;border-radius:8px;cursor:pointer;">
+                        <input type="checkbox" id="sa-edit-${id}" style="width:16px;height:16px;">
+                        <span style="font-size:13px;font-weight:bold;color:#e65100;">🚫 Publicar como agotado</span>
+                    </label>
                     <button id="sbtn-edit-${id}" onclick="pubSubproductoDesdeEdicion('${id}')" class="edit-btn-accion edit-btn-guardar">📤 Publicar subproducto</button>
                 </div>` : ''}
                 <button onclick="borrarAnuncio('${id}')" class="edit-btn-accion edit-btn-borrar" style="margin-top:8px;">🗑️ Eliminar producto</button>
             </div>
         `;
         document.getElementById('pantalla-edicion').classList.add('show');
+        document.body.classList.add('no-scroll');
     };
 
     window.cerrarEdicion = function() {
         document.getElementById('pantalla-edicion').classList.remove('show');
+        document.body.classList.remove('no-scroll');
         editandoId = null;
         renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
     };
@@ -1188,8 +1229,7 @@
         const nuevaDesc = document.getElementById('edit-desc-input').value.trim();
         if (!nuevoNombre) { await showMsg('El nombre no puede estar vacío.', 'warning'); return; }
         if (!nuevoPrecio) { await showMsg('El precio no puede estar vacío.', 'warning'); return; }
-        const btn = document.querySelector(`[onclick="guardarTodoDesdeEdicion('${id}')"]`);
-        if (btn) { btn.textContent = '⏳ Guardando...'; btn.disabled = true; }
+        showLoading();
         try {
             const token = await getToken();
             const r = await fetch(`${FS}/tiendas/${id}?updateMask.fieldPaths=nombre&updateMask.fieldPaths=precio&updateMask.fieldPaths=moneda&updateMask.fieldPaths=descripcion&key=${API_KEY}`, {
@@ -1207,12 +1247,9 @@
             if (t) { t.nombre = nuevoNombre; t.precio = nuevoPrecio; t.moneda = nuevaMoneda; t.descripcion = nuevaDesc; }
             guardarCambioLocal(id, { nombre: nuevoNombre, precio: nuevoPrecio, moneda: nuevaMoneda, descripcion: nuevaDesc });
             document.getElementById('edit-titulo').textContent = nuevoNombre;
+            hideLoading();
             await showMsg('✅ Cambios guardados correctamente.', 'ok');
-            if (btn) { btn.textContent = '💾 Guardar cambios'; btn.disabled = false; }
-        } catch(e) {
-            await msgError(e);
-            if (btn) { btn.textContent = '💾 Guardar cambios'; btn.disabled = false; }
-        }
+        } catch(e) { hideLoading(); await msgError(e); }
     };
 
     window.toggleFormSubEdicion = function(id) {
@@ -1265,8 +1302,8 @@
     window.pubSubproductoDesdeEdicion = async function(padreId) {
         const inp = document.getElementById('sf-edit-'+padreId);
         if (!inp || !inp.files.length) { await showMsg('Selecciona al menos una foto.', 'warning'); return; }
-        const btn = document.getElementById('sbtn-edit-'+padreId);
-        btn.textContent = 'Subiendo...'; btn.disabled = true;
+        const esAgotado = document.getElementById('sa-edit-'+padreId)?.checked || false;
+        showLoading();
         try {
             const urls = [];
             for (let i = 0; i < inp.files.length; i++) {
@@ -1285,7 +1322,7 @@
                 moneda: { stringValue: document.getElementById('sm-edit-'+padreId).value },
                 descripcion: { stringValue: document.getElementById('sd-edit-'+padreId).value.trim() },
                 fotos: { arrayValue: { values: urls.map(u => ({ stringValue: u })) } },
-                estado: { stringValue: 'disponible' },
+                estado: { stringValue: esAgotado ? 'agotado' : 'disponible' },
                 nombreTienda: { stringValue: padre?.nombreTienda||'' }, tel: { stringValue: padre?.tel||'' },
                 direccion: { stringValue: padre?.direccion||'' }, provincia: { stringValue: padre?.provincia||'' },
                 lat: { doubleValue: padre?.lat||latSel }, lng: { doubleValue: padre?.lng||lngSel },
@@ -1294,17 +1331,26 @@
             const r = await fetch(`${FS}/tiendas?key=${API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(pay) });
             if (!r.ok) throw new Error(await r.text());
             const doc = await r.json();
-            const nuevo = { id: doc.name.split('/').pop(), uidVendedor: usuarioUID, productoPadreId: padreId,
+            const nuevo = { id: doc.name.split('/').pop(), uidVendedor: usuarioUID, productoPadreId: padreId, esPrincipal: false,
                 nombre: document.getElementById('sn-edit-'+padreId).value, precio: document.getElementById('sp-edit-'+padreId).value,
-                moneda: document.getElementById('sm-edit-'+padreId).value, fotos: urls, estado: 'disponible',
+                moneda: document.getElementById('sm-edit-'+padreId).value,
+                descripcion: document.getElementById('sd-edit-'+padreId).value.trim(),
+                fotos: urls, estado: esAgotado ? 'agotado' : 'disponible',
                 nombreTienda: padre?.nombreTienda||'', tel: padre?.tel||'', direccion: padre?.direccion||'',
                 provincia: padre?.provincia||'', lat: padre?.lat||latSel, lng: padre?.lng||lngSel };
             tiendasData.push(nuevo);
-            if (padre && !padre.esPrincipal) { padre.esPrincipal = true; }
-            await cargarDatos();
+            if (padre && !padre.esPrincipal) {
+                padre.esPrincipal = true;
+                await fetch(`${FS}/tiendas/${padreId}?updateMask.fieldPaths=esPrincipal&key=${API_KEY}`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ fields: { esPrincipal: { booleanValue: true } } })
+                });
+                guardarCambioLocal(padreId, { esPrincipal: true });
+            }
+            hideLoading();
             cerrarEdicion();
-            await showMsg('✅ Subproducto publicado.', 'ok');
-        } catch(e) { await msgError(e); btn.textContent = '📤 Publicar subproducto'; btn.disabled = false; }
+            await showMsg('✅ Subproducto publicado.\n\nEl botón "Seleccionar" aparecerá en el catálogo en unos minutos.', 'ok');
+        } catch(e) { hideLoading(); await msgError(e); }
     };
 
     window.eliminarFotoLocal = async function(id, idx) {
@@ -1337,6 +1383,8 @@
         imgs[idx].classList.remove('active');
         idx = (idx + d + imgs.length) % imgs.length;
         imgs[idx].classList.add('active');
+        const counter = document.getElementById('counter-gest-'+id);
+        if (counter) counter.textContent = `${idx+1}/${imgs.length}`;
     };
     window.tcEndGest = function(e, el) {
         const diff = _tcXGest - e.changedTouches[0].clientX;
@@ -1393,7 +1441,7 @@
             const ds2 = (t.descripcion||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
             const tel2 = (t.tel||'').replace(/\D/g,'');
             let imgs = t.fotos.map((f,idx) => `<img src="${f}" class="carousel-img ${idx===0?'active':''}" onclick="abrirLightbox('${fe}',${idx})">`).join('');
-            const ctrl = t.fotos.length > 1 ? `<button class="prev" onclick="event.stopPropagation();cambiarFoto('${t.id}',-1)">❮</button><button class="next" onclick="event.stopPropagation();cambiarFoto('${t.id}',1)">❯</button>` : '';
+            const ctrl = t.fotos.length > 1 ? `<div class="foto-counter" id="counter-prev-${t.id}">1/${t.fotos.length}</div>` : '';
 
             // Precio o botón Seleccionar si tiene subproductos
             const precioHtml = t.esPrincipal && subs.length
@@ -1424,6 +1472,7 @@
 
         if (!mis.length) grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888;padding:40px;">No tienes productos.</p>';
         document.getElementById('pantalla-preview').classList.add('show');
+        document.body.classList.add('no-scroll');
     };
 
     window.verUbicacionPreview = function(lat, lng, nombre) {
@@ -1451,6 +1500,27 @@
 
     window.cerrarPreview = function() {
         document.getElementById('pantalla-preview').classList.remove('show');
+        document.body.classList.remove('no-scroll');
+    };
+
+    let modoEdicionActivo = false;
+    window.toggleModoEdicion = function() {
+        modoEdicionActivo = !modoEdicionActivo;
+        const btn = document.getElementById('btn-modo-edicion');
+        const grid = document.getElementById('lista-mis-productos');
+        if (modoEdicionActivo) {
+            btn.textContent = '✕ Salir de edición';
+            btn.style.background = '#fde8e8';
+            btn.style.color = '#d32f2f';
+            btn.style.borderColor = '#d32f2f';
+            grid.classList.add('modo-edicion');
+        } else {
+            btn.textContent = '✏️ Editar productos';
+            btn.style.background = '#fff3e0';
+            btn.style.color = '#e65100';
+            btn.style.borderColor = '#e65100';
+            grid.classList.remove('modo-edicion');
+        }
     };
 
     function renderizarMisProductos(lista) {
@@ -1909,7 +1979,13 @@
                 document.getElementById('listaTiendas').innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#888;'>No hay anuncios disponibles.</p>";
             }
         } catch(e) {
-            document.getElementById('listaTiendas').innerHTML = `<p style='grid-column:1/-1;text-align:center;color:#888;'>Error al cargar: ${e.message}<br><button onclick="cargarDatos()" style="margin-top:12px;padding:10px 20px;background:#0056b3;color:white;border:none;border-radius:20px;font-weight:bold;cursor:pointer;">🔄 Reintentar</button></p>`;
+            document.getElementById('listaTiendas').innerHTML = `
+                <div style='grid-column:1/-1;text-align:center;padding:40px 20px;'>
+                    <div style='font-size:48px;margin-bottom:12px;'>📡</div>
+                    <p style='color:#555;font-weight:bold;font-size:16px;margin:0 0 6px;'>Sin conexión</p>
+                    <p style='color:#888;font-size:13px;margin:0 0 16px;'>Activa tu VPN e intenta de nuevo</p>
+                    <button onclick="cargarDatos()" style="padding:11px 28px;background:#0056b3;color:white;border:none;border-radius:25px;font-weight:bold;font-size:14px;cursor:pointer;">🔄 Reintentar</button>
+                </div>`;
         }
     }
 
@@ -1976,13 +2052,20 @@
     const svgTienda = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#e8f4fd"/><path d="M4 7h16l-1.5 9H5.5L4 7z" fill="#0056b3" opacity="0.15"/><path d="M4 7h16l-1.5 9H5.5L4 7z" stroke="#0056b3" stroke-width="1.5" fill="none"/><path d="M9 7V5.5A1.5 1.5 0 0110.5 4h3A1.5 1.5 0 0115 5.5V7" stroke="#0056b3" stroke-width="1.5" fill="none"/><rect x="10" y="11" width="4" height="3" rx="0.5" fill="#0056b3"/></svg>`;
     const svgDoc = `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#e8f4fd"/><path d="M7 6h10v2H7zM7 10h10v2H7zM7 14h6v2H7z" fill="#0056b3"/><path d="M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="#0056b3" stroke-width="1.5" fill="none"/></svg>`;
 
-    // ============================================================
-    // RENDERIZAR
-    // ============================================================
+    // Versión que incluye agotados (para visitar tienda)
+    function renderizarConAgotados(lista) {
+        lista = (lista || []).filter(t => !t.productoPadreId);
+        renderizarLista(lista);
+    }
+
     function renderizar(lista) {
+        lista = (lista || []).filter(t => !t.productoPadreId && t.estado !== 'agotado');
+        renderizarLista(lista);
+    }
+
+    function renderizarLista(lista) {
         const c = document.getElementById('listaTiendas');
         c.innerHTML = '';
-        lista = (lista || []).filter(t => !t.productoPadreId && t.estado !== 'agotado');
         if (!lista.length) {
             c.innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#888;'>No hay productos disponibles.</p>";
             return;
@@ -1995,7 +2078,7 @@
                 const ds = (t.descripcion||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
                 const tel = (t.tel||'').replace(/\D/g,'');
                 let imgs = t.fotos.map((f,i) => `<img src="${f}" class="carousel-img ${i===0?'active':''}" onclick="abrirLightbox('${fe}',${i})">`).join('');
-                const ctrl = t.fotos.length > 1 ? `<button class="prev" onclick="event.stopPropagation();cambiarFoto('${t.id}',-1)">❮</button><button class="next" onclick="event.stopPropagation();cambiarFoto('${t.id}',1)">❯</button>` : '';
+                const ctrl = t.fotos.length > 1 ? `<div class="foto-counter" id="counter-${t.id}">1/${t.fotos.length}</div>` : '';
                 c.insertAdjacentHTML('beforeend', `
                     <div class="card" id="card-${t.id}" style="opacity:${ag?'0.65':'1'}">
                         <div class="carousel-container" 
@@ -2035,11 +2118,14 @@
     }
 
     window.cambiarFoto = function(id, d) {
-        const imgs = document.querySelectorAll(`#card-${id} .carousel-img`);
+        const imgs = document.querySelectorAll(`#card-${id} .carousel-img, #card-prev-${id} .carousel-img`);
         let idx = Array.from(imgs).findIndex(i => i.classList.contains('active'));
         imgs[idx].classList.remove('active');
         idx = (idx + d + imgs.length) % imgs.length;
         imgs[idx].classList.add('active');
+        // Actualizar contador
+        const counter = document.getElementById('counter-'+id) || document.getElementById('counter-prev-'+id);
+        if (counter) counter.textContent = `${idx+1}/${imgs.length}`;
     };
 
     let _tcX = 0;
@@ -2088,46 +2174,55 @@
     window.borrarAnuncio = async function(id) {
         if (!usuarioUID) { await showMsg('Inicia sesión con VPN para eliminar.', 'warning', () => borrarAnuncio(id)); return; }
         if (!await showConfirm('¿Seguro que quieres eliminar este producto?')) return;
+        showLoading();
         try {
             const token = await getToken();
             const r = await fetch(`${FS}/tiendas/${id}?key=${API_KEY}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
             if (r.ok) {
                 tiendasData = tiendasData.filter(t => t.id !== id);
                 guardarCambioLocal(id, null);
+                hideLoading();
+                cerrarEdicion();
                 renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-                await showMsg('✅ Producto eliminado.\n\nPuede tardar unos minutos en que los demás lo vean.', 'ok');
-            } else { await showMsg('❌ ' + await r.text(), 'error'); }
-        } catch(e) { await msgError(e); }
+                await showMsg('✅ Producto eliminado.', 'ok');
+            } else { hideLoading(); await showMsg('❌ ' + await r.text(), 'error'); }
+        } catch(e) { hideLoading(); await msgError(e); }
     };
 
     window.marcarAgotado = async function(id) {
         if (!usuarioUID) { await showMsg('Inicia sesión con VPN para marcar agotado.', 'warning', () => marcarAgotado(id)); return; }
         if (!await showConfirm('¿Marcar este producto como AGOTADO?')) return;
+        showLoading();
         try {
             const token = await getToken();
             const r = await fetch(`${FS}/tiendas/${id}?updateMask.fieldPaths=estado&key=${API_KEY}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ fields: { estado: { stringValue: 'agotado' } } }) });
             if (r.ok) {
                 const t = tiendasData.find(t => t.id === id); if (t) t.estado = 'agotado';
                 guardarCambioLocal(id, { estado: 'agotado' });
-                renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-                await showMsg('✅ Marcado como agotado.\n\nPuede tardar unos minutos en que los demás lo vean.', 'ok');
-            } else { await showMsg('❌ ' + await r.text(), 'error'); }
-        } catch(e) { await msgError(e); }
+                hideLoading();
+                if (editandoId === id) abrirEdicion(id);
+                else renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
+                await showMsg('✅ Marcado como agotado.', 'ok');
+            } else { hideLoading(); await showMsg('❌ ' + await r.text(), 'error'); }
+        } catch(e) { hideLoading(); await msgError(e); }
     };
 
     window.habilitarProducto = async function(id) {
         if (!usuarioUID) { await showMsg('Inicia sesión con VPN para habilitar.', 'warning', () => habilitarProducto(id)); return; }
         if (!await showConfirm('¿Habilitar este producto nuevamente?')) return;
+        showLoading();
         try {
             const token = await getToken();
             const r = await fetch(`${FS}/tiendas/${id}?updateMask.fieldPaths=estado&key=${API_KEY}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ fields: { estado: { stringValue: 'disponible' } } }) });
             if (r.ok) {
                 const t = tiendasData.find(t => t.id === id); if (t) t.estado = 'disponible';
                 guardarCambioLocal(id, { estado: 'disponible' });
-                renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-                await showMsg('✅ Producto habilitado.\n\nPuede tardar unos minutos en que los demás lo vean.', 'ok');
-            } else { await showMsg('❌ ' + await r.text(), 'error'); }
-        } catch(e) { await msgError(e); }
+                hideLoading();
+                if (editandoId === id) abrirEdicion(id);
+                else renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
+                await showMsg('✅ Producto habilitado.', 'ok');
+            } else { hideLoading(); await showMsg('❌ ' + await r.text(), 'error'); }
+        } catch(e) { hideLoading(); await msgError(e); }
     };
 
     window.gestionarFoto = async function(id, accion) {
@@ -2237,8 +2332,8 @@
         if (!usuarioUID) { await showMsg('Inicia sesión con VPN.', 'warning'); return; }
         const inp = document.getElementById('input-fotos');
         if (!inp.files.length) { await showMsg('Selecciona al menos una foto.', 'warning'); return; }
-        const btn = document.querySelector('#form-nuevo-producto .btn-guardar');
-        btn.innerText = 'Subiendo... ⏳'; btn.disabled = true;
+        const esAgotado = document.getElementById('p-agotado').checked;
+        showLoading();
         try {
             const urls = [];
             for (let i = 0; i < inp.files.length; i++) {
@@ -2259,7 +2354,7 @@
                 moneda: { stringValue: document.getElementById('p-moneda').value },
                 descripcion: { stringValue: document.getElementById('p-desc').value.trim() },
                 fotos: { arrayValue: { values: urls.map(u => ({ stringValue: u })) } },
-                estado: { stringValue: 'disponible' },
+                estado: { stringValue: esAgotado ? 'agotado' : 'disponible' },
                 nombreTienda: { stringValue: iT.nombreTienda || document.getElementById('v-nombre').value || '' },
                 tel: { stringValue: iT.tel || document.getElementById('v-tel').value || '' },
                 direccion: { stringValue: iT.direccion || document.getElementById('v-dir').value || '' },
@@ -2270,16 +2365,17 @@
             const r = await fetch(`${FS}/tiendas?key=${API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(pay) });
             if (!r.ok) throw new Error(await r.text());
             const doc = await r.json();
-            const nuevo = { id: doc.name.split('/').pop(), uidVendedor: usuarioUID, nombre: document.getElementById('p-nombre').value, nombreTienda: iT.nombreTienda||'', precio: document.getElementById('p-precio').value, moneda: document.getElementById('p-moneda').value, descripcion: document.getElementById('p-desc').value.trim(), fotos: urls, estado: 'disponible', tel: iT.tel||'', direccion: iT.direccion||'', provincia: iT.provincia||'', lat: iT.lat||latSel, lng: iT.lng||lngSel };
+            const nuevo = { id: doc.name.split('/').pop(), uidVendedor: usuarioUID, nombre: document.getElementById('p-nombre').value, nombreTienda: iT.nombreTienda||'', precio: document.getElementById('p-precio').value, moneda: document.getElementById('p-moneda').value, descripcion: document.getElementById('p-desc').value.trim(), fotos: urls, estado: esAgotado ? 'agotado' : 'disponible', tel: iT.tel||'', direccion: iT.direccion||'', provincia: iT.provincia||'', lat: iT.lat||latSel, lng: iT.lng||lngSel, esPrincipal: false, productoPadreId: '' };
             tiendasData.push(nuevo);
             agregarProductoLocal(nuevo);
             renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
             inp.value = ''; document.getElementById('preview-container').innerHTML = ''; document.getElementById('preview-text').style.display = 'block';
             document.getElementById('p-nombre').value = ''; document.getElementById('p-precio').value = ''; document.getElementById('p-desc').value = '';
+            document.getElementById('p-agotado').checked = false;
             document.getElementById('form-nuevo-producto').style.display = 'none';
+            hideLoading();
             await showMsg('✅ ¡Producto publicado!\n\n⏳ Puede tardar unos minutos en que los demás usuarios vean los cambios.', 'ok');
-            btn.innerText = '📤 Publicar Producto'; btn.disabled = false;
-        } catch(e) { await showMsg('❌ ' + e.message, 'error'); btn.innerText = '📤 Publicar Producto'; btn.disabled = false; }
+        } catch(e) { hideLoading(); await showMsg('❌ ' + e.message, 'error'); }
     };
 
     // ============================================================
@@ -2443,9 +2539,11 @@
             });
         }
         document.getElementById('pantalla-subproductos').classList.add('show');
+        document.body.classList.add('no-scroll');
     };
     window.cerrarSubproductos = function() {
         document.getElementById('pantalla-subproductos').classList.remove('show');
+        document.body.classList.remove('no-scroll');
     };
 
     window.filtrarPorProvincia = function() {
