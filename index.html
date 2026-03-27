@@ -1845,32 +1845,56 @@
                 if (!r.ok) throw new Error('Worker HTTP ' + r.status);
                 data = await r.json();
             } catch(e1) {
-                const r3 = await fetch(`${FS}/tiendas?key=${API_KEY}&pageSize=300`);
-                if (!r3.ok) throw new Error('No se pudieron cargar los datos.');
-                data = await r3.json();
+                try {
+                    const r2 = await fetch('/datos.json?v=' + Date.now());
+                    if (!r2.ok) throw new Error('datos.json HTTP ' + r2.status);
+                    data = await r2.json();
+                } catch(e2) {
+                    const r3 = await fetch(`${FS}/tiendas?key=${API_KEY}&pageSize=300`);
+                    if (!r3.ok) throw new Error('No se pudieron cargar los datos.');
+                    data = await r3.json();
+                }
             }
+            if (data.documents) {
+                let lista = data.documents.map(doc => {
+                    const f = doc.fields || {};
+                    return {
+                        id: doc.name.split('/').pop(),
+                        uidVendedor: f.uidVendedor?.stringValue || '',
+                        nombre: f.nombre?.stringValue || 'Sin nombre',
+                        nombreTienda: f.nombreTienda?.stringValue || '',
+                        precio: f.precio?.stringValue || 'N/A',
+                        moneda: f.moneda?.stringValue || '',
+                        descripcion: f.descripcion?.stringValue || '',
+                        direccion: f.direccion?.stringValue || '',
+                        provincia: f.provincia?.stringValue || 'N/A',
+                        fotos: f.fotos?.arrayValue?.values?.map(v => v.stringValue) || [f.fotoUrl?.stringValue || 'https://via.placeholder.com/300'],
+                        estado: f.estado?.stringValue || 'disponible',
+                        tel: f.tel?.stringValue || '',
+                        lat: f.lat?.doubleValue || 23.11,
+                        lng: f.lng?.doubleValue || -82.36,
+                        fotoTienda: f.fotoTienda?.stringValue || '',
+                        esPrincipal: f.esPrincipal?.booleanValue || false,
+                        productoPadreId: f.productoPadreId?.stringValue || ''
+                    };
+                });
 
-            // El worker puede devolver array directo o {documents:[...]}
-            let docs;
-            if (Array.isArray(data)) {
-                docs = data;
-            } else if (data.documents) {
-                docs = mapearDocumentos(data.documents);
+                lista = aplicarCambiosLocales(lista);
+
+                const nuevos = obtenerNuevosLocales();
+                const idsExistentes = new Set(lista.map(t => t.id));
+                nuevos.forEach(n => { if (!idsExistentes.has(n.id)) lista.push(n); });
+
+                limpiarLocalesObsoletos(lista, data.documents);
+
+                tiendasData = lista;
+                if (modoDirecto) mostrarDirecto();
+                else {
+                    renderizar(tiendasData);
+                    contarVista('catalogo-principal', 'catalogo');
+                }
             } else {
                 document.getElementById('listaTiendas').innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#888;'>No hay anuncios disponibles.</p>";
-                return;
-            }
-
-            let lista = aplicarCambiosLocales(docs);
-            const nuevos = obtenerNuevosLocales();
-            const idsExistentes = new Set(lista.map(t => t.id));
-            nuevos.forEach(n => { if (!idsExistentes.has(n.id)) lista.push(n); });
-
-            tiendasData = lista;
-            if (modoDirecto) mostrarDirecto();
-            else {
-                renderizar(tiendasData);
-                contarVista('catalogo-principal', 'catalogo');
             }
         } catch(e) {
             document.getElementById('listaTiendas').innerHTML = `<p style='grid-column:1/-1;text-align:center;color:#888;'>Error al cargar: ${e.message}<br><button onclick="cargarDatos()" style="margin-top:12px;padding:10px 20px;background:#0056b3;color:white;border:none;border-radius:20px;font-weight:bold;cursor:pointer;">🔄 Reintentar</button></p>`;
