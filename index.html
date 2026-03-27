@@ -253,21 +253,33 @@
         }
         #carrito-header h3 { margin: 0; font-size: 16px; }
         #carrito-close { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
-        #carrito-items { overflow-y: auto; flex: 1; padding: 10px; }
+        #carrito-items { overflow-y: auto; flex: 1; padding: 10px; background: #f0f4f8; }
+        .carrito-grupo {
+            background: white; border-radius: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .carrito-grupo-header {
+            background: linear-gradient(135deg, #0056b3, #003d82);
+            color: white; padding: 10px 14px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .carrito-grupo-header-info { flex: 1; }
+        .carrito-grupo-nombre { font-weight: bold; font-size: 14px; }
+        .carrito-grupo-dir { font-size: 11px; opacity: 0.8; margin-top: 1px; }
+        .carrito-grupo-btns { display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid #f0f4f8; background: #f8fafc; }
+        .carrito-grupo-btns button { flex: 1; padding: 10px; border: none; border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer; }
+        .btn-carrito-wa-grupo { background: #25D366; color: white; }
         .carrito-item {
-            background: white; border-radius: 14px;
-            padding: 14px; margin-bottom: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 12px 14px; border-bottom: 1px solid #f0f4f8;
+            display: flex; align-items: center; gap: 10px;
         }
-        .carrito-item-nombre { font-weight: bold; font-size: 15px; color: #222; margin-bottom: 4px; }
-        .carrito-item-precio { color: #d32f2f; font-weight: bold; font-size: 16px; margin: 4px 0; }
-        .carrito-item-tienda { font-size: 13px; color: #0056b3; font-weight: bold; margin-bottom: 2px; }
-        .carrito-item-dir { font-size: 12px; color: #888; margin-bottom: 10px; }
-        .carrito-item-btns { display: flex; gap: 8px; }
-        .carrito-item-btns button {
-            flex: 1; padding: 10px; border: none; border-radius: 10px;
-            font-size: 14px; font-weight: bold; cursor: pointer;
-        }
+        .carrito-item:last-of-type { border-bottom: none; }
+        .carrito-item-info { flex: 1; }
+        .carrito-item-nombre { font-weight: bold; font-size: 14px; color: #222; }
+        .carrito-item-precio { color: #d32f2f; font-weight: bold; font-size: 14px; margin-top: 2px; }
+        .carrito-item-del { background: #fde8e8; color: red; border: none; border-radius: 8px; padding: 6px 10px; font-size: 16px; cursor: pointer; flex-shrink: 0; }
         .btn-carrito-wa { background: #25D366; color: white; }
         .btn-carrito-del { background: #fde8e8; color: red; }
 
@@ -2324,20 +2336,50 @@
     function renderizarCarrito() {
         const cont = document.getElementById('carrito-items');
         if (!carrito.length) {
-            cont.innerHTML = '<div id="carrito-vacio">Tu carrito está vacío</div>';
+            cont.innerHTML = `<div style="text-align:center;padding:60px 20px;color:#aaa;">
+                <div style="font-size:60px;margin-bottom:16px;">🛒</div>
+                <p style="font-size:16px;margin:0;">Tu carrito está vacío</p>
+            </div>`;
             return;
         }
-        cont.innerHTML = carrito.map(item => {
-            const tel = item.tel.replace(/\D/g, '');
-            const msg = encodeURIComponent(`Hola, me interesa el producto: *${item.nombre}* por ${item.precio} ${item.moneda} de la tienda *${item.nombreTienda}*. ¿Está disponible?`);
-            return `<div class="carrito-item">
-                <div class="carrito-item-nombre">${item.nombre}</div>
-                <div class="carrito-item-precio">${item.precio} ${item.moneda}</div>
-                <div class="carrito-item-tienda">🏪 ${item.nombreTienda}</div>
-                ${item.direccion ? `<div class="carrito-item-dir">📍 ${item.direccion}</div>` : ''}
-                <div class="carrito-item-btns">
-                    <button class="btn-carrito-wa" onclick="window.open('https://wa.me/${tel}?text=${msg}','_blank')">💬 Me interesa</button>
-                    <button class="btn-carrito-del" onclick="eliminarDelCarrito('${item.id}')">🗑️</button>
+
+        // Agrupar por tienda
+        const grupos = {};
+        carrito.forEach(item => {
+            const key = item.nombreTienda || 'Sin nombre';
+            if (!grupos[key]) grupos[key] = { items: [], tel: item.tel, direccion: item.direccion, nombreTienda: item.nombreTienda };
+            grupos[key].items.push(item);
+        });
+
+        cont.innerHTML = Object.entries(grupos).map(([nombre, grupo]) => {
+            const tel = (grupo.tel || '').replace(/\D/g, '');
+            // Mensaje de WhatsApp con todos los productos del grupo
+            const listaProductos = grupo.items.map(i => `• *${i.nombre}* — ${i.precio} ${i.moneda}`).join('\n');
+            const msg = encodeURIComponent(`Hola, me interesan estos productos de *${nombre}*:\n${listaProductos}\n\n¿Están disponibles?`);
+
+            const itemsHtml = grupo.items.map(item => `
+                <div class="carrito-item">
+                    <div class="carrito-item-info">
+                        <div class="carrito-item-nombre">${item.nombre}</div>
+                        <div class="carrito-item-precio">${item.precio} ${item.moneda}</div>
+                    </div>
+                    <button class="carrito-item-del" onclick="eliminarDelCarrito('${item.id}')">🗑️</button>
+                </div>`).join('');
+
+            return `<div class="carrito-grupo">
+                <div class="carrito-grupo-header">
+                    <div style="font-size:22px;">🏪</div>
+                    <div class="carrito-grupo-header-info">
+                        <div class="carrito-grupo-nombre">${nombre}</div>
+                        ${grupo.direccion ? `<div class="carrito-grupo-dir">📍 ${grupo.direccion}</div>` : ''}
+                    </div>
+                    <div style="background:rgba(255,255,255,0.2);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:bold;">
+                        ${grupo.items.length} producto${grupo.items.length > 1 ? 's' : ''}
+                    </div>
+                </div>
+                ${itemsHtml}
+                <div class="carrito-grupo-btns">
+                    <button class="btn-carrito-wa-grupo" onclick="window.open('https://wa.me/${tel}?text=${msg}','_blank')">💬 Escribir a esta tienda</button>
                 </div>
             </div>`;
         }).join('');
