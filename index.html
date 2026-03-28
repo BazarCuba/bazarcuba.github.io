@@ -8,7 +8,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f4f8; }
+        html { overflow-x: hidden; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f4f8; overflow-x: hidden; }
         body.no-scroll { overflow: hidden; }
 
         header { background: linear-gradient(135deg, #0056b3 0%, #003d82 100%); padding: 18px 15px 14px; color: white; text-align: center; position: relative; box-shadow: 0 3px 10px rgba(0,0,0,0.3); }
@@ -723,6 +724,7 @@
         lbIdx = idx;
         document.getElementById('lightbox-img').src = lbFotos[lbIdx];
         document.getElementById('lightbox').classList.add('active');
+        document.body.classList.add('no-scroll'); // bloquear scroll del fondo
         const prev = document.getElementById('lightbox-prev');
         const next = document.getElementById('lightbox-next');
         const counter = document.getElementById('lightbox-counter');
@@ -732,7 +734,10 @@
         counter.style.display = multi ? 'block' : 'none';
         if (multi) counter.textContent = `${lbIdx+1} / ${lbFotos.length}`;
     };
-    window.cerrarLightbox = function() { document.getElementById('lightbox').classList.remove('active'); };
+    window.cerrarLightbox = function() {
+        document.getElementById('lightbox').classList.remove('active');
+        document.body.classList.remove('no-scroll'); // restaurar scroll
+    };
     window.lightboxNav = function(d) {
         if (lbFotos.length < 2) return;
         lbIdx = (lbIdx + d + lbFotos.length) % lbFotos.length;
@@ -827,7 +832,7 @@
         document.getElementById('hd-nombre').textContent = i.nombreTienda || 'Tienda';
         const p = [i.tel && '📞 '+i.tel, i.direccion && '📍 '+i.direccion, i.provincia].filter(Boolean);
         document.getElementById('hd-info').textContent = p.join('  ·  ');
-        renderizar(prods);
+        renderizarConAgotados(prods); // Mostrar todos incluyendo agotados
     }
 
     window.verCatalogoCompleto = function() {
@@ -920,6 +925,12 @@
     window.volverDesdePanelVendedor = function() {
         document.getElementById('panelVendedor').style.display = 'none';
         document.getElementById('listaTiendas').style.display = 'grid';
+        // Resetear modo edición
+        modoEdicionActivo = false;
+        const btn = document.getElementById('btn-modo-edicion');
+        if (btn) { btn.textContent = '✏️ Editar productos'; btn.style.background = '#fff3e0'; btn.style.color = '#e65100'; btn.style.borderColor = '#e65100'; }
+        // Restaurar carrito si hay items
+        actualizarBadge();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -1045,6 +1056,8 @@
         document.getElementById('listaTiendas').style.display = 'none';
         document.getElementById('mapa-container').style.display = 'none';
         document.getElementById('banner-tienda').style.display = 'none';
+        // Ocultar carrito en panel vendedor
+        document.getElementById('carrito-btn').style.display = 'none';
         const mis = tiendasData.filter(t => t.uidVendedor === usuarioUID);
         if (mis.length > 0) {
             const i = mis[0];
@@ -1061,7 +1074,9 @@
             }
             if (i.lat && i.lng) { latSel = i.lat; lngSel = i.lng; document.getElementById('coords-display').innerText = `📍 Lat: ${i.lat.toFixed(5)}, Lng: ${i.lng.toFixed(5)}`; }
         }
-        renderizarMisProductos(mis);
+        // NO renderizar productos — esperar que el usuario toque "Editar" o "Vista previa"
+        document.getElementById('lista-mis-productos').innerHTML = '<p style="color:#aaa;text-align:center;font-size:13px;padding:20px 0;">Toca "✏️ Editar productos" o "👁️ Vista previa" para ver tus productos.</p>';
+        document.getElementById('lista-mis-productos').style.cssText = '';
         cargarVistas(usuarioUID);
         if (usuarioUID === '2cwkv5VMqiQXEb3ehkqtJHqMmqr2') cargarVistasCatalogo();
         setTimeout(() => { document.getElementById('seccion-productos').scrollIntoView({ behavior: 'smooth' }); }, 300);
@@ -1454,7 +1469,7 @@
             card.className = 'card'; card.id = 'card-prev-'+t.id;
             card.style.opacity = ag ? '0.65' : '1';
             card.innerHTML = `
-                <div class="carousel-container" data-id="${t.id}" ontouchstart="tcStart(event,this)" ontouchend="tcEnd(event,this)" style="border-radius:14px 14px 0 0;">
+                <div class="carousel-container" data-id="${t.id}" style="border-radius:14px 14px 0 0;">
                     ${imgs}${ctrl}
                     ${ag ? '<div class="badge-agotado">AGOTADO</div>' : ''}
                 </div>
@@ -1507,24 +1522,31 @@
     window.toggleModoEdicion = function() {
         modoEdicionActivo = !modoEdicionActivo;
         const btn = document.getElementById('btn-modo-edicion');
-        const grid = document.getElementById('lista-mis-productos');
         if (modoEdicionActivo) {
             btn.textContent = '✕ Salir de edición';
             btn.style.background = '#fde8e8';
             btn.style.color = '#d32f2f';
             btn.style.borderColor = '#d32f2f';
-            grid.classList.add('modo-edicion');
+            document.getElementById('lista-mis-productos').classList.add('modo-edicion');
+            renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
         } else {
             btn.textContent = '✏️ Editar productos';
             btn.style.background = '#fff3e0';
             btn.style.color = '#e65100';
             btn.style.borderColor = '#e65100';
-            grid.classList.remove('modo-edicion');
+            document.getElementById('lista-mis-productos').classList.remove('modo-edicion');
+            renderizarMisProductos([]); // muestra el mensaje
         }
     };
 
     function renderizarMisProductos(lista) {
         const c = document.getElementById('lista-mis-productos');
+        // Solo mostrar si el modo edición está activo
+        if (!modoEdicionActivo) {
+            c.style.cssText = '';
+            c.innerHTML = '<p style="color:#aaa;text-align:center;font-size:13px;padding:20px 0;">Toca "✏️ Editar productos" o "👁️ Vista previa" para ver tus productos.</p>';
+            return;
+        }
         c.style.cssText = 'display:grid;grid-template-columns:repeat(2,1fr);gap:10px;';
         if (!lista.length) {
             c.style.cssText = '';
@@ -1540,7 +1562,7 @@
             html += tarjetaProducto(padre, false);
             const misSubs = subs.filter(s => s.productoPadreId === padre.id);
             if (misSubs.length) {
-                html += `<div style="grid-column:1/-1;font-size:11px;color:#0056b3;font-weight:bold;padding:2px 4px;">📦 ${misSubs.length} subproducto${misSubs.length>1?'s':''} de "${padre.nombre||'este producto'}"</div>`;
+                html += `<div style="grid-column:1/-1;font-size:11px;color:#0056b3;font-weight:bold;padding:4px 4px 2px;background:#e8f4fd;border-radius:8px;margin-top:-4px;">📦 ${misSubs.length} subproducto${misSubs.length>1?'s':''} de "${padre.nombre||'este producto'}"</div>`;
                 misSubs.forEach(sub => { html += tarjetaProducto(sub, true); });
             }
         });
@@ -2081,10 +2103,7 @@
                 const ctrl = t.fotos.length > 1 ? `<div class="foto-counter" id="counter-${t.id}">1/${t.fotos.length}</div>` : '';
                 c.insertAdjacentHTML('beforeend', `
                     <div class="card" id="card-${t.id}" style="opacity:${ag?'0.65':'1'}">
-                        <div class="carousel-container" 
-                            data-id="${t.id}"
-                            ontouchstart="tcStart(event,this)"
-                            ontouchend="tcEnd(event,this)">
+                        <div class="carousel-container" data-id="${t.id}">
                             ${imgs}${ctrl}${ag?'<div class="badge-agotado">AGOTADO</div>':''}
                         </div>
                         ${t.nombreTienda ? `<p style="margin:6px 8px 0;font-size:10px;color:#0056b3;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🏪 ${t.nombreTienda}</p>` : ''}
@@ -2518,7 +2537,7 @@
                 card.id = 'card-' + t.id;
                 card.style.opacity = ag ? '0.65' : '1';
                 card.innerHTML = `
-                    <div class="carousel-container" data-id="${t.id}" ontouchstart="tcStart(event,this)" ontouchend="tcEnd(event,this)">
+                    <div class="carousel-container" data-id="${t.id}">
                         ${fotosHtml}${ctrlHtml}
                         ${ag ? '<div class="badge-agotado">AGOTADO</div>' : ''}
                     </div>
