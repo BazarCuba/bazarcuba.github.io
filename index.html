@@ -507,7 +507,10 @@
 </div>
 
 <div id="mapa-container">
-    <h3 style="color:#0056b3;margin:0 0 8px 10px;">📍 Ubicación:</h3>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 8px 10px;">
+        <h3 style="color:#0056b3;margin:0;">📍 Ubicación:</h3>
+        <button onclick="document.getElementById('mapa-container').style.display='none'" style="background:#fde8e8;color:#d32f2f;border:none;border-radius:50%;width:30px;height:30px;font-size:16px;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
     <div id="mapa"></div>
 </div>
 
@@ -518,18 +521,6 @@
         </div>
         <div class="seccion-card">
             <h3>🏪 Información de tu Tienda</h3>
-            <div class="form-group">
-                <label>Foto de la Tienda <span style="color:#aaa;font-weight:normal;">(opcional)</span>:</label>
-                <div style="display:flex;align-items:center;gap:12px;padding:10px;background:#f8fafc;border-radius:10px;border:1px solid #e8edf2;">
-                    <img id="foto-tienda-preview" src="" alt="" style="width:70px;height:70px;object-fit:cover;border-radius:10px;border:2px solid #ddd;display:none;">
-                    <div id="foto-tienda-placeholder" style="width:70px;height:70px;border-radius:10px;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center;font-size:28px;color:#ccc;">🏪</div>
-                    <div>
-                        <button type="button" onclick="document.getElementById('input-foto-tienda').click()" style="background:#0056b3;color:white;border:none;padding:8px 14px;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;display:block;margin-bottom:6px;">📷 Cambiar foto</button>
-                        <span style="font-size:11px;color:#888;">Foto principal de tu tienda</span>
-                        <input type="file" id="input-foto-tienda" accept="image/*" style="display:none;" onchange="previsualizarFotoTienda(event)">
-                    </div>
-                </div>
-            </div>
             <div class="form-group"><label>Nombre de la Tienda:</label><input type="text" id="v-nombre" placeholder="Ej. Tienda de Ropa de María"></div>
             <div class="form-group"><label>Teléfono / WhatsApp:</label><input type="tel" id="v-tel" placeholder="+53 51234567"></div>
             <div class="form-group"><label>Dirección:</label><input type="text" id="v-dir" placeholder="Ej. Calle 23 #456, Vedado"></div>
@@ -607,7 +598,8 @@
                 </div>
             </div>
             <div id="lista-mis-productos"><p style="color:#888;text-align:center;font-size:13px;">Cargando...</p></div>
-            <button class="btn-secundario" onclick="toggleFormProducto()">➕ Agregar nuevo producto</button>
+            <div id="controles-edicion" style="display:none;">
+                <button class="btn-secundario" onclick="toggleFormProducto()">➕ Agregar nuevo producto</button>
             <div id="form-nuevo-producto">
                 <div style="border:2px dashed #ccc;padding:14px;text-align:center;margin-bottom:12px;border-radius:10px;background:#fafafa;">
                     <p id="preview-text" style="margin:0 0 8px;color:#888;font-size:13px;">📸 Selecciona las fotos en el orden que quieras mostrarlas</p>
@@ -640,6 +632,7 @@
                     <div id="lista-subs-nuevos"></div>
                 </div>
             </div>
+            </div><!-- fin controles-edicion -->
         </div>
     </div>
 </div>
@@ -812,14 +805,15 @@
                 try {
                     const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
                     await signInWithEmailAndPassword(auth, email, pass);
-                    // Si el correo no está verificado, cerrar sesión silenciosamente
-                    if (!auth.currentUser.emailVerified) {
-                        await auth.signOut();
-                        usuarioUID = null;
-                        localStorage.clear();
-                        actualizarUI(false);
+                    // Solo limpiar si no verificado Y tiene VPN (si llegó aquí es que hay conexión)
+                    if (!auth.currentUser.emailVerified && !localStorage.getItem('bc_unverified')) {
+                        // Usuario antiguo sin verificar: guardar flag y mostrar banner
+                        localStorage.setItem('bc_unverified', 'true');
+                        mostrarBannerVerificacion(email);
                     }
-                } catch(e) { /* Sin VPN, silencioso */ }
+                } catch(e) {
+                    // Sin VPN — mantener sesión local, no cerrar
+                }
             });
         }
     }
@@ -1622,12 +1616,14 @@
     window.toggleModoEdicion = function() {
         modoEdicionActivo = !modoEdicionActivo;
         const btn = document.getElementById('btn-modo-edicion');
+        const ctrl = document.getElementById('controles-edicion');
         if (modoEdicionActivo) {
             btn.textContent = '✕ Salir de edición';
             btn.style.background = '#fde8e8';
             btn.style.color = '#d32f2f';
             btn.style.borderColor = '#d32f2f';
             document.getElementById('lista-mis-productos').classList.add('modo-edicion');
+            if (ctrl) ctrl.style.display = 'block';
             renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
         } else {
             btn.textContent = '✏️ Editar productos';
@@ -1635,21 +1631,22 @@
             btn.style.color = '#e65100';
             btn.style.borderColor = '#e65100';
             document.getElementById('lista-mis-productos').classList.remove('modo-edicion');
-            renderizarMisProductos([]); // muestra el mensaje
+            if (ctrl) ctrl.style.display = 'none';
+            // Ocultar form si estaba abierto
+            document.getElementById('form-nuevo-producto').style.display = 'none';
+            renderizarMisProductos([]);
         }
     };
 
     function renderizarMisProductos(lista) {
         const c = document.getElementById('lista-mis-productos');
-        // Solo mostrar si el modo edición está activo
         if (!modoEdicionActivo) {
             c.style.cssText = '';
             c.innerHTML = '<p style="color:#aaa;text-align:center;font-size:13px;padding:20px 0;">Toca "✏️ Editar productos" o "👁️ Vista previa" para ver tus productos.</p>';
             return;
         }
-        c.style.cssText = 'display:grid;grid-template-columns:repeat(2,1fr);gap:10px;';
+        c.style.cssText = 'display:block;';
         if (!lista.length) {
-            c.style.cssText = '';
             c.innerHTML = '<p style="color:#888;text-align:center;font-size:13px;">Aún no tienes productos.</p>';
             return;
         }
@@ -1659,16 +1656,32 @@
 
         let html = '';
         padres.forEach(padre => {
-            html += tarjetaProducto(padre, false);
             const misSubs = subs.filter(s => s.productoPadreId === padre.id);
+            // Grupo contenedor
+            html += `<div style="background:#f8fafc;border-radius:14px;border:1.5px solid #e0eaf5;margin-bottom:16px;overflow:hidden;">`;
+            // Header del grupo
+            html += `<div style="background:#e8f4fd;padding:8px 12px;font-size:12px;font-weight:bold;color:#0056b3;border-bottom:1px solid #d0e8f8;">🏷️ Producto principal</div>`;
+            // Grid del padre
+            html += `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:10px;">`;
+            html += tarjetaProducto(padre, false);
+            html += `</div>`;
             if (misSubs.length) {
-                html += `<div style="grid-column:1/-1;font-size:11px;color:#0056b3;font-weight:bold;padding:4px 4px 2px;background:#e8f4fd;border-radius:8px;margin-top:-4px;">📦 ${misSubs.length} subproducto${misSubs.length>1?'s':''} de "${padre.nombre||'este producto'}"</div>`;
+                html += `<div style="background:#fff3e0;padding:8px 12px;font-size:12px;font-weight:bold;color:#e65100;border-top:1px solid #ffe0b2;border-bottom:1px solid #ffe0b2;">📦 ${misSubs.length} subproducto${misSubs.length>1?'s':''}</div>`;
+                html += `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:10px;">`;
                 misSubs.forEach(sub => { html += tarjetaProducto(sub, true); });
+                html += `</div>`;
             }
+            html += `</div>`;
         });
 
         const huerfanos = subs.filter(s => !padres.find(p => p.id === s.productoPadreId));
-        huerfanos.forEach(h => { html += tarjetaProducto(h, false); });
+        if (huerfanos.length) {
+            html += `<div style="background:#f8fafc;border-radius:14px;border:1.5px solid #e0eaf5;margin-bottom:16px;overflow:hidden;">`;
+            html += `<div style="background:#e8edf2;padding:8px 12px;font-size:12px;font-weight:bold;color:#555;border-bottom:1px solid #ddd;">📦 Subproductos sueltos</div>`;
+            html += `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:10px;">`;
+            huerfanos.forEach(h => { html += tarjetaProducto(h, false); });
+            html += `</div></div>`;
+        }
 
         c.innerHTML = html;
     }
@@ -2198,8 +2211,8 @@
             try {
                 const ag = t.estado === 'agotado';
                 const fe = encodeURIComponent(JSON.stringify(t.fotos));
-                const ns = (t.nombre||'Sin nombre').replace(/'/g,"\\'").replace(/"/g,'&quot;');
-                const ds = (t.descripcion||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+                const ns = (t.nombre||'Sin nombre').replace(/"/g,'&quot;');
+                const ds = (t.descripcion||'').replace(/"/g,'&quot;');
                 const tel = (t.tel||'').replace(/\D/g,'');
                 let imgs = t.fotos.map((f,i) => `<img src="${f}" class="carousel-img ${i===0?'active':''}" onclick="abrirLightbox('${fe}',${i})">`).join('');
                 const ctrl = t.fotos.length > 1 ? `<div class="foto-counter" id="counter-${t.id}">1/${t.fotos.length}</div>` : '';
@@ -2215,7 +2228,7 @@
                                 ? `<button onclick="abrirSubproductos('${t.id}')" style="background:#fde8e8;color:#d32f2f;border:1.5px solid #d32f2f;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;">Seleccionar</button>`
                                 : `<span class="precio-tag">${t.precio}</span>
                                    ${t.moneda ? '<span class="moneda-tag">'+t.moneda+'</span>' : ''}
-                                   ${t.descripcion ? '<button class="btn-descripcion" onclick="abrirDesc(\''+ns+'\',\''+ds+'\')">'+svgDoc+'</button>' : ''}
+                                   ${t.descripcion ? `<button class="btn-descripcion" onclick="abrirDesc(this.dataset.n,this.dataset.d)" data-n="${ns}" data-d="${ds}">${svgDoc}</button>` : ''}
                                    <button onclick="agregarAlCarrito('${t.id}')" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;line-height:1;display:flex;align-items:center;justify-content:center;">🛒</button>`
                             }
                         </div>
