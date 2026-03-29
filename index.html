@@ -10,7 +10,7 @@
         * { box-sizing: border-box; }
         html { overflow-x: hidden; }
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f4f8; overflow-x: hidden; }
-        body.no-scroll { overflow: hidden; }
+        body.no-scroll { overflow: hidden; position: fixed; width: 100%; }
 
         header { background: linear-gradient(135deg, #0056b3 0%, #003d82 100%); padding: 18px 15px 14px; color: white; text-align: center; position: relative; box-shadow: 0 3px 10px rgba(0,0,0,0.3); }
         header h1 { margin: 0; font-size: 26px; letter-spacing: 1px; }
@@ -448,6 +448,15 @@
     </div>
 </div>
 
+<!-- BANNER VERIFICACION CORREO -->
+<div id="banner-verificacion" style="display:none;background:linear-gradient(135deg,#e65100,#bf360c);color:white;padding:14px 16px;margin:0 0 0 0;text-align:center;position:relative;z-index:100;">
+    <div style="font-size:22px;margin-bottom:6px;">📧</div>
+    <p style="margin:0 0 4px;font-weight:bold;font-size:15px;">Toca el enlace enviado a tu correo electrónico</p>
+    <p id="banner-verif-email" style="margin:0 0 10px;font-size:13px;opacity:0.9;"></p>
+    <p style="margin:0 0 10px;font-size:12px;opacity:0.75;">La web se actualizará automáticamente cuando verifiques</p>
+    <button onclick="reenviarVerificacion()" style="background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.6);color:white;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;">🔄 Reenviar correo</button>
+</div>
+
 <header>
     <h1>BazarCuba 🇨🇺</h1>
     <p>Encuentra lo que buscas en tu provincia</p>
@@ -711,8 +720,19 @@
         setTimeout(() => t.classList.remove('show'), 2500);
     }
 
-    function showLoading() { document.getElementById('loading-overlay').classList.add('show'); document.body.classList.add('no-scroll'); }
-    function hideLoading() { document.getElementById('loading-overlay').classList.remove('show'); document.body.classList.remove('no-scroll'); }
+    let _scrollY = 0;
+    function lockScroll() {
+        _scrollY = window.scrollY;
+        document.body.style.top = `-${_scrollY}px`;
+        document.body.classList.add('no-scroll');
+    }
+    function unlockScroll() {
+        document.body.classList.remove('no-scroll');
+        document.body.style.top = '';
+        window.scrollTo(0, _scrollY);
+    }
+    function showLoading() { document.getElementById('loading-overlay').classList.add('show'); lockScroll(); }
+    function hideLoading() { document.getElementById('loading-overlay').classList.remove('show'); unlockScroll(); }
 
     // ============================================================
     // LIGHTBOX
@@ -724,7 +744,7 @@
         lbIdx = idx;
         document.getElementById('lightbox-img').src = lbFotos[lbIdx];
         document.getElementById('lightbox').classList.add('active');
-        document.body.classList.add('no-scroll'); // bloquear scroll del fondo
+        lockScroll(); // bloquear scroll del fondo
         const prev = document.getElementById('lightbox-prev');
         const next = document.getElementById('lightbox-next');
         const counter = document.getElementById('lightbox-counter');
@@ -736,7 +756,7 @@
     };
     window.cerrarLightbox = function() {
         document.getElementById('lightbox').classList.remove('active');
-        document.body.classList.remove('no-scroll'); // restaurar scroll
+        unlockScroll(); // restaurar scroll
     };
     window.lightboxNav = function(d) {
         if (lbFotos.length < 2) return;
@@ -781,6 +801,10 @@
         }
         usuarioUID = uid;
         actualizarUI(true);
+        // Si tenía sesión sin verificar, mostrar banner
+        if (localStorage.getItem('bc_unverified') === 'true') {
+            mostrarBannerVerificacion(localStorage.getItem('bc_e') || '');
+        }
         const email = localStorage.getItem('bc_e');
         const pass = localStorage.getItem('bc_p');
         if (email && pass) {
@@ -788,6 +812,13 @@
                 try {
                     const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
                     await signInWithEmailAndPassword(auth, email, pass);
+                    // Si el correo no está verificado, cerrar sesión silenciosamente
+                    if (!auth.currentUser.emailVerified) {
+                        await auth.signOut();
+                        usuarioUID = null;
+                        localStorage.clear();
+                        actualizarUI(false);
+                    }
                 } catch(e) { /* Sin VPN, silencioso */ }
             });
         }
@@ -969,10 +1000,34 @@
         const btn = document.getElementById('btn-auth-accion');
         btn.innerText = 'Conectando...'; btn.disabled = true;
         try {
-            const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+            const { signInWithEmailAndPassword, sendEmailVerification } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
             const auth = await iniciarFB();
             await signInWithEmailAndPassword(auth, email, pass);
-            usuarioUID = auth.currentUser.uid;
+            const user = auth.currentUser;
+
+            // Verificar que el correo esté confirmado
+            if (!user.emailVerified) {
+                // Dejar entrar pero mostrar banner (usuarios antiguos o nuevos sin verificar)
+                // Guardar sesión normalmente
+                usuarioUID = user.uid;
+                localStorage.setItem('bc_uid', usuarioUID);
+                localStorage.setItem('bc_t', Date.now().toString());
+                localStorage.setItem('bc_e', email);
+                localStorage.setItem('bc_p', pass);
+                // Guardar referencia al usuario para poder reenviar sin pedir pass de nuevo
+                localStorage.setItem('bc_unverified', 'true');
+                actualizarUI(true);
+                document.getElementById('auth-container').style.display = 'none';
+                document.getElementById('opciones-auth').style.display = 'none';
+                toggleMenu();
+                mostrarBannerVerificacion(email);
+                btn.innerText = 'Continuar'; btn.disabled = false;
+                return;
+            }
+            // Limpiar flag si ya verificó
+            localStorage.removeItem('bc_unverified');
+
+            usuarioUID = user.uid;
             localStorage.setItem('bc_uid', usuarioUID);
             localStorage.setItem('bc_t', Date.now().toString());
             localStorage.setItem('bc_e', email);
@@ -1000,9 +1055,14 @@
         const btn = document.getElementById('btn-auth-accion');
         btn.innerText = 'Creando cuenta...'; btn.disabled = true;
         try {
-            const { createUserWithEmailAndPassword, updateProfile } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+            const { createUserWithEmailAndPassword, sendEmailVerification } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
             const auth = await iniciarFB();
             const cred = await createUserWithEmailAndPassword(auth, email, pass);
+            // Forzar idioma español en el correo de verificación
+            auth.languageCode = 'es';
+            await sendEmailVerification(cred.user, {
+                url: window.location.href // redirige de vuelta a BazarCuba al verificar
+            });
             const token = await auth.currentUser.getIdToken();
             await fetch(`${FS}/vendedores?key=${API_KEY}`, {
                 method: 'POST',
@@ -1011,19 +1071,17 @@
                     uid: { stringValue: cred.user.uid },
                     email: { stringValue: email },
                     tel: { stringValue: tel },
-                    fecha: { timestampValue: new Date().toISOString() }
+                    fecha: { timestampValue: new Date().toISOString() },
+                    verificado: { booleanValue: false }
                 }})
             });
-            usuarioUID = cred.user.uid;
-            localStorage.setItem('bc_uid', usuarioUID);
-            localStorage.setItem('bc_t', Date.now().toString());
-            localStorage.setItem('bc_e', email);
-            localStorage.setItem('bc_p', pass);
-            actualizarUI(true);
+            // No guardar sesión hasta verificar — cerrar sesión temporalmente
+            await auth.signOut();
             document.getElementById('auth-container').style.display = 'none';
             document.getElementById('opciones-auth').style.display = 'none';
-            await showMsg('✅ Cuenta creada exitosamente. ¡Bienvenido a BazarCuba!', 'ok');
-            renderizar(tiendasData);
+            toggleMenu();
+            mostrarBannerVerificacion(email);
+            btn.innerText = 'Registrarse'; btn.disabled = false;
         } catch(e) {
             let msg = 'No se pudo crear la cuenta. ';
             if (e.code === 'auth/email-already-in-use') msg += 'Este correo ya está registrado.';
@@ -1034,10 +1092,50 @@
         }
     };
 
+    let _verificacionInterval = null;
+
+    window.mostrarBannerVerificacion = function(email) {
+        document.getElementById('banner-verif-email').textContent = email || localStorage.getItem('bc_e') || '';
+        document.getElementById('banner-verificacion').style.display = 'block';
+        // Iniciar polling: revisar cada 5 segundos si el usuario ya verificó
+        if (_verificacionInterval) clearInterval(_verificacionInterval);
+        _verificacionInterval = setInterval(async () => {
+            try {
+                const auth = fbAuth;
+                if (!auth || !auth.currentUser) return;
+                await auth.currentUser.reload(); // refrescar estado desde Firebase
+                if (auth.currentUser.emailVerified) {
+                    clearInterval(_verificacionInterval);
+                    _verificacionInterval = null;
+                    localStorage.removeItem('bc_unverified');
+                    document.getElementById('banner-verificacion').style.display = 'none';
+                    await showMsg('✅ ¡Correo verificado!\n\nBienvenido a BazarCuba 🇨🇺', 'ok');
+                }
+            } catch(e) { /* silencioso, sin VPN no puede revisar */ }
+        }, 5000); // revisar cada 5 segundos
+    };
+
+    window.reenviarVerificacion = async function() {
+        try {
+            const auth = fbAuth;
+            if (auth && auth.currentUser) {
+                auth.languageCode = 'es';
+                const { sendEmailVerification } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+                await sendEmailVerification(auth.currentUser, { url: window.location.href });
+                toast('📧 Correo reenviado. Revisa tu bandeja.');
+            } else {
+                toast('❌ Activa el VPN para reenviar.');
+            }
+        } catch(e) { toast('❌ No se pudo reenviar. Activa el VPN.'); }
+    };
+
     window.cerrarSesion = function() {
+        if (_verificacionInterval) { clearInterval(_verificacionInterval); _verificacionInterval = null; }
         usuarioUID = null; fbAuth = null; fbApp = null;
         localStorage.removeItem('bc_uid'); localStorage.removeItem('bc_t');
         localStorage.removeItem('bc_e'); localStorage.removeItem('bc_p');
+        localStorage.removeItem('bc_unverified');
+        document.getElementById('banner-verificacion').style.display = 'none';
         actualizarUI(false);
         document.getElementById('panelVendedor').style.display = 'none';
         document.getElementById('listaTiendas').style.display = 'grid';
@@ -1227,12 +1325,12 @@
             </div>
         `;
         document.getElementById('pantalla-edicion').classList.add('show');
-        document.body.classList.add('no-scroll');
+        lockScroll();
     };
 
     window.cerrarEdicion = function() {
         document.getElementById('pantalla-edicion').classList.remove('show');
-        document.body.classList.remove('no-scroll');
+        unlockScroll();
         editandoId = null;
         renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
     };
@@ -1317,6 +1415,8 @@
     window.pubSubproductoDesdeEdicion = async function(padreId) {
         const inp = document.getElementById('sf-edit-'+padreId);
         if (!inp || !inp.files.length) { await showMsg('Selecciona al menos una foto.', 'warning'); return; }
+        const totalMB = Array.from(inp.files).reduce((s, f) => s + f.size, 0) / (1024*1024);
+        if (totalMB > 10) { await showMsg(`El total de fotos pesa ${totalMB.toFixed(1)} MB. El máximo es 10 MB.`, 'warning'); return; }
         const esAgotado = document.getElementById('sa-edit-'+padreId)?.checked || false;
         showLoading();
         try {
@@ -1487,7 +1587,7 @@
 
         if (!mis.length) grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888;padding:40px;">No tienes productos.</p>';
         document.getElementById('pantalla-preview').classList.add('show');
-        document.body.classList.add('no-scroll');
+        lockScroll();
     };
 
     window.verUbicacionPreview = function(lat, lng, nombre) {
@@ -1515,7 +1615,7 @@
 
     window.cerrarPreview = function() {
         document.getElementById('pantalla-preview').classList.remove('show');
-        document.body.classList.remove('no-scroll');
+        unlockScroll();
     };
 
     let modoEdicionActivo = false;
@@ -1629,6 +1729,8 @@
         if (!usuarioUID) { await showMsg('Inicia sesion con VPN para publicar.', 'warning', () => pubSubproducto(padreId)); return; }
         const inp = document.getElementById('sf-'+padreId);
         if (!inp || !inp.files.length) { await showMsg('Selecciona al menos una foto.', 'warning'); return; }
+        const totalMB = Array.from(inp.files).reduce((s, f) => s + f.size, 0) / (1024*1024);
+        if (totalMB > 10) { await showMsg(`El total de fotos pesa ${totalMB.toFixed(1)} MB. El máximo es 10 MB.`, 'warning'); return; }
         const btn = document.getElementById('sbtn-'+padreId);
         btn.innerText = 'Subiendo... '; btn.disabled = true;
         try {
@@ -2351,6 +2453,9 @@
         if (!usuarioUID) { await showMsg('Inicia sesión con VPN.', 'warning'); return; }
         const inp = document.getElementById('input-fotos');
         if (!inp.files.length) { await showMsg('Selecciona al menos una foto.', 'warning'); return; }
+        // Validar límite: 10 MB en total, máximo 5 fotos
+        const totalMB = Array.from(inp.files).reduce((s, f) => s + f.size, 0) / (1024*1024);
+        if (totalMB > 10) { await showMsg(`El total de fotos pesa ${totalMB.toFixed(1)} MB. El máximo es 10 MB.\n\nIntenta seleccionar fotos más ligeras.`, 'warning'); return; }
         const esAgotado = document.getElementById('p-agotado').checked;
         showLoading();
         try {
@@ -2530,7 +2635,7 @@
                     `<img src="${foto}" class="carousel-img ${idx===0?'active':''}" onclick="abrirLightbox('${fe}',${idx})">`
                 ).join('');
                 const ctrlHtml = t.fotos.length > 1
-                    ? `<button class="prev" onclick="event.stopPropagation();cambiarFoto('${t.id}',-1)">&#10094;</button><button class="next" onclick="event.stopPropagation();cambiarFoto('${t.id}',1)">&#10095;</button>`
+                    ? `<div class="foto-counter" id="counter-sub-${t.id}">1/${t.fotos.length}</div>`
                     : '';
                 const card = document.createElement('div');
                 card.className = 'card';
@@ -2558,11 +2663,11 @@
             });
         }
         document.getElementById('pantalla-subproductos').classList.add('show');
-        document.body.classList.add('no-scroll');
+        lockScroll();
     };
     window.cerrarSubproductos = function() {
         document.getElementById('pantalla-subproductos').classList.remove('show');
-        document.body.classList.remove('no-scroll');
+        unlockScroll();
     };
 
     window.filtrarPorProvincia = function() {
