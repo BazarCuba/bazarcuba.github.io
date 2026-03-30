@@ -1084,7 +1084,11 @@
                     verificado: { booleanValue: false }
                 }})
             });
-            // No guardar sesión hasta verificar — cerrar sesión temporalmente
+            // Guardar credenciales ANTES de cerrar sesión — el polling las necesita
+            localStorage.setItem('bc_e', email);
+            localStorage.setItem('bc_p', pass);
+            localStorage.setItem('bc_unverified', 'true');
+            // Cerrar sesión hasta que verifique
             await auth.signOut();
             document.getElementById('auth-container').style.display = 'none';
             document.getElementById('opciones-auth').style.display = 'none';
