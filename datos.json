@@ -3,32 +3,23 @@
     {
       "name": "projects/bazarcuba/databases/(default)/documents/tiendas/FhGaOeoCowkvjPBklckQ",
       "fields": {
+        "descripcion": {
+          "stringValue": ""
+        },
+        "lat": {
+          "doubleValue": 20.033611457971954
+        },
         "correo": {
           "stringValue": "norges@bazarcuba.app"
         },
-        "nombre": {
-          "stringValue": "OTG "
+        "esPrincipal": {
+          "booleanValue": true
         },
-        "fecha": {
-          "timestampValue": "2026-04-01T13:24:23.628Z"
+        "moneda": {
+          "stringValue": "CUP"
         },
-        "direccion": {
-          "stringValue": "Carretera de Bacardí #5A / Crombet y Hatuey, reparto San Pedrito "
-        },
-        "uidVendedor": {
-          "stringValue": "5M5kT57Pw3OCgRcwL1APkJKd3op2"
-        },
-        "provincia": {
-          "stringValue": "Santiago de Cuba"
-        },
-        "nombreTienda": {
-          "stringValue": "DE TODO"
-        },
-        "lng": {
-          "doubleValue": -75.832244753837585
-        },
-        "estado": {
-          "stringValue": "disponible"
+        "tel": {
+          "stringValue": "58811896"
         },
         "fotos": {
           "arrayValue": {
@@ -51,42 +42,11 @@
             ]
           }
         },
-        "descripcion": {
-          "stringValue": ""
-        },
-        "tel": {
-          "stringValue": "58811896"
-        },
-        "precio": {
-          "stringValue": "200"
-        },
-        "lat": {
-          "doubleValue": 20.033611457971954
-        },
-        "moneda": {
-          "stringValue": "CUP"
-        },
-        "esPrincipal": {
-          "booleanValue": true
-        }
-      },
-      "createTime": "2026-04-01T13:24:24.156066Z",
-      "updateTime": "2026-04-01T13:31:32.182963Z"
-    },
-    {
-      "name": "projects/bazarcuba/databases/(default)/documents/tiendas/eNJ5UaoieTdLvppC9WGO",
-      "fields": {
-        "correo": {
-          "stringValue": "norges@bazarcuba.app"
-        },
-        "nombre": {
-          "stringValue": "micros"
-        },
-        "fecha": {
-          "timestampValue": "2026-04-01T13:31:30.566Z"
-        },
         "direccion": {
           "stringValue": "Carretera de Bacardí #5A / Crombet y Hatuey, reparto San Pedrito "
+        },
+        "estado": {
+          "stringValue": "disponible"
         },
         "nombreTienda": {
           "stringValue": "DE TODO"
@@ -97,14 +57,72 @@
         "lng": {
           "doubleValue": -75.832244753837585
         },
+        "fecha": {
+          "timestampValue": "2026-04-01T13:24:23.628Z"
+        },
         "uidVendedor": {
           "stringValue": "5M5kT57Pw3OCgRcwL1APkJKd3op2"
+        },
+        "nombre": {
+          "stringValue": "OTG "
+        },
+        "precio": {
+          "stringValue": "200"
+        }
+      },
+      "createTime": "2026-04-01T13:24:24.156066Z",
+      "updateTime": "2026-04-01T13:31:32.182963Z"
+    },
+    {
+      "name": "projects/bazarcuba/databases/(default)/documents/tiendas/eNJ5UaoieTdLvppC9WGO",
+      "fields": {
+        "provincia": {
+          "stringValue": "Santiago de Cuba"
+        },
+        "nombreTienda": {
+          "stringValue": "DE TODO"
+        },
+        "fecha": {
+          "timestampValue": "2026-04-01T13:31:30.566Z"
+        },
+        "uidVendedor": {
+          "stringValue": "5M5kT57Pw3OCgRcwL1APkJKd3op2"
+        },
+        "precio": {
+          "stringValue": "260"
+        },
+        "nombre": {
+          "stringValue": "micros"
+        },
+        "productoPadreId": {
+          "stringValue": "FhGaOeoCowkvjPBklckQ"
+        },
+        "lng": {
+          "doubleValue": -75.832244753837585
+        },
+        "lat": {
+          "doubleValue": 20.033611457971954
+        },
+        "descripcion": {
+          "stringValue": ""
+        },
+        "direccion": {
+          "stringValue": "Carretera de Bacardí #5A / Crombet y Hatuey, reparto San Pedrito "
         },
         "estado": {
           "stringValue": "disponible"
         },
-        "precio": {
-          "stringValue": "260"
+        "moneda": {
+          "stringValue": "CUP"
+        },
+        "tel": {
+          "stringValue": "58811896"
+        },
+        "correo": {
+          "stringValue": "norges@bazarcuba.app"
+        },
+        "esPrincipal": {
+          "booleanValue": false
         },
         "fotos": {
           "arrayValue": {
@@ -114,24 +132,6 @@
               }
             ]
           }
-        },
-        "tel": {
-          "stringValue": "58811896"
-        },
-        "descripcion": {
-          "stringValue": ""
-        },
-        "productoPadreId": {
-          "stringValue": "FhGaOeoCowkvjPBklckQ"
-        },
-        "lat": {
-          "doubleValue": 20.033611457971954
-        },
-        "esPrincipal": {
-          "booleanValue": false
-        },
-        "moneda": {
-          "stringValue": "CUP"
         }
       },
       "createTime": "2026-04-01T13:31:31.334801Z",
