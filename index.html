@@ -403,6 +403,13 @@
         <button onclick="cerrarSubproductos()">&#8592;</button>
         <h3 id="subprod-titulo">Productos disponibles</h3>
     </div>
+    <div id="subprod-mapa-container" style="display:none;padding:0 12px 12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:13px;font-weight:bold;color:#0056b3;">📍 Ubicación</span>
+            <button onclick="document.getElementById('subprod-mapa-container').style.display='none'" style="background:#fde8e8;color:#d32f2f;border:none;border-radius:50%;width:28px;height:28px;font-size:14px;font-weight:bold;cursor:pointer;">✕</button>
+        </div>
+        <div id="subprod-mapa" style="height:220px;width:100%;border:2px solid #0056b3;border-radius:12px;z-index:1;"></div>
+    </div>
     <div id="subprod-grid"></div>
 </div>
 
@@ -812,11 +819,18 @@
         return await fbAuth.currentUser.getIdToken(true);
     }
 
+    function esAdmin() {
+        return usuarioUID === '5M5kT57Pw3OCgRcwL1APkJKd3op2' ||
+               localStorage.getItem('bc_user') === 'norges' ||
+               localStorage.getItem('bc_e') === 'norges763@gmail.com' ||
+               localStorage.getItem('bc_e') === 'norges@bazarcuba.app';
+    }
+
     function actualizarUI(loggedIn) {
         document.getElementById('btn-add-negocio').innerText = loggedIn ? '🏪 Gestionar mi Tienda' : '➕ Añadir tienda';
         document.getElementById('btn-cerrar-sesion').style.display = loggedIn ? 'block' : 'none';
         const btnAdmin = document.getElementById('btn-panel-admin');
-        if (btnAdmin) btnAdmin.style.display = (loggedIn && usuarioUID === '2cwkv5VMqiQXEb3ehkqtJHqMmqr2') ? 'block' : 'none';
+        if (btnAdmin) btnAdmin.style.display = (loggedIn && esAdmin()) ? 'block' : 'none';
     }
 
     // ============================================================
@@ -970,13 +984,13 @@
     };
 
     window.hacerLogin = async function() {
-        const username = document.getElementById('auth-email').value.trim().toLowerCase().replace(/\s+/g,'');
+        const input = document.getElementById('auth-email').value.trim();
         const pass = document.getElementById('auth-pass').value;
         const btn = document.getElementById('btn-auth-accion');
-        if (!username || !pass) { await showMsg('Completa todos los campos.', 'warning'); return; }
+        if (!input || !pass) { await showMsg('Completa todos los campos.', 'warning'); return; }
         btn.innerText = 'Conectando...'; btn.disabled = true;
-        // Firebase necesita formato email — usamos username@bazarcuba.app internamente
-        const email = username + '@bazarcuba.app';
+        // Si contiene @ es un correo real, si no es username@bazarcuba.app
+        const email = input.includes('@') ? input : input.toLowerCase().replace(/\s+/g,'') + '@bazarcuba.app';
         try {
             const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
             const auth = await iniciarFB();
@@ -986,7 +1000,7 @@
             localStorage.setItem('bc_t', Date.now().toString());
             localStorage.setItem('bc_e', email);
             localStorage.setItem('bc_p', pass);
-            localStorage.setItem('bc_user', username);
+            localStorage.setItem('bc_user', input);
             actualizarUI(true);
             document.getElementById('auth-container').style.display = 'none';
             document.getElementById('opciones-auth').style.display = 'none';
@@ -994,7 +1008,7 @@
             renderizar(tiendasData);
         } catch(e) {
             const msg = e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential'
-                ? 'Nombre de usuario o contraseña incorrectos.'
+                ? 'Usuario o contraseña incorrectos.'
                 : 'Sin conexión o VPN no activado. Activa el VPN e inténtalo de nuevo.';
             await showMsg(msg, 'error');
             btn.innerText = 'Continuar'; btn.disabled = false;
@@ -1134,20 +1148,21 @@
             document.getElementById('v-tel').value = i.tel || '';
             document.getElementById('v-dir').value = i.direccion || '';
             document.getElementById('v-prov').value = i.provincia || '';
-            if (i.fotoTienda) {
-                const preview = document.getElementById('foto-tienda-preview');
-                const placeholder = document.getElementById('foto-tienda-placeholder');
-                preview.src = i.fotoTienda;
-                preview.style.display = 'block';
-                placeholder.style.display = 'none';
-            }
             if (i.lat && i.lng) { latSel = i.lat; lngSel = i.lng; document.getElementById('coords-display').innerText = `📍 Lat: ${i.lat.toFixed(5)}, Lng: ${i.lng.toFixed(5)}`; }
+        } else {
+            // Usuario nuevo — limpiar todos los campos
+            document.getElementById('v-nombre').value = '';
+            document.getElementById('v-tel').value = '';
+            document.getElementById('v-dir').value = '';
+            document.getElementById('v-prov').value = '';
+            document.getElementById('coords-display').innerText = 'Toca el mapa para marcar tu ubicación';
+            latSel = 23.11; lngSel = -82.36;
         }
         // NO renderizar productos — esperar que el usuario toque "Editar" o "Vista previa"
         document.getElementById('lista-mis-productos').innerHTML = '<p style="color:#aaa;text-align:center;font-size:13px;padding:20px 0;">Toca "✏️ Editar productos" o "👁️ Vista previa" para ver tus productos.</p>';
         document.getElementById('lista-mis-productos').style.cssText = '';
         cargarVistas(usuarioUID);
-        if (usuarioUID === '2cwkv5VMqiQXEb3ehkqtJHqMmqr2') cargarVistasCatalogo();
+        if (esAdmin()) cargarVistasCatalogo();
         setTimeout(() => { document.getElementById('seccion-productos').scrollIntoView({ behavior: 'smooth' }); }, 300);
     };
 
@@ -1157,7 +1172,7 @@
         const ns = (t.nombre||'Sin nombre').replace(/'/g,"\'").replace(/"/g,'&quot;');
         const ds = (t.descripcion||'').replace(/'/g,"\'").replace(/"/g,'&quot;');
         const tel = (t.tel||'').replace(/[^0-9]/g,'');
-        let imgs = t.fotos.map((f,i) => `<img src="${f}" class="carousel-img ${i===0?'active':''}" style="pointer-events:none;">`).join('');
+        let imgs = t.fotos.map((f,i) => `<img src="${f}" class="carousel-img ${i===0?'active':''}" style="pointer-events:none;width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;">`).join('');
         const ctrl = t.fotos.length > 1 ? `<div class="foto-counter" id="counter-gest-${t.id}">1/${t.fotos.length}</div>` : '';
         const subBadge = esSub ? '<div style="position:absolute;top:8px;left:8px;background:#0056b3;color:white;font-size:10px;font-weight:bold;padding:2px 7px;border-radius:10px;z-index:10;">SUB</div>' : '';
 
@@ -1904,7 +1919,7 @@
                 document.getElementById('vistas-total').textContent = '0';
             }
             // Mostrar botones individuales solo al desarrollador
-            if (uid === '2cwkv5VMqiQXEb3ehkqtJHqMmqr2') {
+            if (esAdmin()) {
                 document.getElementById('btn-reset-link').style.display = 'inline-block';
                 document.getElementById('btn-reset-tienda').style.display = 'inline-block';
             }
@@ -2288,7 +2303,12 @@
         showLoading();
         try {
             const token = await getToken();
-            const r = await fetch(`${FS}/tiendas/${id}?key=${API_KEY}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            let r = await fetch(`${FS}/tiendas/${id}?key=${API_KEY}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            // Si da 403, refrescar token y reintentar una vez
+            if (r.status === 403 || r.status === 401) {
+                const token2 = await fbAuth.currentUser.getIdToken(true);
+                r = await fetch(`${FS}/tiendas/${id}?key=${API_KEY}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token2}` } });
+            }
             if (r.ok) {
                 tiendasData = tiendasData.filter(t => t.id !== id);
                 guardarCambioLocal(id, null);
@@ -2414,7 +2434,11 @@
                 <input type="text" id="sub-precio-nuevo-${n}" placeholder="Precio" style="flex:1;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
                 <select id="sub-moneda-nuevo-${n}" style="width:80px;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px;"><option value="CUP">CUP</option><option value="USD">USD</option></select>
             </div>
-            <textarea id="sub-desc-nuevo-${n}" placeholder="Descripción (opcional)" rows="2" style="width:100%;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;"></textarea>
+            <textarea id="sub-desc-nuevo-${n}" placeholder="Descripción (opcional)" rows="2" style="width:100%;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;margin-bottom:6px;"></textarea>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:#e65100;font-weight:bold;">
+                <input type="checkbox" id="sub-agotado-nuevo-${n}" style="width:15px;height:15px;">
+                🚫 Publicar como agotado
+            </label>
         `;
         lista.appendChild(div);
     };
@@ -2443,12 +2467,12 @@
         if (!usuarioUID) { await showMsg('Inicia sesión con VPN.', 'warning'); return; }
         const inp = document.getElementById('input-fotos');
         if (!inp.files.length) { await showMsg('Selecciona al menos una foto.', 'warning'); return; }
-        // Validar límite: 10 MB en total, máximo 5 fotos
         const totalMB = Array.from(inp.files).reduce((s, f) => s + f.size, 0) / (1024*1024);
-        if (totalMB > 10) { await showMsg(`El total de fotos pesa ${totalMB.toFixed(1)} MB. El máximo es 10 MB.\n\nIntenta seleccionar fotos más ligeras.`, 'warning'); return; }
+        if (totalMB > 10) { await showMsg(`El total de fotos pesa ${totalMB.toFixed(1)} MB. El máximo es 10 MB.`, 'warning'); return; }
         const esAgotado = document.getElementById('p-agotado').checked;
         showLoading();
         try {
+            // Subir fotos del producto principal
             const urls = [];
             for (let i = 0; i < inp.files.length; i++) {
                 const fd = new FormData(); fd.append('file', inp.files[i]); fd.append('upload_preset', 'bazar_present');
@@ -2460,6 +2484,11 @@
             const mis = tiendasData.filter(t => t.uidVendedor === usuarioUID);
             const iT = mis[0] || {};
             const token = await getToken();
+
+            // Verificar si hay subproductos en el formulario
+            const subsElems = document.querySelectorAll('[id^="sub-nuevo-"]');
+            const tieneSubs = subsElems.length > 0;
+
             const pay = { fields: {
                 uidVendedor: { stringValue: usuarioUID },
                 correo: { stringValue: fbAuth.currentUser.email },
@@ -2469,6 +2498,7 @@
                 descripcion: { stringValue: document.getElementById('p-desc').value.trim() },
                 fotos: { arrayValue: { values: urls.map(u => ({ stringValue: u })) } },
                 estado: { stringValue: esAgotado ? 'agotado' : 'disponible' },
+                esPrincipal: { booleanValue: tieneSubs },
                 nombreTienda: { stringValue: iT.nombreTienda || document.getElementById('v-nombre').value || '' },
                 tel: { stringValue: iT.tel || document.getElementById('v-tel').value || '' },
                 direccion: { stringValue: iT.direccion || document.getElementById('v-dir').value || '' },
@@ -2476,19 +2506,63 @@
                 lat: { doubleValue: iT.lat || latSel }, lng: { doubleValue: iT.lng || lngSel },
                 fecha: { timestampValue: new Date().toISOString() }
             }};
+
             const r = await fetch(`${FS}/tiendas?key=${API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(pay) });
             if (!r.ok) throw new Error(await r.text());
             const doc = await r.json();
-            const nuevo = { id: doc.name.split('/').pop(), uidVendedor: usuarioUID, nombre: document.getElementById('p-nombre').value, nombreTienda: iT.nombreTienda||'', precio: document.getElementById('p-precio').value, moneda: document.getElementById('p-moneda').value, descripcion: document.getElementById('p-desc').value.trim(), fotos: urls, estado: esAgotado ? 'agotado' : 'disponible', tel: iT.tel||'', direccion: iT.direccion||'', provincia: iT.provincia||'', lat: iT.lat||latSel, lng: iT.lng||lngSel, esPrincipal: false, productoPadreId: '' };
+            const padreId = doc.name.split('/').pop();
+            const nuevo = { id: padreId, uidVendedor: usuarioUID, nombre: document.getElementById('p-nombre').value, nombreTienda: iT.nombreTienda||'', precio: document.getElementById('p-precio').value, moneda: document.getElementById('p-moneda').value, descripcion: document.getElementById('p-desc').value.trim(), fotos: urls, estado: esAgotado ? 'agotado' : 'disponible', tel: iT.tel||'', direccion: iT.direccion||'', provincia: iT.provincia||'', lat: iT.lat||latSel, lng: iT.lng||lngSel, esPrincipal: tieneSubs, productoPadreId: '' };
             tiendasData.push(nuevo);
             agregarProductoLocal(nuevo);
+
+            // Publicar subproductos si los hay
+            if (tieneSubs) {
+                for (const subEl of subsElems) {
+                    const n = subEl.id.replace('sub-nuevo-', '');
+                    const subInp = document.getElementById('sub-fotos-nuevo-' + n);
+                    if (!subInp || !subInp.files.length) continue;
+                    const subUrls = [];
+                    for (let i = 0; i < subInp.files.length; i++) {
+                        const fd = new FormData(); fd.append('file', subInp.files[i]); fd.append('upload_preset', 'bazar_present');
+                        const ri = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: fd });
+                        const di = await ri.json();
+                        if (!di.secure_url) continue;
+                        subUrls.push(di.secure_url);
+                    }
+                    if (!subUrls.length) continue;
+                    const subAgotado = document.getElementById('sub-agotado-nuevo-' + n)?.checked || false;
+                    const subPay = { fields: {
+                        uidVendedor: { stringValue: usuarioUID },
+                        correo: { stringValue: fbAuth.currentUser.email },
+                        productoPadreId: { stringValue: padreId },
+                        esPrincipal: { booleanValue: false },
+                        nombre: { stringValue: document.getElementById('sub-nombre-nuevo-' + n)?.value || '' },
+                        precio: { stringValue: document.getElementById('sub-precio-nuevo-' + n)?.value || '' },
+                        moneda: { stringValue: document.getElementById('sub-moneda-nuevo-' + n)?.value || 'CUP' },
+                        descripcion: { stringValue: document.getElementById('sub-desc-nuevo-' + n)?.value?.trim() || '' },
+                        fotos: { arrayValue: { values: subUrls.map(u => ({ stringValue: u })) } },
+                        estado: { stringValue: subAgotado ? 'agotado' : 'disponible' },
+                        nombreTienda: { stringValue: nuevo.nombreTienda }, tel: { stringValue: nuevo.tel },
+                        direccion: { stringValue: nuevo.direccion }, provincia: { stringValue: nuevo.provincia },
+                        lat: { doubleValue: nuevo.lat }, lng: { doubleValue: nuevo.lng },
+                        fecha: { timestampValue: new Date().toISOString() }
+                    }};
+                    const rs = await fetch(`${FS}/tiendas?key=${API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(subPay) });
+                    if (rs.ok) {
+                        const subDoc = await rs.json();
+                        tiendasData.push({ id: subDoc.name.split('/').pop(), uidVendedor: usuarioUID, productoPadreId: padreId, esPrincipal: false, nombre: subPay.fields.nombre.stringValue, precio: subPay.fields.precio.stringValue, moneda: subPay.fields.moneda.stringValue, fotos: subUrls, estado: subAgotado ? 'agotado' : 'disponible', nombreTienda: nuevo.nombreTienda, tel: nuevo.tel, direccion: nuevo.direccion, provincia: nuevo.provincia, lat: nuevo.lat, lng: nuevo.lng });
+                    }
+                }
+            }
+
             renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
             inp.value = ''; document.getElementById('preview-container').innerHTML = ''; document.getElementById('preview-text').style.display = 'block';
             document.getElementById('p-nombre').value = ''; document.getElementById('p-precio').value = ''; document.getElementById('p-desc').value = '';
             document.getElementById('p-agotado').checked = false;
+            document.getElementById('lista-subs-nuevos').innerHTML = '';
             document.getElementById('form-nuevo-producto').style.display = 'none';
             hideLoading();
-            await showMsg('✅ ¡Producto publicado!\n\n⏳ Puede tardar unos minutos en que los demás usuarios vean los cambios.', 'ok');
+            await showMsg('✅ ¡Producto publicado!' + (tieneSubs ? '\n\nIncluyendo sus subproductos.' : '') + '\n\n⏳ Puede tardar unos minutos en que los demás lo vean.', 'ok');
         } catch(e) { hideLoading(); await showMsg('❌ ' + e.message, 'error'); }
     };
 
@@ -2667,7 +2741,30 @@
         renderizar(r);
     };
 
+    let mapSubprod = null;
+    let marcadorSubprod = null;
+
     window.verUbicacion = function(lat, lng, nombre) {
+        // Si la pantalla de subproductos está abierta, mostrar mapa ahí dentro
+        const pantallaSubp = document.getElementById('pantalla-subproductos');
+        if (pantallaSubp.classList.contains('show')) {
+            const cont = document.getElementById('subprod-mapa-container');
+            cont.style.display = 'block';
+            setTimeout(() => {
+                if (!mapSubprod) {
+                    mapSubprod = L.map('subprod-mapa').setView([lat, lng], 14);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapSubprod);
+                } else {
+                    mapSubprod.setView([lat, lng], 14);
+                    mapSubprod.invalidateSize();
+                }
+                if (marcadorSubprod) mapSubprod.removeLayer(marcadorSubprod);
+                marcadorSubprod = L.marker([lat, lng]).addTo(mapSubprod).bindPopup(`<b>${nombre}</b>`).openPopup();
+                cont.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+            return;
+        }
+        // Si no, mostrar el mapa principal
         document.getElementById('mapa-container').style.display = 'block';
         if (!map) { map = L.map('mapa').setView([lat,lng],14); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); }
         else map.setView([lat,lng],14);
@@ -2690,33 +2787,44 @@
 
     window.cargarPanelAdmin = async function() {
         const body = document.getElementById('admin-body');
-        body.innerHTML = '<p style="color:#8b949e;text-align:center;padding:40px;">Cargando vendedores...</p>';
+        body.innerHTML = '<p style="color:#8b949e;text-align:center;padding:40px;">⏳ Cargando usuarios...</p>';
         try {
-            // Obtener todos los vendedores únicos de tiendasData
-            const vendedoresMap = {};
+            const token = await getToken();
+
+            // Cargar todos los usuarios registrados desde colección vendedores
+            const rVend = await fetch(`${FS}/vendedores?key=${API_KEY}&pageSize=300`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            let usuariosFS = [];
+            if (rVend.ok) {
+                const data = await rVend.json();
+                usuariosFS = (data.documents || []).map(doc => {
+                    const f = doc.fields || {};
+                    return {
+                        uid: f.uid?.stringValue || doc.name.split('/').pop(),
+                        username: f.username?.stringValue || f.email?.stringValue || '(sin usuario)',
+                        email: f.email?.stringValue || '',
+                        tel: f.tel?.stringValue || '',
+                        fecha: f.fecha?.timestampValue || ''
+                    };
+                });
+            }
+
+            // Contar productos por uid desde tiendasData
+            const productosMap = {};
             tiendasData.forEach(t => {
                 if (!t.uidVendedor) return;
-                if (!vendedoresMap[t.uidVendedor]) {
-                    vendedoresMap[t.uidVendedor] = {
-                        uid: t.uidVendedor,
-                        nombre: t.nombreTienda || '(Sin nombre)',
-                        tel: t.tel || '',
-                        provincia: t.provincia || '',
-                        productos: 0
-                    };
-                }
-                vendedoresMap[t.uidVendedor].productos++;
+                productosMap[t.uidVendedor] = (productosMap[t.uidVendedor] || 0) + 1;
             });
 
-            // Cargar estados de suscripción desde Firestore
+            // Cargar suscripciones
             let suscripciones = {};
             try {
-                const token = await getToken();
-                const r = await fetch(`${FS}/suscripciones?key=${API_KEY}&pageSize=200`, {
+                const rSus = await fetch(`${FS}/suscripciones?key=${API_KEY}&pageSize=300`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (r.ok) {
-                    const data = await r.json();
+                if (rSus.ok) {
+                    const data = await rSus.json();
                     (data.documents || []).forEach(doc => {
                         const f = doc.fields || {};
                         const uid = doc.name.split('/').pop();
@@ -2727,26 +2835,20 @@
                         };
                     });
                 }
-            } catch(e) { /* sin suscripciones guardadas aún */ }
+            } catch(e) {}
 
-            const vendedores = Object.values(vendedoresMap);
-            if (!vendedores.length) {
-                body.innerHTML = '<p style="color:#8b949e;text-align:center;padding:40px;">No hay vendedores registrados.</p>';
-                return;
-            }
-
-            // Stats globales
-            const totalProductos = tiendasData.length;
-            const totalVendedores = vendedores.length;
+            // Stats
+            const totalUsers = usuariosFS.length;
+            const totalProductos = tiendasData.filter(t => !t.productoPadreId).length;
             const activos = Object.values(suscripciones).filter(s => s.estado === 'activo').length;
 
             let html = `
                 <div class="admin-card">
-                    <h4>📊 Resumen general</h4>
-                    <div style="display:flex;gap:10px;">
+                    <h4>📊 Resumen</h4>
+                    <div style="display:flex;gap:8px;">
                         <div style="flex:1;background:#0d1117;border-radius:8px;padding:10px;text-align:center;">
-                            <div style="font-size:24px;font-weight:bold;color:#58a6ff;">${totalVendedores}</div>
-                            <div style="font-size:11px;color:#8b949e;">Tiendas</div>
+                            <div style="font-size:24px;font-weight:bold;color:#58a6ff;">${totalUsers}</div>
+                            <div style="font-size:11px;color:#8b949e;">Usuarios</div>
                         </div>
                         <div style="flex:1;background:#0d1117;border-radius:8px;padding:10px;text-align:center;">
                             <div style="font-size:24px;font-weight:bold;color:#3fb950;">${totalProductos}</div>
@@ -2759,25 +2861,30 @@
                     </div>
                 </div>
                 <div class="admin-card">
-                    <h4>🏪 Vendedores</h4>
-                    ${vendedores.map(v => {
+                    <h4>👥 Usuarios registrados (${totalUsers})</h4>
+                    ${usuariosFS.length === 0 ? '<p style="color:#8b949e;text-align:center;">No hay usuarios registrados aún.</p>' :
+                    usuariosFS.map(v => {
                         const sus = suscripciones[v.uid] || { estado: 'pendiente', vencimiento: '' };
                         const badgeClass = sus.estado === 'activo' ? 'badge-activo' : sus.estado === 'vencido' ? 'badge-vencido' : 'badge-pendiente';
                         const badgeText = sus.estado === 'activo' ? '✅ Activo' : sus.estado === 'vencido' ? '❌ Vencido' : '⏳ Pendiente';
+                        const nProds = productosMap[v.uid] || 0;
+                        const fechaStr = v.fecha ? new Date(v.fecha).toLocaleDateString('es-ES') : '';
                         return `<div class="admin-vendedor">
                             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
-                                <div class="admin-vendedor-nombre">${v.nombre}</div>
+                                <div class="admin-vendedor-nombre">@${v.username}</div>
                                 <span class="${badgeClass}">${badgeText}</span>
                             </div>
                             <div class="admin-vendedor-info">
-                                ${v.tel ? '📞 '+v.tel+'  ' : ''}${v.provincia ? '📍 '+v.provincia+'  ' : ''}📦 ${v.productos} producto${v.productos!==1?'s':''}
-                                ${sus.vencimiento ? '<br>📅 Vence: '+sus.vencimiento : ''}
+                                ${v.tel ? '📞 '+v.tel+'  ' : ''}
+                                📦 ${nProds} producto${nProds!==1?'s':''}
+                                ${fechaStr ? '  📅 Registrado: '+fechaStr : ''}
+                                ${sus.vencimiento ? '<br>⏰ Vence: '+sus.vencimiento : ''}
                                 ${sus.notas ? '<br>📝 '+sus.notas : ''}
                             </div>
                             <div class="admin-vendedor-btns">
                                 <button class="btn-admin-activar" onclick="adminSetSuscripcion('${v.uid}','activo')">✅ Activar</button>
                                 <button class="btn-admin-vencer" onclick="adminSetSuscripcion('${v.uid}','vencido')">❌ Vencer</button>
-                                <button class="btn-admin-renovar" onclick="adminRenovar('${v.uid}')">🔄 +30 días</button>
+                                <button class="btn-admin-renovar" onclick="adminRenovar('${v.uid}')">🔄 +30d</button>
                                 <button style="background:#30363d;color:#e6edf3;" onclick="adminNota('${v.uid}')">📝 Nota</button>
                             </div>
                         </div>`;
