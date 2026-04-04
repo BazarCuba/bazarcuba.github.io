@@ -452,7 +452,10 @@
         <div id="campo-telefono" style="display:none;margin-bottom:10px;">
             <input type="tel" id="auth-tel" placeholder="Teléfono (+53 51234567)" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;">
         </div>
-        <input type="password" id="auth-pass" placeholder="Contraseña (mín 6 letras)" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;">
+        <div style="position:relative;">
+            <input type="password" id="auth-pass" placeholder="Contraseña (mín 6 letras)" style="width:100%;padding:10px;padding-right:40px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+            <button type="button" onclick="const i=document.getElementById('auth-pass');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁️':'🙈'" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:18px;padding:0;line-height:1;">👁️</button>
+        </div>
         <button id="btn-auth-accion" onclick="ejecutarAuth()" style="width:100%;margin-top:12px;padding:11px;background:linear-gradient(135deg,#0056b3,#003d82);color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:15px;">Continuar</button>
     </div>
 </div>
@@ -1250,7 +1253,7 @@
                 <h4>📸 Fotos</h4>
                 <div class="edit-foto-grid" id="edit-fotos-grid">${fotosHtml}</div>
                 <div style="display:flex;gap:8px;">
-                    <button onclick="gestionarFoto('${id}','agregar')" class="edit-btn-accion" style="flex:1;background:#e8f4fd;color:#0056b3;border:1.5px solid #0056b3;">➕ Agregar foto</button>
+                    <button onclick="gestionarFoto('${id}','agregar')" class="edit-btn-accion" style="flex:1;background:#e8f4fd;color:#0056b3;border:1.5px solid #0056b3;">➕ Agregar fotos</button>
                     <button onclick="gestionarFoto('${id}','cambiar')" class="edit-btn-accion" style="flex:1;background:#fff3e0;color:#e65100;border:1.5px solid #e65100;">🔄 Cambiar todas</button>
                 </div>
             </div>
@@ -1549,7 +1552,7 @@
                 ? `<button onclick="abrirSubproductosPreview('${t.id}')" style="background:#fde8e8;color:#d32f2f;border:1.5px solid #d32f2f;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;">Seleccionar</button>`
                 : `<span class="precio-tag">${t.precio}</span>
                    ${t.moneda ? '<span class="moneda-tag">'+t.moneda+'</span>' : ''}
-                   ${t.descripcion ? '<button class="btn-descripcion" onclick="abrirDesc(\''+ns2+'\',\''+ds2+'\')">'+svgDoc+'</button>' : ''}`;
+                   ${t.descripcion ? `<button class="btn-descripcion" onclick="abrirDesc(this.dataset.n,this.dataset.d)" data-n="${ns2}" data-d="${ds2}">${svgDoc}</button>` : ''}`;
 
             const card = document.createElement('div');
             card.className = 'card'; card.id = 'card-prev-'+t.id;
@@ -2299,12 +2302,27 @@
 
     window.borrarAnuncio = async function(id) {
         if (!usuarioUID) { await showMsg('Inicia sesión con VPN para eliminar.', 'warning', () => borrarAnuncio(id)); return; }
-        if (!await showConfirm('¿Seguro que quieres eliminar este producto?')) return;
+        const esPadre = tiendasData.some(t => t.productoPadreId === id);
+        const msg = esPadre
+            ? '¿Seguro que quieres eliminar este producto y todos sus subproductos?'
+            : '¿Seguro que quieres eliminar este producto?';
+        if (!await showConfirm(msg)) return;
         showLoading();
         try {
             const token = await getToken();
+            // Borrar subproductos primero si los hay
+            const subs = tiendasData.filter(t => t.productoPadreId === id);
+            for (const sub of subs) {
+                let rs = await fetch(`${FS}/tiendas/${sub.id}?key=${API_KEY}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                if (rs.status === 403 || rs.status === 401) {
+                    const t2 = await fbAuth.currentUser.getIdToken(true);
+                    await fetch(`${FS}/tiendas/${sub.id}?key=${API_KEY}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${t2}` } });
+                }
+                tiendasData = tiendasData.filter(t => t.id !== sub.id);
+                guardarCambioLocal(sub.id, null);
+            }
+            // Borrar el padre
             let r = await fetch(`${FS}/tiendas/${id}?key=${API_KEY}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-            // Si da 403, refrescar token y reintentar una vez
             if (r.status === 403 || r.status === 401) {
                 const token2 = await fbAuth.currentUser.getIdToken(true);
                 r = await fetch(`${FS}/tiendas/${id}?key=${API_KEY}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token2}` } });
@@ -2315,7 +2333,7 @@
                 hideLoading();
                 cerrarEdicion();
                 renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-                await showMsg('✅ Producto eliminado.', 'ok');
+                await showMsg('✅ Producto eliminado.' + (subs.length ? `\n${subs.length} subproducto${subs.length>1?'s':''} también eliminado${subs.length>1?'s':''}.` : ''), 'ok');
             } else { hideLoading(); await showMsg('❌ ' + await r.text(), 'error'); }
         } catch(e) { hideLoading(); await msgError(e); }
     };
@@ -2358,27 +2376,35 @@
 
     window.gestionarFoto = async function(id, accion) {
         if (!usuarioUID) { await showMsg('Inicia sesión con VPN para gestionar fotos.', 'warning', () => gestionarFoto(id, accion)); return; }
-        const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
+        const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.multiple = true;
         inp.onchange = async e => {
-            const file = e.target.files[0]; if (!file) return;
-            toast('📤 Subiendo imagen...');
+            const files = Array.from(e.target.files); if (!files.length) return;
+            // Validar total
+            const anuncio = tiendasData.find(t => t.id === id);
+            const fotosActuales = accion === 'cambiar' ? [] : [...(anuncio.fotos || [])];
+            const totalMB = files.reduce((s, f) => s + f.size, 0) / (1024*1024);
+            if (totalMB > 10) { await showMsg(`Las fotos pesan ${totalMB.toFixed(1)} MB. El máximo es 10 MB.`, 'warning'); return; }
+            showLoading();
             try {
-                const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', 'bazar_present');
-                const ri = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: fd });
-                const di = await ri.json();
-                if (!di.secure_url) throw new Error('Error subiendo imagen');
-                const anuncio = tiendasData.find(t => t.id === id);
-                let fotos = [...(anuncio.fotos || [])];
-                if (accion === 'cambiar') fotos = [di.secure_url]; else fotos.push(di.secure_url);
+                const nuevasUrls = [];
+                for (const file of files) {
+                    const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', 'bazar_present');
+                    const ri = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: fd });
+                    const di = await ri.json();
+                    if (!di.secure_url) throw new Error('Error subiendo imagen');
+                    nuevasUrls.push(di.secure_url);
+                }
+                const fotos = [...fotosActuales, ...nuevasUrls];
                 const token = await getToken();
                 const r = await fetch(`${FS}/tiendas/${id}?updateMask.fieldPaths=fotos&key=${API_KEY}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ fields: { fotos: { arrayValue: { values: fotos.map(u => ({ stringValue: u })) } } } }) });
                 if (r.ok) {
                     anuncio.fotos = fotos;
-                    guardarCambioLocal(id, { fotos: fotos });
-                    renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
-                    await showMsg('✅ Foto actualizada.\n\nPuede tardar unos minutos en que los demás lo vean.', 'ok');
-                } else { await showMsg('❌ ' + await r.text(), 'error'); }
-            } catch(err) { await showMsg('❌ ' + err.message, 'error'); }
+                    guardarCambioLocal(id, { fotos });
+                    hideLoading();
+                    abrirEdicion(id); // refrescar pantalla de edición
+                    await showMsg(`✅ ${nuevasUrls.length} foto${nuevasUrls.length>1?'s':''} ${accion==='cambiar'?'reemplazadas':'agregadas'} correctamente.`, 'ok');
+                } else { hideLoading(); await showMsg('❌ ' + await r.text(), 'error'); }
+            } catch(err) { hideLoading(); await showMsg('❌ ' + err.message, 'error'); }
         };
         inp.click();
     };
