@@ -221,7 +221,7 @@
         #pantalla-subproductos {
             display: none; position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #f0f4f8; z-index: 4000; flex-direction: column; overflow: hidden;
+            background: #f0f4f8; z-index: 5500; flex-direction: column; overflow: hidden;
         }
         #pantalla-subproductos.show { display: flex; }
         #subprod-header {
@@ -432,6 +432,7 @@
 
 <div id="side-menu">
     <button onclick="toggleMenu()" style="background:#ff4444;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;float:right;font-weight:bold;">✕ Cerrar</button>
+    <button onclick="toggleMenu();abrirAcercaDe()" style="float:left;background:none;border:2px solid #0056b3;color:#0056b3;border-radius:50%;width:32px;height:32px;font-size:16px;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">?</button>
     <h2 style="margin-top:45px;color:#0056b3;">BazarCuba 🇨🇺</h2>
     <hr style="border-color:#eee;">
     <button id="btn-add-negocio" onclick="mostrarPanelVendedor()" style="width:100%;padding:14px;background:linear-gradient(135deg,#0056b3,#003d82);color:white;border:none;border-radius:10px;font-weight:bold;cursor:pointer;margin-top:10px;font-size:15px;">➕ Añadir tienda</button>
@@ -643,6 +644,13 @@
     // VARIABLES
     // ============================================================
     let tiendasData = [];
+
+    // SVGs globales
+    const svgTel = `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#4CAF50"/><path d="M6.5 7.5C6.5 6.67 7.17 6 8 6h1.5c.28 0 .53.15.66.38l1.5 2.5c.16.27.1.61-.13.82L10.7 10.5c.52 1.1 1.2 1.78 2.3 2.3l.8-.83c.21-.23.55-.29.82-.13l2.5 1.5c.23.13.38.38.38.66V16c0 .83-.67 1.5-1.5 1.5C9.49 17.5 6.5 14.51 6.5 7.5z" fill="white"/></svg>`;
+    const svgWA = `<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#25D366"/><path d="M12 4C7.58 4 4 7.58 4 12c0 1.42.37 2.75 1.02 3.91L4 20l4.18-1.01C9.3 19.63 10.62 20 12 20c4.42 0 8-3.58 8-8s-3.58-8-8-8zm3.93 11.07c-.16.45-.94.88-1.29.93-.33.05-.74.07-1.19-.07-.27-.09-.63-.2-1.08-.4-1.89-.82-3.13-2.73-3.22-2.86-.09-.13-.76-1.01-.76-1.93s.48-1.37.65-1.56c.17-.19.37-.23.49-.23.12 0 .25 0 .36.01.11 0 .27-.04.42.32.16.37.54 1.31.59 1.4.05.09.08.2.02.32-.06.12-.09.19-.18.3-.09.1-.19.23-.27.31-.09.09-.18.18-.08.36.1.18.46.75.98 1.22.67.6 1.24.79 1.42.88.18.09.28.07.39-.04.11-.12.46-.54.58-.72.12-.18.24-.15.41-.09.17.06 1.1.52 1.29.61.19.09.31.13.36.2.05.11.05.61-.11 1.06z" fill="white"/></svg>`;
+    const svgGPS = `<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="white"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335"/><path d="M12 2C8.13 2 5 5.13 5 9c0 1.8.6 3.46 1.6 4.8L12 2z" fill="#FBBC05"/><path d="M12 2v7l5.4 7.8C18.4 15.46 19 13.8 19 12c0-3.87-3.13-7-7-7z" fill="#4285F4"/><circle cx="12" cy="9" r="2.5" fill="white"/></svg>`;
+    const svgTienda = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#e8f4fd"/><path d="M4 7h16l-1.5 9H5.5L4 7z" fill="#0056b3" opacity="0.15"/><path d="M4 7h16l-1.5 9H5.5L4 7z" stroke="#0056b3" stroke-width="1.5" fill="none"/><path d="M9 7V5.5A1.5 1.5 0 0110.5 4h3A1.5 1.5 0 0115 5.5V7" stroke="#0056b3" stroke-width="1.5" fill="none"/><rect x="10" y="11" width="4" height="3" rx="0.5" fill="#0056b3"/></svg>`;
+    const svgDoc = `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#e8f4fd"/><path d="M7 6h10v2H7zM7 10h10v2H7zM7 14h6v2H7z" fill="#0056b3"/><path d="M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="#0056b3" stroke-width="1.5" fill="none"/></svg>`;
     let map, mapPrincipal, mapSelector;
     let marcadorActual, marcadorSelector;
     let latSel = 23.11, lngSel = -82.36;
@@ -1604,14 +1612,28 @@
     };
 
     window.abrirSubproductosPreview = function(padreId) {
-        // Cerrar preview primero para evitar conflicto de z-index
-        document.getElementById('pantalla-preview').classList.remove('show');
-        setTimeout(() => abrirSubproductos(padreId), 100);
+        // Abrir subproductos encima de la vista previa sin cerrarla
+        abrirSubproductos(padreId);
+        // Al cerrar subproductos, volver a preview (no al catálogo)
+        window._volverAPreview = true;
     };
 
     window.cerrarPreview = function() {
         document.getElementById('pantalla-preview').classList.remove('show');
         unlockScroll();
+    };
+
+    window.abrirAcercaDe = function() {
+        showMsg(
+            '¿Qué es BazarCuba? 🇨🇺\n\n' +
+            'BazarCuba es una plataforma diseñada para que cualquier cubano pueda crear su catálogo de productos en línea de forma fácil y rápida.\n\n' +
+            '📦 Crea tu tienda virtual\n' +
+            '📸 Sube fotos de tus productos\n' +
+            '📍 Muestra tu ubicación en el mapa\n' +
+            '💬 Tus clientes te contactan por WhatsApp\n\n' +
+            'Solo debes registrarte con un nombre de usuario y empezar a publicar. ¡Es gratis!',
+            'info'
+        );
     };
 
     let modoEdicionActivo = false;
@@ -1634,7 +1656,6 @@
             btn.style.borderColor = '#e65100';
             document.getElementById('lista-mis-productos').classList.remove('modo-edicion');
             if (ctrl) ctrl.style.display = 'none';
-            // Ocultar form si estaba abierto
             document.getElementById('form-nuevo-producto').style.display = 'none';
             renderizarMisProductos([]);
         }
@@ -2183,13 +2204,6 @@
         localStorage.setItem('bc_cambios', JSON.stringify(locales));
         localStorage.setItem('bc_nuevos', JSON.stringify(nuevosActualizados));
     }
-
-    // SVGs
-    const svgTel = `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#4CAF50"/><path d="M6.5 7.5C6.5 6.67 7.17 6 8 6h1.5c.28 0 .53.15.66.38l1.5 2.5c.16.27.1.61-.13.82L10.7 10.5c.52 1.1 1.2 1.78 2.3 2.3l.8-.83c.21-.23.55-.29.82-.13l2.5 1.5c.23.13.38.38.38.66V16c0 .83-.67 1.5-1.5 1.5C9.49 17.5 6.5 14.51 6.5 7.5z" fill="white"/></svg>`;
-    const svgWA = `<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#25D366"/><path d="M12 4C7.58 4 4 7.58 4 12c0 1.42.37 2.75 1.02 3.91L4 20l4.18-1.01C9.3 19.63 10.62 20 12 20c4.42 0 8-3.58 8-8s-3.58-8-8-8zm3.93 11.07c-.16.45-.94.88-1.29.93-.33.05-.74.07-1.19-.07-.27-.09-.63-.2-1.08-.4-1.89-.82-3.13-2.73-3.22-2.86-.09-.13-.76-1.01-.76-1.93s.48-1.37.65-1.56c.17-.19.37-.23.49-.23.12 0 .25 0 .36.01.11 0 .27-.04.42.32.16.37.54 1.31.59 1.4.05.09.08.2.02.32-.06.12-.09.19-.18.3-.09.1-.19.23-.27.31-.09.09-.18.18-.08.36.1.18.46.75.98 1.22.67.6 1.24.79 1.42.88.18.09.28.07.39-.04.11-.12.46-.54.58-.72.12-.18.24-.15.41-.09.17.06 1.1.52 1.29.61.19.09.31.13.36.2.05.11.05.61-.11 1.06z" fill="white"/></svg>`;
-    const svgGPS = `<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="white"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335"/><path d="M12 2C8.13 2 5 5.13 5 9c0 1.8.6 3.46 1.6 4.8L12 2z" fill="#FBBC05"/><path d="M12 2v7l5.4 7.8C18.4 15.46 19 13.8 19 12c0-3.87-3.13-7-7-7z" fill="#4285F4"/><circle cx="12" cy="9" r="2.5" fill="white"/></svg>`;
-    const svgTienda = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#e8f4fd"/><path d="M4 7h16l-1.5 9H5.5L4 7z" fill="#0056b3" opacity="0.15"/><path d="M4 7h16l-1.5 9H5.5L4 7z" stroke="#0056b3" stroke-width="1.5" fill="none"/><path d="M9 7V5.5A1.5 1.5 0 0110.5 4h3A1.5 1.5 0 0115 5.5V7" stroke="#0056b3" stroke-width="1.5" fill="none"/><rect x="10" y="11" width="4" height="3" rx="0.5" fill="#0056b3"/></svg>`;
-    const svgDoc = `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#e8f4fd"/><path d="M7 6h10v2H7zM7 10h10v2H7zM7 14h6v2H7z" fill="#0056b3"/><path d="M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="#0056b3" stroke-width="1.5" fill="none"/></svg>`;
 
     // Versión que incluye agotados (para visitar tienda)
     function renderizarConAgotados(lista) {
@@ -2753,13 +2767,13 @@
                         <span class="precio-tag">${t.precio}</span>
                         ${t.moneda ? '<span class="moneda-tag">'+t.moneda+'</span>' : ''}
                         ${t.descripcion ? `<button class="btn-descripcion" onclick="abrirDesc(this.dataset.n,this.dataset.d)" data-n="${ns2}" data-d="${ds2}">${svgDoc}</button>` : ''}
-                        <button onclick="agregarAlCarrito('${t.id}')" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;">&#128722;</button>
+                        ${!ag ? `<button onclick="agregarAlCarrito('${t.id}')" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;">&#128722;</button>` : '<span style="margin-left:auto;"></span>'}
                     </div>
                     <p class="provincia">&#128205; ${t.provincia}</p>
                     <div class="card-buttons">
-                        <a href="tel:${t.tel}" class="btn-llamar">${svgTel}</a>
-                        <a href="https://wa.me/${tel2}" target="_blank" class="btn-wa">${svgWA}</a>
-                        <button class="btn-mapa-card" onclick="verUbicacion(${t.lat},${t.lng},'${ns2}')">${svgGPS}</button>
+                        <a href="${ag ? '' : 'tel:'+t.tel}" class="btn-llamar${ag?' btn-disabled':''}" ${ag?'onclick="return false"':''}>${svgTel}</a>
+                        <a href="${ag ? '' : 'https://wa.me/'+tel2}" ${ag?'':'target="_blank"'} class="btn-wa${ag?' btn-disabled':''}" ${ag?'onclick="return false"':''}>${svgWA}</a>
+                        <button class="btn-mapa-card${ag?' btn-disabled':''}" ${ag?'':` onclick="verUbicacion(${t.lat},${t.lng},'${ns2}')"`}>${svgGPS}</button>
                     </div>`;
                 grid.appendChild(card);
             });
@@ -2771,7 +2785,12 @@
     };
     window.cerrarSubproductos = function() {
         document.getElementById('pantalla-subproductos').classList.remove('show');
-        unlockScroll();
+        if (window._volverAPreview) {
+            window._volverAPreview = false;
+            // No unlockScroll — preview sigue abierta y ya tiene el scroll bloqueado
+        } else {
+            unlockScroll();
+        }
     };
 
     window.filtrarPorProvincia = function() {
