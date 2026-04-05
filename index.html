@@ -30,7 +30,7 @@
         .precio-row { display: flex; align-items: center; gap: 5px; margin: 0 8px 6px; flex-wrap: wrap; }
         .precio-tag { color: #d32f2f; font-size: 15px; font-weight: bold; }
         .moneda-tag { color: #0056b3; font-size: 12px; font-weight: bold; background: #e8f4fd; padding: 2px 6px; border-radius: 10px; }
-        .btn-descripcion { background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; }
+        .btn-descripcion { background: none; border: none; cursor: pointer; padding: 3px; display: inline-flex; align-items: center; justify-content: center; min-width: 28px; min-height: 28px; flex-shrink: 0; }
 
         .card-buttons { display: flex; gap: 6px; padding: 6px 8px 10px; }
         .card-buttons a, .card-buttons button { flex: 1; padding: 8px 4px; border-radius: 12px; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; }
@@ -652,7 +652,7 @@
     const svgWA = `<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#25D366"/><path d="M12 4C7.58 4 4 7.58 4 12c0 1.42.37 2.75 1.02 3.91L4 20l4.18-1.01C9.3 19.63 10.62 20 12 20c4.42 0 8-3.58 8-8s-3.58-8-8-8zm3.93 11.07c-.16.45-.94.88-1.29.93-.33.05-.74.07-1.19-.07-.27-.09-.63-.2-1.08-.4-1.89-.82-3.13-2.73-3.22-2.86-.09-.13-.76-1.01-.76-1.93s.48-1.37.65-1.56c.17-.19.37-.23.49-.23.12 0 .25 0 .36.01.11 0 .27-.04.42.32.16.37.54 1.31.59 1.4.05.09.08.2.02.32-.06.12-.09.19-.18.3-.09.1-.19.23-.27.31-.09.09-.18.18-.08.36.1.18.46.75.98 1.22.67.6 1.24.79 1.42.88.18.09.28.07.39-.04.11-.12.46-.54.58-.72.12-.18.24-.15.41-.09.17.06 1.1.52 1.29.61.19.09.31.13.36.2.05.11.05.61-.11 1.06z" fill="white"/></svg>`;
     const svgGPS = `<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="white"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335"/><path d="M12 2C8.13 2 5 5.13 5 9c0 1.8.6 3.46 1.6 4.8L12 2z" fill="#FBBC05"/><path d="M12 2v7l5.4 7.8C18.4 15.46 19 13.8 19 12c0-3.87-3.13-7-7-7z" fill="#4285F4"/><circle cx="12" cy="9" r="2.5" fill="white"/></svg>`;
     const svgTienda = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#e8f4fd"/><path d="M4 7h16l-1.5 9H5.5L4 7z" fill="#0056b3" opacity="0.15"/><path d="M4 7h16l-1.5 9H5.5L4 7z" stroke="#0056b3" stroke-width="1.5" fill="none"/><path d="M9 7V5.5A1.5 1.5 0 0110.5 4h3A1.5 1.5 0 0115 5.5V7" stroke="#0056b3" stroke-width="1.5" fill="none"/><rect x="10" y="11" width="4" height="3" rx="0.5" fill="#0056b3"/></svg>`;
-    const svgDoc = `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#e8f4fd"/><path d="M7 6h10v2H7zM7 10h10v2H7zM7 14h6v2H7z" fill="#0056b3"/><path d="M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="#0056b3" stroke-width="1.5" fill="none"/></svg>`;
+    const svgDoc = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#e8f4fd"/><path d="M7 6h10v2H7zM7 10h10v2H7zM7 14h6v2H7z" fill="#0056b3"/><path d="M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="#0056b3" stroke-width="1.5" fill="none"/></svg>`;
     let map, mapPrincipal, mapSelector;
     let marcadorActual, marcadorSelector;
     let latSel = 23.11, lngSel = -82.36;
@@ -2255,7 +2255,7 @@
                                 ? `<button onclick="abrirSubproductos('${t.id}')" style="background:#fde8e8;color:#d32f2f;border:1.5px solid #d32f2f;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;">Seleccionar</button>`
                                 : `<span class="precio-tag">${t.precio}</span>
                                    ${t.moneda ? '<span class="moneda-tag">'+t.moneda+'</span>' : ''}
-                                   <button onclick="agregarAlCarrito('${t.id}')" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;line-height:1;display:flex;align-items:center;justify-content:center;">🛒</button>`
+                                   ${!ag ? `<button onclick="agregarAlCarrito('${t.id}')" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;line-height:1;display:flex;align-items:center;justify-content:center;">🛒</button>` : '<span style="margin-left:auto"></span>'}`
                             }
                         </div>
                         <div id="desc-edit-${t.id}" style="display:none;padding:0 8px 6px;">
