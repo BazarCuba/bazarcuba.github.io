@@ -599,9 +599,11 @@
                     </div>
                 </div>
             </div>
-            <div id="lista-mis-productos"><p style="color:#888;text-align:center;font-size:13px;">Cargando...</p></div>
             <div id="controles-edicion" style="display:none;">
                 <button class="btn-secundario" onclick="toggleFormProducto()">➕ Agregar nuevo producto</button>
+            </div>
+            <div id="lista-mis-productos"><p style="color:#888;text-align:center;font-size:13px;">Cargando...</p></div>
+            <div id="controles-edicion-form" style="display:none;">
             <div id="form-nuevo-producto">
                 <div style="border:2px dashed #ccc;padding:14px;text-align:center;margin-bottom:12px;border-radius:10px;background:#fafafa;">
                     <p id="preview-text" style="margin:0 0 8px;color:#888;font-size:13px;">📸 Selecciona las fotos en el orden que quieras mostrarlas</p>
@@ -634,7 +636,7 @@
                     <div id="lista-subs-nuevos"></div>
                 </div>
             </div>
-            </div><!-- fin controles-edicion -->
+            </div><!-- fin controles-edicion-form -->
         </div>
     </div>
 </div>
@@ -1566,8 +1568,8 @@
             const precioHtml = t.esPrincipal && subs.length
                 ? `<button onclick="abrirSubproductosPreview('${t.id}')" style="background:#fde8e8;color:#d32f2f;border:1.5px solid #d32f2f;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;">Seleccionar</button>`
                 : `<span class="precio-tag">${t.precio}</span>
-                   ${t.moneda ? '<span class="moneda-tag">'+t.moneda+'</span>' : ''}
-                   ${t.descripcion ? `<button class="btn-descripcion" onclick="abrirDesc(this.dataset.n,this.dataset.d)" data-n="${ns2}" data-d="${ds2}">${svgDoc}</button>` : ''}`;
+                   ${t.moneda ? '<span class="moneda-tag">'+t.moneda+'</span>' : ''}`;
+            const descBtn = t.descripcion ? `<button class="btn-descripcion" onclick="abrirDesc(this.dataset.n,this.dataset.d)" data-n="${ns2}" data-d="${ds2}" style="flex-shrink:0;">${svgDoc}</button>` : '';
 
             const card = document.createElement('div');
             card.className = 'card'; card.id = 'card-prev-'+t.id;
@@ -1578,7 +1580,10 @@
                     ${ag ? '<div class="badge-agotado">AGOTADO</div>' : ''}
                 </div>
                 ${t.nombreTienda ? `<p style="margin:6px 8px 0;font-size:10px;color:#0056b3;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🏪 ${t.nombreTienda}</p>` : ''}
-                <h3 style="margin:8px 8px 2px;color:#222;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.nombre||'Sin nombre'}</h3>
+                <div style="display:flex;align-items:center;gap:4px;padding:0 8px;margin:6px 0 2px;">
+                    <h3 style="margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;color:#222;">${t.nombre||'Sin nombre'}</h3>
+                    ${descBtn}
+                </div>
                 <div class="precio-row">${precioHtml}</div>
                 <p class="provincia">📍 ${t.provincia}</p>
                 <div class="card-buttons">
@@ -1641,6 +1646,7 @@
         modoEdicionActivo = !modoEdicionActivo;
         const btn = document.getElementById('btn-modo-edicion');
         const ctrl = document.getElementById('controles-edicion');
+        const ctrlForm = document.getElementById('controles-edicion-form');
         if (modoEdicionActivo) {
             btn.textContent = '✕ Salir de edición';
             btn.style.background = '#fde8e8';
@@ -1648,6 +1654,7 @@
             btn.style.borderColor = '#d32f2f';
             document.getElementById('lista-mis-productos').classList.add('modo-edicion');
             if (ctrl) ctrl.style.display = 'block';
+            if (ctrlForm) ctrlForm.style.display = 'block';
             renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
         } else {
             btn.textContent = '✏️ Editar productos';
@@ -1656,6 +1663,7 @@
             btn.style.borderColor = '#e65100';
             document.getElementById('lista-mis-productos').classList.remove('modo-edicion');
             if (ctrl) ctrl.style.display = 'none';
+            if (ctrlForm) ctrlForm.style.display = 'none';
             document.getElementById('form-nuevo-producto').style.display = 'none';
             renderizarMisProductos([]);
         }
@@ -2238,13 +2246,15 @@
                             ${imgs}${ctrl}${ag?'<div class="badge-agotado">AGOTADO</div>':''}
                         </div>
                         ${t.nombreTienda ? `<p style="margin:6px 8px 0;font-size:10px;color:#0056b3;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🏪 ${t.nombreTienda}</p>` : ''}
-                        <h3>${t.nombre||'Sin nombre'}</h3>
+                        <div style="display:flex;align-items:center;gap:4px;padding:0 8px;margin:6px 0 2px;">
+                            <h3 style="margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;color:#222;">${t.nombre||'Sin nombre'}</h3>
+                            ${t.descripcion ? `<button class="btn-descripcion" onclick="abrirDesc(this.dataset.n,this.dataset.d)" data-n="${ns}" data-d="${ds}" style="flex-shrink:0;">${svgDoc}</button>` : ''}
+                        </div>
                         <div class="precio-row">
                             ${t.esPrincipal
                                 ? `<button onclick="abrirSubproductos('${t.id}')" style="background:#fde8e8;color:#d32f2f;border:1.5px solid #d32f2f;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;">Seleccionar</button>`
                                 : `<span class="precio-tag">${t.precio}</span>
                                    ${t.moneda ? '<span class="moneda-tag">'+t.moneda+'</span>' : ''}
-                                   ${t.descripcion ? `<button class="btn-descripcion" onclick="abrirDesc(this.dataset.n,this.dataset.d)" data-n="${ns}" data-d="${ds}">${svgDoc}</button>` : ''}
                                    <button onclick="agregarAlCarrito('${t.id}')" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;line-height:1;display:flex;align-items:center;justify-content:center;">🛒</button>`
                             }
                         </div>
@@ -2762,11 +2772,13 @@
                         ${fotosHtml}${ctrlHtml}
                         ${ag ? '<div class="badge-agotado">AGOTADO</div>' : ''}
                     </div>
-                    <h3>${t.nombre||'Sin nombre'}</h3>
+                    <div style="display:flex;align-items:center;gap:4px;padding:0 8px;margin:6px 0 2px;">
+                        <h3 style="margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;color:#222;">${t.nombre||'Sin nombre'}</h3>
+                        ${t.descripcion ? `<button class="btn-descripcion" onclick="abrirDesc(this.dataset.n,this.dataset.d)" data-n="${ns2}" data-d="${ds2}" style="flex-shrink:0;">${svgDoc}</button>` : ''}
+                    </div>
                     <div class="precio-row">
                         <span class="precio-tag">${t.precio}</span>
                         ${t.moneda ? '<span class="moneda-tag">'+t.moneda+'</span>' : ''}
-                        ${t.descripcion ? `<button class="btn-descripcion" onclick="abrirDesc(this.dataset.n,this.dataset.d)" data-n="${ns2}" data-d="${ds2}">${svgDoc}</button>` : ''}
                         ${!ag ? `<button onclick="agregarAlCarrito('${t.id}')" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;">&#128722;</button>` : '<span style="margin-left:auto;"></span>'}
                     </div>
                     <p class="provincia">&#128205; ${t.provincia}</p>
