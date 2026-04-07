@@ -22,15 +22,13 @@
         #btn-vista-toggle.activo { background: #0056b3; color: white; }
 
         .grid-tiendas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 10px 20px; max-width: 1200px; margin: 0 auto; }
-        /* Scrollbar delgada para pantallas flotantes */
-        ::-webkit-scrollbar { width: 3px; height: 3px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,86,179,0.25); border-radius: 10px; }
-        * { scrollbar-width: thin; scrollbar-color: rgba(0,86,179,0.25) transparent; }
-        /* Botones de scroll */
-        #scroll-btns { position: fixed; right: 12px; bottom: 100px; display: flex; flex-direction: column; gap: 6px; z-index: 4500; }
-        .scroll-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(0,86,179,0.75); color: white; border: none; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2); backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
-        .scroll-btn.visible { opacity: 1; pointer-events: auto; }
+        /* Scrollbar delgada arrastrable */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,86,179,0.45); border-radius: 10px; min-height: 40px; }
+        ::-webkit-scrollbar-thumb:active { background: rgba(0,86,179,0.8); }
+        * { scrollbar-width: thin; scrollbar-color: rgba(0,86,179,0.45) rgba(0,0,0,0.05); }
+        /* fin scrollbar */
 
         .card { background: white; border-radius: 14px; box-shadow: 0 3px 12px rgba(0,0,0,0.1); position: relative; overflow: visible; }
         .card .carousel-container { border-radius: 14px 14px 0 0; }
@@ -437,10 +435,15 @@
     </div>
 </div>
 
-<div id="scroll-btns">
-    <button class="scroll-btn" id="scroll-up" onclick="window.scrollBy({top:-300,behavior:'smooth'})">▲</button>
-    <button class="scroll-btn" id="scroll-down" onclick="window.scrollBy({top:300,behavior:'smooth'})">▼</button>
+<!-- POPUP VARIANTES -->
+<div id="var-popup" style="display:none;position:fixed;z-index:8000;background:white;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.22);padding:14px;min-width:220px;max-width:88vw;max-height:60vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span id="var-popup-titulo" style="font-size:13px;font-weight:bold;color:#0056b3;"></span>
+        <button onclick="cerrarPopupVariantes()" style="background:#f0f0f0;border:none;border-radius:50%;width:26px;height:26px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div id="var-popup-lista"></div>
 </div>
+<div id="var-popup-overlay" onclick="cerrarPopupVariantes()" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:7999;"></div>
 
 <div id="menu-dots" onclick="toggleMenu()">⋮</div>
 
@@ -2522,17 +2525,11 @@
     }
 
     function renderizar(lista) {
-        // Solo productos disponibles, sin padres de variantes agotados
         lista = shuffle((lista || []).filter(t => {
-            if (t.productoPadreId) return false; // no variantes sueltas
-            if (t.esColeccion) return true; // colecciones siempre visibles
-            if (t.estado === 'agotado' && !t.esPrincipal) return false; // agotados simples ocultos
-            if (t.esPrincipal) {
-                // Mostrar si tiene al menos una variante disponible
-                const vars = tiendasData.filter(v => v.productoPadreId === t.id && v.esVariante);
-                return vars.some(v => v.estado !== 'agotado');
-            }
-            return t.estado !== 'agotado';
+            if (t.productoPadreId) return false; // nunca mostrar variantes/hijos sueltos
+            if (t.esColeccion) return true;       // colecciones siempre
+            if (t.estado === 'agotado') return false; // agotados fuera
+            return true;
         }));
         renderizarLista(lista);
     }
@@ -2576,38 +2573,17 @@
                     return;
                 }
 
-                // ¿Tiene variantes? Buscar en tiendasData
+                // ¿Tiene variantes?
                 const variantes = tiendasData.filter(v => v.productoPadreId === t.id && v.esVariante);
                 const tieneVariantes = t.esPrincipal && variantes.length > 0;
+                const varActual = tieneVariantes ? (variantes.find(v => v.id === _varSeleccionada[t.id]) || null) : null;
 
-                // Variante seleccionada actualmente (o la primera por defecto)
-                if (tieneVariantes && !_varSeleccionada[t.id]) {
-                    _varSeleccionada[t.id] = variantes[0].id;
-                }
-                const varActual = tieneVariantes ? variantes.find(v => v.id === _varSeleccionada[t.id]) || variantes[0] : null;
-
-                // Fotos y precio a mostrar (variante o padre)
-                const fotosShow = (varActual && varActual.fotos && varActual.fotos.length > 0)
-                    ? varActual.fotos
-                    : t.fotos;
+                // Fotos: si hay variante seleccionada con fotos propias úsalas, si no las del padre
+                const fotosShow = (varActual && varActual.fotos && varActual.fotos.length > 0) ? varActual.fotos : t.fotos;
                 const feShow = encodeURIComponent(JSON.stringify(fotosShow));
                 const imgsShow = fotosShow.map((f,i) => `<img src="${f}" class="carousel-img ${i===0?'active':''}" onclick="abrirLightbox('${feShow}',${i})">`).join('');
                 const ctrlShow = fotosShow.length > 1 ? `<div class="foto-counter" id="counter-${t.id}">1/${fotosShow.length}</div>` : '';
-                const precioShow = varActual ? varActual.precio : t.precio;
-                const monedaShow = varActual ? varActual.moneda : t.moneda;
                 const agShow = varActual ? varActual.estado === 'agotado' : ag;
-
-                // Lista de variantes desplegable
-                const varListaHtml = tieneVariantes ? `
-                    <div id="var-lista-${t.id}" style="display:none;grid-column:1/-1;background:#f8fafc;border-radius:0 0 12px 12px;border:1px solid #e0eaf5;border-top:none;padding:6px 8px;margin-top:-4px;">
-                        ${variantes.map(v => {
-                            const vag = v.estado === 'agotado';
-                            return `<button onclick="seleccionarVariante('${t.id}','${v.id}')" style="width:100%;text-align:left;padding:8px 10px;margin-bottom:4px;background:${v.id===_varSeleccionada[t.id]?'#e8f4fd':'white'};border:1.5px solid ${v.id===_varSeleccionada[t.id]?'#0056b3':'#ddd'};border-radius:8px;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;${vag?'opacity:0.5;':''}" ${vag?'disabled':''}>
-                                <span>${v.nombre}${vag?' — AGOTADO':''}</span>
-                                ${v.precio && v.precio !== t.precio ? `<span style="color:#d32f2f;font-weight:bold;">${v.precio} ${v.moneda}</span>` : ''}
-                            </button>`;
-                        }).join('')}
-                    </div>` : '';
 
                 c.insertAdjacentHTML('beforeend', `
                     <div class="card" id="card-${t.id}" style="opacity:${agShow?'0.65':'1'}">
@@ -2617,17 +2593,19 @@
                         ${t.nombreTienda ? `<p style="margin:6px 8px 0;font-size:10px;color:#0056b3;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🏪 ${t.nombreTienda}</p>` : ''}
                         <div style="display:flex;align-items:center;gap:4px;padding:0 8px;margin:6px 0 2px;">
                             ${tieneVariantes
-                                ? `<button onclick="toggleVariantes('${t.id}')" style="flex:1;min-width:0;text-align:left;background:none;border:none;cursor:pointer;padding:0;font-size:14px;font-weight:bold;color:#0056b3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="btn-var-nombre-${t.id}">${t.nombre||'Sin nombre'} <span style="font-size:11px;">▾</span></button>`
+                                ? `<button onclick="abrirPopupVariantes('${t.id}',event)" id="btn-var-nombre-${t.id}" style="flex:1;min-width:0;text-align:left;background:#f0f6ff;border:1.5px solid #0056b3;border-radius:8px;cursor:pointer;padding:5px 8px;font-size:13px;font-weight:bold;color:#0056b3;display:flex;align-items:center;justify-content:space-between;gap:4px;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">${t.nombre||'Sin nombre'}</span><span style="font-size:20px;line-height:1;flex-shrink:0;">▾</span></button>`
                                 : `<h3 style="margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;color:#222;">${t.nombre||'Sin nombre'}</h3>`
                             }
                             ${t.descripcion ? `<button class="btn-descripcion" onclick="abrirDesc(this.dataset.n,this.dataset.d)" data-n="${ns}" data-d="${ds}" style="flex-shrink:0;">${svgDoc}</button>` : ''}
                         </div>
                         <div class="precio-row" id="precio-row-${t.id}">
-                            <span class="precio-tag" id="precio-${t.id}">${precioShow}</span>
-                            ${monedaShow ? `<span class="moneda-tag" id="moneda-${t.id}">${monedaShow}</span>` : ''}
-                            ${!agShow ? `<button onclick="agregarAlCarrito('${varActual?varActual.id:t.id}')" id="carrito-btn-${t.id}" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;line-height:1;display:flex;align-items:center;justify-content:center;">🛒</button>` : '<span style="margin-left:auto"></span>'}
+                            ${tieneVariantes && !varActual
+                                ? `<span style="font-size:12px;color:#888;font-style:italic;">Selecciona una variante</span><span style="margin-left:auto"></span>`
+                                : `<span class="precio-tag" id="precio-${t.id}">${varActual ? varActual.precio : t.precio}</span>
+                                   ${(varActual ? varActual.moneda : t.moneda) ? `<span class="moneda-tag" id="moneda-${t.id}">${varActual ? varActual.moneda : t.moneda}</span>` : ''}
+                                   ${!agShow ? `<button onclick="agregarAlCarrito('${varActual?varActual.id:t.id}')" id="carrito-btn-${t.id}" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;line-height:1;display:flex;align-items:center;justify-content:center;">🛒</button>` : '<span style="margin-left:auto"></span>'}`
+                            }
                         </div>
-                        ${varListaHtml}
                         <div id="desc-edit-${t.id}" style="display:none;padding:0 8px 6px;">
                 <textarea id="desc-input-${t.id}" rows="2" placeholder="Descripción..." style="width:100%;padding:6px;border:1.5px solid #0056b3;border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">${t.descripcion||''}</textarea>
                 <div style="display:flex;gap:4px;margin-top:4px;">
@@ -2647,12 +2625,49 @@
         });
     }
 
-    window.toggleVariantes = function(padreId) {
-        const lista = document.getElementById('var-lista-' + padreId);
-        if (!lista) return;
-        lista.style.display = lista.style.display === 'none' ? 'block' : 'none';
+    window.abrirPopupVariantes = function(padreId, event) {
+        event.stopPropagation();
+        const padre = tiendasData.find(t => t.id === padreId);
+        if (!padre) return;
+        const variantes = tiendasData.filter(v => v.productoPadreId === padreId && v.esVariante);
+        const popup = document.getElementById('var-popup');
+        const overlay = document.getElementById('var-popup-overlay');
+        document.getElementById('var-popup-titulo').textContent = padre.nombre || '';
+
+        // Construir lista de variantes
+        const lista = document.getElementById('var-popup-lista');
+        lista.innerHTML = variantes.map(v => {
+            const vag = v.estado === 'agotado';
+            const selec = _varSeleccionada[padreId] === v.id;
+            return `<button onclick="seleccionarVariante('${padreId}','${v.id}');cerrarPopupVariantes()" style="width:100%;text-align:left;padding:10px 12px;margin-bottom:6px;background:${selec?'#e8f4fd':'white'};border:1.5px solid ${selec?'#0056b3':'#ddd'};border-radius:10px;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;${vag?'opacity:0.5;':''}" ${vag?'disabled':''}>
+                <span style="font-weight:${selec?'bold':'normal'};color:${selec?'#0056b3':'#222'};">${v.nombre}${vag?' — AGOTADO':''}</span>
+                ${v.precio ? `<span style="color:#d32f2f;font-weight:bold;font-size:12px;">${v.precio} ${v.moneda||''}</span>` : ''}
+            </button>`;
+        }).join('');
+
+        // Posicionar cerca del botón tocado, dentro de la pantalla
         const btn = document.getElementById('btn-var-nombre-' + padreId);
-        if (btn) btn.innerHTML = btn.innerHTML.replace('▾','▸').replace('▸', lista.style.display==='block'?'▾':'▸');
+        if (btn) {
+            const rect = btn.getBoundingClientRect();
+            const popupW = Math.min(260, window.innerWidth * 0.88);
+            let left = rect.left;
+            let top = rect.bottom + 6;
+            if (left + popupW > window.innerWidth - 8) left = window.innerWidth - popupW - 8;
+            if (left < 8) left = 8;
+            // Si se sale por abajo, mostrar arriba del botón
+            if (top + 200 > window.innerHeight) top = rect.top - 210;
+            popup.style.left = left + 'px';
+            popup.style.top = (top + window.scrollY) + 'px';
+        }
+
+        popup.style.display = 'block';
+        overlay.style.display = 'block';
+        popup._padreId = padreId;
+    };
+
+    window.cerrarPopupVariantes = function() {
+        document.getElementById('var-popup').style.display = 'none';
+        document.getElementById('var-popup-overlay').style.display = 'none';
     };
 
     window.seleccionarVariante = function(padreId, varId) {
@@ -3481,20 +3496,6 @@
         }
         return showMsg('❌ ' + tecnico, 'error', accion);
     }
-
-    // Botones de scroll — aparecer solo cuando hay contenido arriba/abajo
-    (function() {
-        const btnUp = document.getElementById('scroll-up');
-        const btnDown = document.getElementById('scroll-down');
-        function actualizarScrollBtns() {
-            const scrollY = window.scrollY;
-            const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-            btnUp.classList.toggle('visible', scrollY > 80);
-            btnDown.classList.toggle('visible', scrollY < maxScroll - 80);
-        }
-        window.addEventListener('scroll', actualizarScrollBtns, { passive: true });
-        setTimeout(actualizarScrollBtns, 1000);
-    })();
 
     detectarDirecto();
     cargarDatos().then(() => restaurarSesion());
