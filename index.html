@@ -22,6 +22,12 @@
         #btn-vista-toggle.activo { background: #0056b3; color: white; }
 
         .grid-tiendas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 10px 20px; max-width: 1200px; margin: 0 auto; }
+        /* Scrollbar delgada para todo el sitio */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,86,179,0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,86,179,0.6); }
+        * { scrollbar-width: thin; scrollbar-color: rgba(0,86,179,0.3) transparent; }
 
         .card { background: white; border-radius: 14px; box-shadow: 0 3px 12px rgba(0,0,0,0.1); position: relative; overflow: visible; }
         .card .carousel-container { border-radius: 14px 14px 0 0; }
@@ -600,7 +606,10 @@
                 </div>
             </div>
             <div id="controles-edicion" style="display:none;">
-                <button class="btn-secundario" onclick="toggleFormProducto()">➕ Agregar nuevo producto</button>
+                <div style="display:flex;gap:8px;margin-bottom:8px;">
+                    <button class="btn-secundario" style="flex:1;margin-bottom:0;" onclick="toggleFormProducto()">➕ Producto</button>
+                    <button onclick="mostrarFormColeccion()" style="flex:1;padding:10px;background:#e8f4fd;color:#0056b3;border:2px solid #0056b3;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer;">📁 Colección</button>
+                </div>
             </div>
             <div id="lista-mis-productos"><p style="color:#888;text-align:center;font-size:13px;">Cargando...</p></div>
             <div id="controles-edicion-form" style="display:none;">
@@ -641,6 +650,31 @@
                 </div>
             </div>
             </div><!-- fin controles-edicion-form -->
+            <!-- FORM NUEVA COLECCIÓN -->
+            <div id="form-nueva-coleccion" style="display:none;margin-top:8px;background:#e8f4fd;border-radius:10px;padding:14px;border:1.5px solid #0056b3;">
+                <h4 style="margin:0 0 10px;color:#0056b3;font-size:14px;">📁 Nueva Colección</h4>
+                <div style="border:2px dashed #0056b3;padding:10px;text-align:center;border-radius:8px;cursor:pointer;margin-bottom:8px;background:white;" onclick="document.getElementById('input-fotos-col').click()">
+                    <p id="col-preview-text" style="margin:0 0 4px;color:#888;font-size:12px;">📸 Foto de portada (opcional)</p>
+                    <div id="col-preview-container" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;"></div>
+                    <input type="file" id="input-fotos-col" accept="image/*" style="display:none;" onchange="previsualizarFotoCol(event)">
+                </div>
+                <div class="form-group"><label>Nombre de la colección:</label><input type="text" id="col-nombre" placeholder="Ej: Ropa de verano, Zapatos, Accesorios..."></div>
+                <div class="form-group">
+                    <label>Descripción <span style="color:#aaa;font-weight:normal;">(opcional)</span>:</label>
+                    <textarea id="col-desc" rows="2" placeholder="Describe la colección..."></textarea>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn-guardar" style="flex:1;" onclick="publicarColeccion()">📁 Crear Colección</button>
+                    <button onclick="document.getElementById('form-nueva-coleccion').style.display='none'" style="flex:1;padding:10px;background:#f0f0f0;color:#555;border:none;border-radius:10px;font-weight:bold;cursor:pointer;">Cancelar</button>
+                </div>
+            </div>
+            <!-- BOTONES AL FINAL -->
+            <div id="controles-edicion-fin" style="display:none;margin-top:10px;">
+                <div style="display:flex;gap:8px;">
+                    <button class="btn-secundario" style="flex:1;margin-bottom:0;" onclick="toggleFormProducto()">➕ Producto</button>
+                    <button onclick="mostrarFormColeccion()" style="flex:1;padding:10px;background:#e8f4fd;color:#0056b3;border:2px solid #0056b3;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer;">📁 Colección</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -1724,29 +1758,97 @@
     };
 
     let modoEdicionActivo = false;
+    window.mostrarFormColeccion = function() {
+        document.getElementById('form-nuevo-producto').style.display = 'none';
+        const f = document.getElementById('form-nueva-coleccion');
+        f.style.display = f.style.display === 'none' ? 'block' : 'none';
+        if (f.style.display === 'block') f.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.previsualizarFotoCol = function(e) {
+        const file = e.target.files[0]; if (!file) return;
+        const r = new FileReader();
+        r.onload = ev => {
+            const c = document.getElementById('col-preview-container');
+            c.innerHTML = `<img src="${ev.target.result}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid #0056b3;">`;
+            document.getElementById('col-preview-text').style.display = 'none';
+        };
+        r.readAsDataURL(file);
+    };
+
+    window.publicarColeccion = async function() {
+        const nombre = document.getElementById('col-nombre').value.trim();
+        if (!nombre) { await showMsg('Escribe el nombre de la colección.', 'warning'); return; }
+        showLoading();
+        try {
+            const mis = tiendasData.filter(t => t.uidVendedor === usuarioUID);
+            const iT = mis[0] || {};
+            const token = await getToken();
+            // Subir foto de portada si hay
+            let fotoUrl = 'https://via.placeholder.com/300x200?text=Colección';
+            const inp = document.getElementById('input-fotos-col');
+            if (inp && inp.files.length) {
+                const fd = new FormData(); fd.append('file', inp.files[0]); fd.append('upload_preset', 'bazar_present');
+                const ri = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: fd });
+                const di = await ri.json();
+                if (di.secure_url) fotoUrl = di.secure_url;
+            }
+            const pay = { fields: {
+                uidVendedor: { stringValue: usuarioUID },
+                correo: { stringValue: fbAuth.currentUser.email },
+                nombre: { stringValue: nombre },
+                descripcion: { stringValue: document.getElementById('col-desc').value.trim() },
+                fotos: { arrayValue: { values: [{ stringValue: fotoUrl }] } },
+                esColeccion: { booleanValue: true },
+                esPrincipal: { booleanValue: false },
+                productoPadreId: { stringValue: '' },
+                estado: { stringValue: 'disponible' },
+                nombreTienda: { stringValue: iT.nombreTienda||'' },
+                tel: { stringValue: iT.tel||'' },
+                direccion: { stringValue: iT.direccion||'' },
+                provincia: { stringValue: iT.provincia||'' },
+                lat: { doubleValue: iT.lat||latSel }, lng: { doubleValue: iT.lng||lngSel },
+                fecha: { timestampValue: new Date().toISOString() }
+            }};
+            const r = await fetch(`${FS}/tiendas?key=${API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(pay) });
+            if (!r.ok) throw new Error(await r.text());
+            const doc = await r.json();
+            const nueva = { id: doc.name.split('/').pop(), uidVendedor: usuarioUID, nombre, descripcion: document.getElementById('col-desc').value.trim(), fotos: [fotoUrl], esColeccion: true, esPrincipal: false, productoPadreId: '', estado: 'disponible', nombreTienda: iT.nombreTienda||'', tel: iT.tel||'', direccion: iT.direccion||'', provincia: iT.provincia||'', lat: iT.lat||latSel, lng: iT.lng||lngSel };
+            tiendasData.push(nueva);
+            document.getElementById('col-nombre').value = '';
+            document.getElementById('col-desc').value = '';
+            document.getElementById('col-preview-container').innerHTML = '';
+            document.getElementById('col-preview-text').style.display = 'block';
+            document.getElementById('form-nueva-coleccion').style.display = 'none';
+            renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
+            hideLoading();
+            await showMsg('✅ Colección creada.\n\nAhora puedes agregar productos con el botón "Editar" de cada producto y asignarlo a esta colección.', 'ok');
+        } catch(e) { hideLoading(); await msgError(e); }
+    };
+
     window.toggleModoEdicion = function() {
         modoEdicionActivo = !modoEdicionActivo;
         const btn = document.getElementById('btn-modo-edicion');
         const ctrl = document.getElementById('controles-edicion');
         const ctrlForm = document.getElementById('controles-edicion-form');
+        const ctrlFin = document.getElementById('controles-edicion-fin');
         if (modoEdicionActivo) {
             btn.textContent = '✕ Salir de edición';
-            btn.style.background = '#fde8e8';
-            btn.style.color = '#d32f2f';
-            btn.style.borderColor = '#d32f2f';
+            btn.style.background = '#fde8e8'; btn.style.color = '#d32f2f'; btn.style.borderColor = '#d32f2f';
             document.getElementById('lista-mis-productos').classList.add('modo-edicion');
             if (ctrl) ctrl.style.display = 'block';
             if (ctrlForm) ctrlForm.style.display = 'block';
+            if (ctrlFin) ctrlFin.style.display = 'block';
             renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
         } else {
             btn.textContent = '✏️ Editar productos';
-            btn.style.background = '#fff3e0';
-            btn.style.color = '#e65100';
-            btn.style.borderColor = '#e65100';
+            btn.style.background = '#fff3e0'; btn.style.color = '#e65100'; btn.style.borderColor = '#e65100';
             document.getElementById('lista-mis-productos').classList.remove('modo-edicion');
             if (ctrl) ctrl.style.display = 'none';
             if (ctrlForm) ctrlForm.style.display = 'none';
+            if (ctrlFin) ctrlFin.style.display = 'none';
             document.getElementById('form-nuevo-producto').style.display = 'none';
+            document.getElementById('form-nueva-coleccion').style.display = 'none';
             renderizarMisProductos([]);
         }
     };
@@ -2209,7 +2311,8 @@
                         esPrincipal: f.esPrincipal?.booleanValue || false,
                         productoPadreId: f.productoPadreId?.stringValue || '',
                         esVariante: f.esVariante?.booleanValue || false,
-                        usaFotosPadre: f.usaFotosPadre?.booleanValue || false
+                        usaFotosPadre: f.usaFotosPadre?.booleanValue || false,
+                        esColeccion: f.esColeccion?.booleanValue || false
                     };
                 });
 
@@ -2297,16 +2400,29 @@
         localStorage.setItem('bc_nuevos', JSON.stringify(nuevosActualizados));
     }
 
+    // Mezclar array aleatoriamente (Fisher-Yates)
+    function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
     // Versión que incluye agotados (para visitar tienda)
     function renderizarConAgotados(lista) {
-        lista = (lista || []).filter(t => !t.productoPadreId);
+        lista = shuffle((lista || []).filter(t => !t.productoPadreId));
         renderizarLista(lista);
     }
 
     function renderizar(lista) {
-        lista = (lista || []).filter(t => !t.productoPadreId && t.estado !== 'agotado');
+        lista = shuffle((lista || []).filter(t => !t.productoPadreId && t.estado !== 'agotado'));
         renderizarLista(lista);
     }
+
+    // Estado de variante seleccionada por tarjeta
+    const _varSeleccionada = {};
 
     function renderizarLista(lista) {
         const c = document.getElementById('listaTiendas');
@@ -2324,24 +2440,78 @@
                 const tel = (t.tel||'').replace(/\D/g,'');
                 let imgs = t.fotos.map((f,i) => `<img src="${f}" class="carousel-img ${i===0?'active':''}" onclick="abrirLightbox('${fe}',${i})">`).join('');
                 const ctrl = t.fotos.length > 1 ? `<div class="foto-counter" id="counter-${t.id}">1/${t.fotos.length}</div>` : '';
+
+                // ¿Es colección?
+                if (t.esColeccion) {
+                    c.insertAdjacentHTML('beforeend', `
+                        <div class="card" id="card-${t.id}" onclick="abrirColeccion('${t.id}')" style="cursor:pointer;border:2px solid #0056b3;">
+                            <div class="carousel-container" data-id="${t.id}">
+                                ${imgs}${ctrl}
+                                <div style="position:absolute;top:8px;left:8px;background:#0056b3;color:white;font-size:10px;font-weight:bold;padding:3px 8px;border-radius:10px;z-index:6;">📁 COLECCIÓN</div>
+                            </div>
+                            ${t.nombreTienda ? `<p style="margin:6px 8px 0;font-size:10px;color:#0056b3;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🏪 ${t.nombreTienda}</p>` : ''}
+                            <div style="display:flex;align-items:center;gap:4px;padding:0 8px;margin:6px 0 2px;">
+                                <h3 style="margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;color:#0056b3;font-weight:bold;">${t.nombre||'Sin nombre'}</h3>
+                            </div>
+                            <div class="precio-row" style="padding-bottom:6px;">
+                                <span style="font-size:12px;color:#888;">Ver productos →</span>
+                            </div>
+                        </div>`);
+                    return;
+                }
+
+                // ¿Tiene variantes? Buscar en tiendasData
+                const variantes = tiendasData.filter(v => v.productoPadreId === t.id && v.esVariante);
+                const tieneVariantes = t.esPrincipal && variantes.length > 0;
+
+                // Variante seleccionada actualmente (o la primera por defecto)
+                if (tieneVariantes && !_varSeleccionada[t.id]) {
+                    _varSeleccionada[t.id] = variantes[0].id;
+                }
+                const varActual = tieneVariantes ? variantes.find(v => v.id === _varSeleccionada[t.id]) || variantes[0] : null;
+
+                // Fotos y precio a mostrar (variante o padre)
+                const fotosShow = (varActual && varActual.fotos && varActual.fotos.length > 0)
+                    ? varActual.fotos
+                    : t.fotos;
+                const feShow = encodeURIComponent(JSON.stringify(fotosShow));
+                const imgsShow = fotosShow.map((f,i) => `<img src="${f}" class="carousel-img ${i===0?'active':''}" onclick="abrirLightbox('${feShow}',${i})">`).join('');
+                const ctrlShow = fotosShow.length > 1 ? `<div class="foto-counter" id="counter-${t.id}">1/${fotosShow.length}</div>` : '';
+                const precioShow = varActual ? varActual.precio : t.precio;
+                const monedaShow = varActual ? varActual.moneda : t.moneda;
+                const agShow = varActual ? varActual.estado === 'agotado' : ag;
+
+                // Lista de variantes desplegable
+                const varListaHtml = tieneVariantes ? `
+                    <div id="var-lista-${t.id}" style="display:none;grid-column:1/-1;background:#f8fafc;border-radius:0 0 12px 12px;border:1px solid #e0eaf5;border-top:none;padding:6px 8px;margin-top:-4px;">
+                        ${variantes.map(v => {
+                            const vag = v.estado === 'agotado';
+                            return `<button onclick="seleccionarVariante('${t.id}','${v.id}')" style="width:100%;text-align:left;padding:8px 10px;margin-bottom:4px;background:${v.id===_varSeleccionada[t.id]?'#e8f4fd':'white'};border:1.5px solid ${v.id===_varSeleccionada[t.id]?'#0056b3':'#ddd'};border-radius:8px;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;${vag?'opacity:0.5;':''}" ${vag?'disabled':''}>
+                                <span>${v.nombre}${vag?' — AGOTADO':''}</span>
+                                ${v.precio && v.precio !== t.precio ? `<span style="color:#d32f2f;font-weight:bold;">${v.precio} ${v.moneda}</span>` : ''}
+                            </button>`;
+                        }).join('')}
+                    </div>` : '';
+
                 c.insertAdjacentHTML('beforeend', `
-                    <div class="card" id="card-${t.id}" style="opacity:${ag?'0.65':'1'}">
-                        <div class="carousel-container" data-id="${t.id}">
-                            ${imgs}${ctrl}${ag?'<div class="badge-agotado">AGOTADO</div>':''}
+                    <div class="card" id="card-${t.id}" style="opacity:${agShow?'0.65':'1'}">
+                        <div class="carousel-container" data-id="${t.id}" id="carousel-${t.id}">
+                            ${imgsShow}${ctrlShow}${agShow?'<div class="badge-agotado">AGOTADO</div>':''}
                         </div>
                         ${t.nombreTienda ? `<p style="margin:6px 8px 0;font-size:10px;color:#0056b3;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🏪 ${t.nombreTienda}</p>` : ''}
                         <div style="display:flex;align-items:center;gap:4px;padding:0 8px;margin:6px 0 2px;">
-                            <h3 style="margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;color:#222;">${t.nombre||'Sin nombre'}</h3>
+                            ${tieneVariantes
+                                ? `<button onclick="toggleVariantes('${t.id}')" style="flex:1;min-width:0;text-align:left;background:none;border:none;cursor:pointer;padding:0;font-size:14px;font-weight:bold;color:#0056b3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="btn-var-nombre-${t.id}">${t.nombre||'Sin nombre'} <span style="font-size:11px;">▾</span></button>`
+                                : `<h3 style="margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;color:#222;">${t.nombre||'Sin nombre'}</h3>`
+                            }
                             ${t.descripcion ? `<button class="btn-descripcion" onclick="abrirDesc(this.dataset.n,this.dataset.d)" data-n="${ns}" data-d="${ds}" style="flex-shrink:0;">${svgDoc}</button>` : ''}
                         </div>
-                        <div class="precio-row">
-                            ${t.esPrincipal
-                                ? `<button onclick="abrirSubproductos('${t.id}')" style="background:#fde8e8;color:#d32f2f;border:1.5px solid #d32f2f;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;">Seleccionar</button>`
-                                : `<span class="precio-tag">${t.precio}</span>
-                                   ${t.moneda ? '<span class="moneda-tag">'+t.moneda+'</span>' : ''}
-                                   ${!ag ? `<button onclick="agregarAlCarrito('${t.id}')" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;line-height:1;display:flex;align-items:center;justify-content:center;">🛒</button>` : '<span style="margin-left:auto"></span>'}`
-                            }
+                        <div class="precio-row" id="precio-row-${t.id}">
+                            <span class="precio-tag" id="precio-${t.id}">${precioShow}</span>
+                            ${monedaShow ? `<span class="moneda-tag" id="moneda-${t.id}">${monedaShow}</span>` : ''}
+                            ${!agShow ? `<button onclick="agregarAlCarrito('${varActual?varActual.id:t.id}')" id="carrito-btn-${t.id}" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;line-height:1;display:flex;align-items:center;justify-content:center;">🛒</button>` : '<span style="margin-left:auto"></span>'}
                         </div>
+                        ${varListaHtml}
                         <div id="desc-edit-${t.id}" style="display:none;padding:0 8px 6px;">
                 <textarea id="desc-input-${t.id}" rows="2" placeholder="Descripción..." style="width:100%;padding:6px;border:1.5px solid #0056b3;border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">${t.descripcion||''}</textarea>
                 <div style="display:flex;gap:4px;margin-top:4px;">
@@ -2351,15 +2521,64 @@
             </div>
             <p class="provincia">📍 ${t.provincia}</p>
                         <div class="card-buttons">
-                            <a href="${ag?'':'tel:'+t.tel}" class="btn-llamar${ag?' btn-disabled':''}">${svgTel}</a>
-                            <a href="${ag?'':'https://wa.me/'+tel}" ${ag?'':' target="_blank"'} class="btn-wa${ag?' btn-disabled':''}">${svgWA}</a>
-                            <button class="btn-mapa-card${ag?' btn-disabled':''}" ${ag?'':' onclick="verUbicacion('+t.lat+','+t.lng+',\''+ns+'\')"'}>${svgGPS}</button>
-                            <button class="btn-tienda${ag?' btn-disabled':''}" ${ag?'':' onclick="visitarTienda(\''+t.uidVendedor+'\')"'} title="Ver tienda">${svgTienda}</button>
+                            <a href="${agShow?'':'tel:'+t.tel}" class="btn-llamar${agShow?' btn-disabled':''}">${svgTel}</a>
+                            <a href="${agShow?'':'https://wa.me/'+tel}" ${agShow?'':' target="_blank"'} class="btn-wa${agShow?' btn-disabled':''}">${svgWA}</a>
+                            <button class="btn-mapa-card${agShow?' btn-disabled':''}" ${agShow?'':' onclick="verUbicacion('+t.lat+','+t.lng+',\''+ns+'\')"'}>${svgGPS}</button>
+                            <button class="btn-tienda${agShow?' btn-disabled':''}" ${agShow?'':' onclick="visitarTienda(\''+t.uidVendedor+'\')"'} title="Ver tienda">${svgTienda}</button>
                         </div>
                     </div>`);
             } catch(e) { console.error('Error card:', t.id, e); }
         });
     }
+
+    window.toggleVariantes = function(padreId) {
+        const lista = document.getElementById('var-lista-' + padreId);
+        if (!lista) return;
+        lista.style.display = lista.style.display === 'none' ? 'block' : 'none';
+        const btn = document.getElementById('btn-var-nombre-' + padreId);
+        if (btn) btn.innerHTML = btn.innerHTML.replace('▾','▸').replace('▸', lista.style.display==='block'?'▾':'▸');
+    };
+
+    window.seleccionarVariante = function(padreId, varId) {
+        _varSeleccionada[padreId] = varId;
+        const padre = tiendasData.find(t => t.id === padreId);
+        const variante = tiendasData.find(t => t.id === varId);
+        if (!padre || !variante) return;
+
+        // Actualizar fotos en el carrusel
+        const fotosShow = (variante.fotos && variante.fotos.length > 0) ? variante.fotos : padre.fotos;
+        const carousel = document.getElementById('carousel-' + padreId);
+        if (carousel) {
+            const feShow = encodeURIComponent(JSON.stringify(fotosShow));
+            carousel.innerHTML = fotosShow.map((f,i) =>
+                `<img src="${f}" class="carousel-img ${i===0?'active':''}" onclick="abrirLightbox('${feShow}',${i})">`
+            ).join('') + (fotosShow.length > 1 ? `<div class="foto-counter" id="counter-${padreId}">1/${fotosShow.length}</div>` : '');
+        }
+
+        // Actualizar precio
+        const precioEl = document.getElementById('precio-' + padreId);
+        const monedaEl = document.getElementById('moneda-' + padreId);
+        if (precioEl) precioEl.textContent = variante.precio || padre.precio;
+        if (monedaEl) monedaEl.textContent = variante.moneda || padre.moneda;
+
+        // Actualizar botón carrito (agrega la variante, no el padre)
+        const carritoBtn = document.getElementById('carrito-btn-' + padreId);
+        if (carritoBtn) carritoBtn.setAttribute('onclick', `agregarAlCarrito('${varId}')`);
+
+        // Actualizar estado agotado
+        const card = document.getElementById('card-' + padreId);
+        if (card) card.style.opacity = variante.estado === 'agotado' ? '0.65' : '1';
+
+        // Actualizar botones activos en la lista
+        const lista = document.getElementById('var-lista-' + padreId);
+        if (lista) {
+            lista.querySelectorAll('button').forEach(btn => {
+                const esActivo = btn.getAttribute('onclick')?.includes(varId);
+                btn.style.background = esActivo ? '#e8f4fd' : 'white';
+                btn.style.border = `1.5px solid ${esActivo ? '#0056b3' : '#ddd'}`;
+            });
+        }
+    };
 
     window.cambiarFoto = function(id, d) {
         const imgs = document.querySelectorAll(`#card-${id} .carousel-img, #card-prev-${id} .carousel-img`);
@@ -2898,6 +3117,38 @@
         }
     };
 
+    window.abrirColeccion = function(colId) {
+        const col = tiendasData.find(t => t.id === colId);
+        if (!col) return;
+        const productos = tiendasData.filter(t => t.productoPadreId === colId && !t.esVariante);
+        // Reutilizar pantalla subproductos pero como colección
+        document.getElementById('subprod-titulo').textContent = '📁 ' + (col.nombre || 'Colección');
+        const grid = document.getElementById('subprod-grid');
+        if (!productos.length) {
+            grid.innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#888;padding:40px;'>Esta colección no tiene productos aún.</p>";
+        } else {
+            grid.innerHTML = '';
+            // Renderizar productos de la colección usando renderizarLista
+            const tmp = document.createElement('div');
+            tmp.id = 'listaTiendas-tmp';
+            tmp.style.cssText = 'display:grid;grid-template-columns:repeat(2,1fr);gap:10px;';
+            grid.appendChild(tmp);
+            const oldC = document.getElementById('listaTiendas');
+            // Temporalmente apuntar renderizarLista al grid
+            const realId = oldC.id;
+            oldC.id = '_hidden_tmp';
+            tmp.id = 'listaTiendas';
+            renderizarLista(productos.filter(t => !t.productoPadreId || t.productoPadreId === colId));
+            tmp.id = 'listaTiendas-tmp';
+            oldC.id = realId;
+            grid.innerHTML = '';
+            grid.appendChild(tmp);
+        }
+        document.getElementById('pantalla-subproductos').classList.add('show');
+        lockScroll();
+        actualizarBadge();
+    };
+
     window.filtrarPorProvincia = function() {
         const f = document.getElementById('filtroProvincia').value;
         let r = f === 'todas' ? tiendasData : tiendasData.filter(t => t.provincia === f);
@@ -3117,6 +3368,14 @@
 
     detectarDirecto();
     cargarDatos().then(() => restaurarSesion());
+
+    // Rotar orden del catálogo cada 3 minutos
+    setInterval(() => {
+        // Solo rotar si estamos en el catálogo principal visible
+        if (!tiendaUID && document.getElementById('listaTiendas').style.display !== 'none') {
+            filtrarPorProvincia();
+        }
+    }, 3 * 60 * 1000);
 
     const _uid = localStorage.getItem('bc_uid');
     if (_uid) {
