@@ -22,12 +22,15 @@
         #btn-vista-toggle.activo { background: #0056b3; color: white; }
 
         .grid-tiendas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 10px 20px; max-width: 1200px; margin: 0 auto; }
-        /* Scrollbar delgada para todo el sitio */
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        /* Scrollbar delgada para pantallas flotantes */
+        ::-webkit-scrollbar { width: 3px; height: 3px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,86,179,0.3); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(0,86,179,0.6); }
-        * { scrollbar-width: thin; scrollbar-color: rgba(0,86,179,0.3) transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,86,179,0.25); border-radius: 10px; }
+        * { scrollbar-width: thin; scrollbar-color: rgba(0,86,179,0.25) transparent; }
+        /* Botones de scroll */
+        #scroll-btns { position: fixed; right: 12px; bottom: 100px; display: flex; flex-direction: column; gap: 6px; z-index: 4500; }
+        .scroll-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(0,86,179,0.75); color: white; border: none; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2); backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        .scroll-btn.visible { opacity: 1; pointer-events: auto; }
 
         .card { background: white; border-radius: 14px; box-shadow: 0 3px 12px rgba(0,0,0,0.1); position: relative; overflow: visible; }
         .card .carousel-container { border-radius: 14px 14px 0 0; }
@@ -432,6 +435,11 @@
             <p style="font-size:16px;margin:0;">Tu carrito está vacío</p>
         </div>
     </div>
+</div>
+
+<div id="scroll-btns">
+    <button class="scroll-btn" id="scroll-up" onclick="window.scrollBy({top:-300,behavior:'smooth'})">▲</button>
+    <button class="scroll-btn" id="scroll-down" onclick="window.scrollBy({top:300,behavior:'smooth'})">▼</button>
 </div>
 
 <div id="menu-dots" onclick="toggleMenu()">⋮</div>
@@ -1294,7 +1302,8 @@
         editandoId = id;
         const ag = t.estado === 'agotado';
         const esSub = !!t.productoPadreId;
-        document.getElementById('edit-titulo').textContent = t.nombre || 'Editar producto';
+        const esCol = !!t.esColeccion;
+        document.getElementById('edit-titulo').textContent = (esCol ? '📁 ' : '') + (t.nombre || 'Editar');
 
         const fotosHtml = (t.fotos||[]).map((f,i) => `
             <div class="edit-foto-item">
@@ -1346,25 +1355,47 @@
                     : `<button onclick="marcarAgotado('${id}')" class="edit-btn-accion edit-btn-agotado">🚫 Marcar como agotado</button>`
                 }
                 ${!esSub ? `
-                <button onclick="toggleFormVarianteEdicion('${id}')" class="edit-btn-accion edit-btn-sub" id="btn-toggle-var-${id}">🏷️ Agregar talla / variante</button>
-                <div id="form-var-edicion-${id}" style="display:none;border-top:1px dashed #ddd;margin-top:10px;padding-top:10px;">
-                    <p style="margin:0 0 8px;font-size:12px;color:#0056b3;font-weight:bold;">Nueva variante / talla:</p>
-                    <input type="text" id="vn-edit-${id}" placeholder="Ej: Talla 40, Color rojo, Talla M..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:6px;box-sizing:border-box;">
-                    <div style="display:flex;gap:8px;margin-bottom:6px;">
-                        <input type="text" id="vp-edit-${id}" placeholder="Precio (deja vacío = igual al padre)" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
-                        <select id="vm-edit-${id}" style="width:80px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px;"><option value="CUP">CUP</option><option value="USD">USD</option></select>
-                    </div>
-                    <div style="border:1px dashed #ccc;padding:8px;text-align:center;border-radius:8px;cursor:pointer;margin-bottom:6px;background:#f8fafc;" onclick="document.getElementById('vf-edit-${id}').click()">
-                        <span id="vft-edit-${id}" style="font-size:12px;color:#888;">📸 Fotos (opcional — si no agregas, usa las del producto)</span>
-                        <div id="vfp-edit-${id}" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-top:4px;"></div>
-                        <input type="file" id="vf-edit-${id}" accept="image/*" multiple style="display:none;" onchange="prevVarianteFotos(event,'edit-${id}')">
-                    </div>
-                    <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px;background:#fff3e0;border-radius:8px;cursor:pointer;">
-                        <input type="checkbox" id="va-edit-${id}" style="width:16px;height:16px;">
-                        <span style="font-size:13px;font-weight:bold;color:#e65100;">🚫 Publicar como agotado</span>
-                    </label>
-                    <button id="vbtn-edit-${id}" onclick="pubVarianteDesdeEdicion('${id}')" class="edit-btn-accion edit-btn-guardar">📤 Publicar variante</button>
-                </div>` : ''}
+                ${esCol
+                    ? `<button onclick="toggleFormProductoEnColeccion('${id}')" class="edit-btn-accion edit-btn-sub" id="btn-toggle-prodcol-${id}">📦 Agregar producto a la colección</button>
+                    <div id="form-prodcol-${id}" style="display:none;border-top:1px dashed #ddd;margin-top:10px;padding-top:10px;">
+                        <p style="margin:0 0 8px;font-size:12px;color:#0056b3;font-weight:bold;">Nuevo producto en la colección:</p>
+                        <div style="border:1px dashed #ccc;padding:8px;text-align:center;border-radius:8px;cursor:pointer;margin-bottom:6px;background:#f8fafc;" onclick="document.getElementById('pf-col-${id}').click()">
+                            <span id="pft-col-${id}" style="font-size:12px;color:#888;">📸 Fotos del producto *</span>
+                            <div id="pfp-col-${id}" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-top:4px;"></div>
+                            <input type="file" id="pf-col-${id}" accept="image/*" multiple style="display:none;" onchange="prevFotosColProd(event,'${id}')">
+                        </div>
+                        <input type="text" id="pn-col-${id}" placeholder="Nombre del producto *" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:6px;box-sizing:border-box;">
+                        <div style="display:flex;gap:8px;margin-bottom:6px;">
+                            <input type="text" id="pp-col-${id}" placeholder="Precio *" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+                            <select id="pm-col-${id}" style="width:80px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;"><option value="CUP">CUP</option><option value="USD">USD</option></select>
+                        </div>
+                        <textarea id="pd-col-${id}" placeholder="Descripción (opcional)" rows="2" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box;margin-bottom:6px;"></textarea>
+                        <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px;background:#fff3e0;border-radius:8px;cursor:pointer;">
+                            <input type="checkbox" id="pa-col-${id}" style="width:16px;height:16px;">
+                            <span style="font-size:13px;font-weight:bold;color:#e65100;">🚫 Publicar como agotado</span>
+                        </label>
+                        <button onclick="pubProductoEnColeccion('${id}')" class="edit-btn-accion edit-btn-guardar">📤 Agregar producto</button>
+                    </div>`
+                    : `<button onclick="toggleFormVarianteEdicion('${id}')" class="edit-btn-accion edit-btn-sub" id="btn-toggle-var-${id}">🏷️ Agregar variante</button>
+                    <div id="form-var-edicion-${id}" style="display:none;border-top:1px dashed #ddd;margin-top:10px;padding-top:10px;">
+                        <p style="margin:0 0 8px;font-size:12px;color:#0056b3;font-weight:bold;">Nueva variante:</p>
+                        <input type="text" id="vn-edit-${id}" placeholder="Ej: Talla 40, Color rojo, Talla M..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:6px;box-sizing:border-box;">
+                        <div style="display:flex;gap:8px;margin-bottom:6px;">
+                            <input type="text" id="vp-edit-${id}" placeholder="Precio (vacío = igual al padre)" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+                            <select id="vm-edit-${id}" style="width:80px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px;"><option value="CUP">CUP</option><option value="USD">USD</option></select>
+                        </div>
+                        <div style="border:1px dashed #ccc;padding:8px;text-align:center;border-radius:8px;cursor:pointer;margin-bottom:6px;background:#f8fafc;" onclick="document.getElementById('vf-edit-${id}').click()">
+                            <span id="vft-edit-${id}" style="font-size:12px;color:#888;">📸 Fotos (opcional — si no agregas, usa las del producto)</span>
+                            <div id="vfp-edit-${id}" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-top:4px;"></div>
+                            <input type="file" id="vf-edit-${id}" accept="image/*" multiple style="display:none;" onchange="prevVarianteFotos(event,'edit-${id}')">
+                        </div>
+                        <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px;background:#fff3e0;border-radius:8px;cursor:pointer;">
+                            <input type="checkbox" id="va-edit-${id}" style="width:16px;height:16px;">
+                            <span style="font-size:13px;font-weight:bold;color:#e65100;">🚫 Publicar como agotado</span>
+                        </label>
+                        <button id="vbtn-edit-${id}" onclick="pubVarianteDesdeEdicion('${id}')" class="edit-btn-accion edit-btn-guardar">📤 Publicar variante</button>
+                    </div>`
+                }` : ''}
                 <button onclick="borrarAnuncio('${id}')" class="edit-btn-accion edit-btn-borrar" style="margin-top:8px;">🗑️ Eliminar producto</button>
             </div>
         `;
@@ -1519,6 +1550,80 @@
             r.readAsDataURL(f);
         });
         document.getElementById('vft-edit-' + sufijo).style.display = 'none';
+    };
+
+    window.toggleFormProductoEnColeccion = function(id) {
+        const f = document.getElementById('form-prodcol-' + id);
+        if (f) f.style.display = f.style.display === 'none' ? 'block' : 'none';
+    };
+
+    window.prevFotosColProd = function(e, colId) {
+        const c = document.getElementById('pfp-col-' + colId);
+        if (!c) return;
+        c.innerHTML = '';
+        Array.from(e.target.files).forEach(f => {
+            const r = new FileReader();
+            r.onload = ev => {
+                const img = document.createElement('img');
+                img.src = ev.target.result;
+                img.style.cssText = 'width:40px;height:40px;object-fit:cover;border-radius:6px;border:1.5px solid #0056b3;';
+                c.appendChild(img);
+            };
+            r.readAsDataURL(f);
+        });
+        document.getElementById('pft-col-' + colId).style.display = 'none';
+    };
+
+    window.pubProductoEnColeccion = async function(colId) {
+        const nombre = document.getElementById('pn-col-' + colId)?.value?.trim();
+        const precio = document.getElementById('pp-col-' + colId)?.value?.trim();
+        const inp = document.getElementById('pf-col-' + colId);
+        if (!nombre) { await showMsg('Escribe el nombre del producto.', 'warning'); return; }
+        if (!precio) { await showMsg('Escribe el precio del producto.', 'warning'); return; }
+        if (!inp || !inp.files.length) { await showMsg('Selecciona al menos una foto.', 'warning'); return; }
+        const totalMB = Array.from(inp.files).reduce((s, f) => s + f.size, 0) / (1024*1024);
+        if (totalMB > 10) { await showMsg(`Las fotos pesan ${totalMB.toFixed(1)} MB. Máximo 10 MB.`, 'warning'); return; }
+        const col = tiendasData.find(t => t.id === colId);
+        const esAgotado = document.getElementById('pa-col-' + colId)?.checked || false;
+        const moneda = document.getElementById('pm-col-' + colId)?.value || 'CUP';
+        showLoading();
+        try {
+            const urls = [];
+            for (const file of inp.files) {
+                const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', 'bazar_present');
+                const ri = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: fd });
+                const di = await ri.json();
+                if (di.secure_url) urls.push(di.secure_url);
+            }
+            const token = await getToken();
+            const pay = { fields: {
+                uidVendedor: { stringValue: usuarioUID },
+                correo: { stringValue: fbAuth.currentUser.email },
+                productoPadreId: { stringValue: colId },
+                esPrincipal: { booleanValue: false },
+                esVariante: { booleanValue: false },
+                esColeccion: { booleanValue: false },
+                nombre: { stringValue: nombre },
+                precio: { stringValue: precio },
+                moneda: { stringValue: moneda },
+                descripcion: { stringValue: document.getElementById('pd-col-' + colId)?.value?.trim() || '' },
+                fotos: { arrayValue: { values: urls.map(u => ({ stringValue: u })) } },
+                estado: { stringValue: esAgotado ? 'agotado' : 'disponible' },
+                nombreTienda: { stringValue: col?.nombreTienda||'' },
+                tel: { stringValue: col?.tel||'' },
+                direccion: { stringValue: col?.direccion||'' },
+                provincia: { stringValue: col?.provincia||'' },
+                lat: { doubleValue: col?.lat||latSel }, lng: { doubleValue: col?.lng||lngSel },
+                fecha: { timestampValue: new Date().toISOString() }
+            }};
+            const r = await fetch(`${FS}/tiendas?key=${API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(pay) });
+            if (!r.ok) throw new Error(await r.text());
+            const doc = await r.json();
+            tiendasData.push({ id: doc.name.split('/').pop(), uidVendedor: usuarioUID, productoPadreId: colId, esPrincipal: false, esVariante: false, esColeccion: false, nombre, precio, moneda, descripcion: document.getElementById('pd-col-'+colId)?.value?.trim()||'', fotos: urls, estado: esAgotado?'agotado':'disponible', nombreTienda: col?.nombreTienda||'', tel: col?.tel||'', direccion: col?.direccion||'', provincia: col?.provincia||'', lat: col?.lat||latSel, lng: col?.lng||lngSel });
+            hideLoading();
+            cerrarEdicion();
+            await showMsg(`✅ Producto "${nombre}" agregado a la colección.`, 'ok');
+        } catch(e) { hideLoading(); await msgError(e); }
     };
 
     window.toggleFormVarianteEdicion = function(id) {
@@ -2417,7 +2522,18 @@
     }
 
     function renderizar(lista) {
-        lista = shuffle((lista || []).filter(t => !t.productoPadreId && t.estado !== 'agotado'));
+        // Solo productos disponibles, sin padres de variantes agotados
+        lista = shuffle((lista || []).filter(t => {
+            if (t.productoPadreId) return false; // no variantes sueltas
+            if (t.esColeccion) return true; // colecciones siempre visibles
+            if (t.estado === 'agotado' && !t.esPrincipal) return false; // agotados simples ocultos
+            if (t.esPrincipal) {
+                // Mostrar si tiene al menos una variante disponible
+                const vars = tiendasData.filter(v => v.productoPadreId === t.id && v.esVariante);
+                return vars.some(v => v.estado !== 'agotado');
+            }
+            return t.estado !== 'agotado';
+        }));
         renderizarLista(lista);
     }
 
@@ -3365,6 +3481,20 @@
         }
         return showMsg('❌ ' + tecnico, 'error', accion);
     }
+
+    // Botones de scroll — aparecer solo cuando hay contenido arriba/abajo
+    (function() {
+        const btnUp = document.getElementById('scroll-up');
+        const btnDown = document.getElementById('scroll-down');
+        function actualizarScrollBtns() {
+            const scrollY = window.scrollY;
+            const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+            btnUp.classList.toggle('visible', scrollY > 80);
+            btnDown.classList.toggle('visible', scrollY < maxScroll - 80);
+        }
+        window.addEventListener('scroll', actualizarScrollBtns, { passive: true });
+        setTimeout(actualizarScrollBtns, 1000);
+    })();
 
     detectarDirecto();
     cargarDatos().then(() => restaurarSesion());
