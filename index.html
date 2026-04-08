@@ -23,9 +23,9 @@
 
         .grid-tiendas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 10px 20px; max-width: 1200px; margin: 0 auto; }
         /* Scrollbar delgada arrastrable */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,86,179,0.45); border-radius: 10px; min-height: 40px; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; margin: 2px; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,86,179,0.45); border-radius: 10px; min-height: 50px; }
         ::-webkit-scrollbar-thumb:active { background: rgba(0,86,179,0.8); }
         * { scrollbar-width: thin; scrollbar-color: rgba(0,86,179,0.45) rgba(0,0,0,0.05); }
         /* fin scrollbar */
@@ -1770,7 +1770,6 @@
     let mapPreview = null, marcadorPreview = null;
 
     window.abrirVistaPrevia = function() {
-        // Incluir todos los productos (agotados también), solo sin subproductos
         const mis = tiendasData.filter(t => t.uidVendedor === usuarioUID && !t.productoPadreId);
         const todosLosMios = tiendasData.filter(t => t.uidVendedor === usuarioUID);
         const i = mis[0] || {};
@@ -1784,40 +1783,50 @@
 
         mis.forEach(t => {
             const ag = t.estado === 'agotado';
-            const subs = todosLosMios.filter(s => s.productoPadreId === t.id);
-            const fe = encodeURIComponent(JSON.stringify(t.fotos));
-            const ns2 = (t.nombre||'Sin nombre').replace(/'/g,"\\'").replace(/"/g,'&quot;');
-            const ds2 = (t.descripcion||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
-            const tel2 = (t.tel||'').replace(/\D/g,'');
-            let imgs = t.fotos.map((f,idx) => `<img src="${f}" class="carousel-img ${idx===0?'active':''}" onclick="abrirLightbox('${fe}',${idx})">`).join('');
-            const ctrl = t.fotos.length > 1 ? `<div class="foto-counter" id="counter-prev-${t.id}">1/${t.fotos.length}</div>` : '';
+            const variantes = todosLosMios.filter(s => s.productoPadreId === t.id && s.esVariante);
+            const tieneVariantes = t.esPrincipal && variantes.length > 0;
+            const varActual = tieneVariantes ? (variantes.find(v => v.id === _varSeleccionada[t.id]) || null) : null;
 
-            // Precio o botón Seleccionar si tiene subproductos
-            const precioHtml = t.esPrincipal && subs.length
-                ? `<button onclick="abrirSubproductosPreview('${t.id}')" style="background:#fde8e8;color:#d32f2f;border:1.5px solid #d32f2f;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:bold;cursor:pointer;">Seleccionar</button>`
-                : `<span class="precio-tag">${t.precio}</span>
-                   ${t.moneda ? '<span class="moneda-tag">'+t.moneda+'</span>' : ''}`;
+            // Fotos: variante seleccionada con fotos propias, o fotos del padre
+            const fotosShow = (varActual && varActual.fotos && varActual.fotos.length > 0) ? varActual.fotos : t.fotos;
+            const fe = encodeURIComponent(JSON.stringify(fotosShow));
+            const ns2 = (t.nombre||'Sin nombre').replace(/"/g,'&quot;');
+            const ds2 = (t.descripcion||'').replace(/"/g,'&quot;');
+            const tel2 = (t.tel||'').replace(/\D/g,'');
+            const agShow = varActual ? varActual.estado === 'agotado' : ag;
+            let imgs = fotosShow.map((f,idx) => `<img src="${f}" class="carousel-img ${idx===0?'active':''}" onclick="abrirLightbox('${fe}',${idx})">`).join('');
+            const ctrl = fotosShow.length > 1 ? `<div class="foto-counter" id="counter-prev-${t.id}">1/${fotosShow.length}</div>` : '';
+
+            const precioHtml = tieneVariantes
+                ? (varActual
+                    ? `<span class="precio-tag">${varActual.precio}</span>${varActual.moneda ? '<span class="moneda-tag">'+varActual.moneda+'</span>' : ''}<button onclick="agregarAlCarrito('${varActual.id}')" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;">🛒</button>`
+                    : `<span style="font-size:12px;color:#888;font-style:italic;">Selecciona una variante</span>`)
+                : `<span class="precio-tag">${t.precio}</span>${t.moneda ? '<span class="moneda-tag">'+t.moneda+'</span>' : ''}${!ag?`<button onclick="agregarAlCarrito('${t.id}')" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;">🛒</button>`:''}`;
+
             const descBtn = t.descripcion ? `<button class="btn-descripcion" onclick="abrirDesc(this.dataset.n,this.dataset.d)" data-n="${ns2}" data-d="${ds2}" style="flex-shrink:0;">${svgDoc}</button>` : '';
 
             const card = document.createElement('div');
             card.className = 'card'; card.id = 'card-prev-'+t.id;
-            card.style.opacity = ag ? '0.65' : '1';
+            card.style.opacity = agShow ? '0.65' : '1';
             card.innerHTML = `
-                <div class="carousel-container" data-id="${t.id}" style="border-radius:14px 14px 0 0;">
+                <div class="carousel-container" data-id="${t.id}" id="carousel-prev-${t.id}" style="border-radius:14px 14px 0 0;">
                     ${imgs}${ctrl}
-                    ${ag ? '<div class="badge-agotado">AGOTADO</div>' : ''}
+                    ${agShow ? '<div class="badge-agotado">AGOTADO</div>' : ''}
                 </div>
                 ${t.nombreTienda ? `<p style="margin:6px 8px 0;font-size:10px;color:#0056b3;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🏪 ${t.nombreTienda}</p>` : ''}
                 <div style="display:flex;align-items:center;gap:4px;padding:0 8px;margin:6px 0 2px;">
-                    <h3 style="margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;color:#222;">${t.nombre||'Sin nombre'}</h3>
+                    ${tieneVariantes
+                        ? `<button onclick="abrirPopupVariantesPreview('${t.id}',event)" id="btn-var-prev-${t.id}" style="flex:1;min-width:0;text-align:left;background:#f0f6ff;border:1.5px solid #0056b3;border-radius:8px;cursor:pointer;padding:5px 8px;font-size:13px;font-weight:bold;color:#0056b3;display:flex;align-items:center;justify-content:space-between;gap:4px;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">${t.nombre||'Sin nombre'}</span><span style="font-size:20px;line-height:1;flex-shrink:0;">▾</span></button>`
+                        : `<h3 style="margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;color:#222;">${t.nombre||'Sin nombre'}</h3>`
+                    }
                     ${descBtn}
                 </div>
-                <div class="precio-row">${precioHtml}</div>
+                <div class="precio-row" id="precio-row-prev-${t.id}">${precioHtml}</div>
                 <p class="provincia">📍 ${t.provincia}</p>
                 <div class="card-buttons">
-                    <a href="${ag?'':'tel:'+t.tel}" class="btn-llamar${ag?' btn-disabled':''}">${svgTel}</a>
-                    <a href="${ag?'':'https://wa.me/'+tel2}" ${ag?'':'target="_blank"'} class="btn-wa${ag?' btn-disabled':''}">${svgWA}</a>
-                    <button class="btn-mapa-card${ag?' btn-disabled':''}" ${ag?'':` onclick="verUbicacionPreview(${t.lat},${t.lng},'${ns2}')"`}>${svgGPS}</button>
+                    <a href="${agShow?'':'tel:'+t.tel}" class="btn-llamar${agShow?' btn-disabled':''}">${svgTel}</a>
+                    <a href="${agShow?'':'https://wa.me/'+tel2}" ${agShow?'':'target="_blank"'} class="btn-wa${agShow?' btn-disabled':''}">${svgWA}</a>
+                    <button class="btn-mapa-card${agShow?' btn-disabled':''}" ${agShow?'':` onclick="verUbicacionPreview(${t.lat},${t.lng},'${ns2}')"`}>${svgGPS}</button>
                 </div>`;
             grid.appendChild(card);
         });
@@ -1825,6 +1834,67 @@
         if (!mis.length) grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888;padding:40px;">No tienes productos.</p>';
         document.getElementById('pantalla-preview').classList.add('show');
         lockScroll();
+    };
+
+    // Popup variantes para vista previa (reutiliza el mismo popup pero con id -prev-)
+    window.abrirPopupVariantesPreview = function(padreId, event) {
+        event.stopPropagation();
+        const padre = tiendasData.find(t => t.id === padreId);
+        if (!padre) return;
+        const variantes = tiendasData.filter(v => v.productoPadreId === padreId && v.esVariante);
+        const popup = document.getElementById('var-popup');
+        document.getElementById('var-popup-titulo').textContent = padre.nombre || '';
+        const lista = document.getElementById('var-popup-lista');
+        lista.innerHTML = variantes.map(v => {
+            const vag = v.estado === 'agotado';
+            const selec = _varSeleccionada[padreId] === v.id;
+            return `<button onclick="seleccionarVariantePreview('${padreId}','${v.id}');cerrarPopupVariantes()" style="width:100%;text-align:left;padding:10px 12px;margin-bottom:6px;background:${selec?'#e8f4fd':'white'};border:1.5px solid ${selec?'#0056b3':'#ddd'};border-radius:10px;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;box-sizing:border-box;${vag?'opacity:0.5;':''}" ${vag?'disabled':''}>
+                <span style="font-weight:${selec?'bold':'normal'};color:${selec?'#0056b3':'#222'};">${v.nombre}${vag?' — AGOTADO':''}</span>
+                ${v.precio ? `<span style="color:#d32f2f;font-weight:bold;font-size:12px;white-space:nowrap;margin-left:8px;">${v.precio} ${v.moneda||''}</span>` : ''}
+            </button>`;
+        }).join('');
+        popup.style.display = 'block';
+        popup.style.left = '-9999px';
+        const popupH = popup.offsetHeight;
+        const popupW = popup.offsetWidth;
+        popup.style.left = '';
+        const btn = document.getElementById('btn-var-prev-' + padreId);
+        let left = 8, top = 100;
+        if (btn) {
+            const rect = btn.getBoundingClientRect();
+            left = rect.left;
+            top = rect.bottom + 8;
+            if (left + popupW > window.innerWidth - 8) left = window.innerWidth - popupW - 8;
+            if (left < 8) left = 8;
+            if (top + popupH > window.innerHeight - 10) top = rect.top - popupH - 8;
+            if (top < 8) top = 8;
+        }
+        popup.style.left = left + 'px';
+        popup.style.top = top + 'px';
+        document.getElementById('var-popup-overlay').style.display = 'block';
+    };
+
+    window.seleccionarVariantePreview = function(padreId, varId) {
+        _varSeleccionada[padreId] = varId;
+        const padre = tiendasData.find(t => t.id === padreId);
+        const variante = tiendasData.find(t => t.id === varId);
+        if (!padre || !variante) return;
+        const fotosShow = (variante.fotos && variante.fotos.length > 0) ? variante.fotos : padre.fotos;
+        const carousel = document.getElementById('carousel-prev-' + padreId);
+        if (carousel) {
+            const fe = encodeURIComponent(JSON.stringify(fotosShow));
+            const ag = variante.estado === 'agotado';
+            carousel.innerHTML = fotosShow.map((f,i) =>
+                `<img src="${f}" class="carousel-img ${i===0?'active':''}" onclick="abrirLightbox('${fe}',${i})">`
+            ).join('') + (fotosShow.length > 1 ? `<div class="foto-counter">1/${fotosShow.length}</div>` : '') + (ag ? '<div class="badge-agotado">AGOTADO</div>' : '');
+        }
+        const precioRow = document.getElementById('precio-row-prev-' + padreId);
+        if (precioRow) {
+            const ag = variante.estado === 'agotado';
+            precioRow.innerHTML = `<span class="precio-tag">${variante.precio||padre.precio}</span>${(variante.moneda||padre.moneda)?`<span class="moneda-tag">${variante.moneda||padre.moneda}</span>`:''} ${!ag?`<button onclick="agregarAlCarrito('${varId}')" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;">🛒</button>`:''}`;
+        }
+        const card = document.getElementById('card-prev-' + padreId);
+        if (card) card.style.opacity = variante.estado === 'agotado' ? '0.65' : '1';
     };
 
     window.verUbicacionPreview = function(lat, lng, nombre) {
@@ -2414,7 +2484,7 @@
                         descripcion: f.descripcion?.stringValue || '',
                         direccion: f.direccion?.stringValue || '',
                         provincia: f.provincia?.stringValue || 'N/A',
-                        fotos: f.fotos?.arrayValue?.values?.map(v => v.stringValue) || [f.fotoUrl?.stringValue || 'https://via.placeholder.com/300'],
+                        fotos: (f.fotos?.arrayValue?.values?.map(v => v.stringValue).filter(Boolean) || []).filter(u => u && !u.includes('placeholder')),
                         estado: f.estado?.stringValue || 'disponible',
                         tel: f.tel?.stringValue || '',
                         lat: f.lat?.doubleValue || 23.11,
@@ -2470,7 +2540,7 @@
                 descripcion: f.descripcion?.stringValue || '',
                 direccion: f.direccion?.stringValue || '',
                 provincia: f.provincia?.stringValue || 'N/A',
-                fotos: f.fotos?.arrayValue?.values?.map(v => v.stringValue) || [f.fotoUrl?.stringValue || 'https://via.placeholder.com/300'],
+                fotos: (f.fotos?.arrayValue?.values?.map(v => v.stringValue).filter(Boolean) || []).filter(u => u && !u.includes('placeholder')),
                 estado: f.estado?.stringValue || 'disponible',
                 tel: f.tel?.stringValue || '',
                 lat: f.lat?.doubleValue || 23.11,
@@ -2678,6 +2748,12 @@
         document.getElementById('var-popup').style.display = 'none';
         document.getElementById('var-popup-overlay').style.display = 'none';
     };
+
+    // Cerrar popup al hacer scroll
+    window.addEventListener('scroll', function() {
+        const popup = document.getElementById('var-popup');
+        if (popup && popup.style.display !== 'none') cerrarPopupVariantes();
+    }, { passive: true });
 
     window.seleccionarVariante = function(padreId, varId) {
         _varSeleccionada[padreId] = varId;
