@@ -10,7 +10,7 @@
         * { box-sizing: border-box; }
         html { overflow-x: hidden; }
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f4f8; overflow-x: hidden; }
-        body.no-scroll { overflow: hidden; position: fixed; width: 100%; }
+        body.no-scroll { overflow: hidden; }
 
         header { background: linear-gradient(135deg, #0056b3 0%, #003d82 100%); padding: 18px 15px 14px; color: white; text-align: center; position: relative; box-shadow: 0 3px 10px rgba(0,0,0,0.3); }
         header h1 { margin: 0; font-size: 26px; letter-spacing: 1px; }
@@ -777,11 +777,15 @@
     function lockScroll() {
         _scrollY = window.scrollY;
         document.body.style.top = `-${_scrollY}px`;
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
         document.body.classList.add('no-scroll');
     }
     function unlockScroll() {
         document.body.classList.remove('no-scroll');
+        document.body.style.position = '';
         document.body.style.top = '';
+        document.body.style.width = '';
         window.scrollTo(0, _scrollY);
     }
     function showLoading() { document.getElementById('loading-overlay').classList.add('show'); lockScroll(); }
@@ -2634,33 +2638,38 @@
         const overlay = document.getElementById('var-popup-overlay');
         document.getElementById('var-popup-titulo').textContent = padre.nombre || '';
 
-        // Construir lista de variantes
         const lista = document.getElementById('var-popup-lista');
         lista.innerHTML = variantes.map(v => {
             const vag = v.estado === 'agotado';
             const selec = _varSeleccionada[padreId] === v.id;
-            return `<button onclick="seleccionarVariante('${padreId}','${v.id}');cerrarPopupVariantes()" style="width:100%;text-align:left;padding:10px 12px;margin-bottom:6px;background:${selec?'#e8f4fd':'white'};border:1.5px solid ${selec?'#0056b3':'#ddd'};border-radius:10px;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;${vag?'opacity:0.5;':''}" ${vag?'disabled':''}>
+            return `<button onclick="seleccionarVariante('${padreId}','${v.id}');cerrarPopupVariantes()" style="width:100%;text-align:left;padding:10px 12px;margin-bottom:6px;background:${selec?'#e8f4fd':'white'};border:1.5px solid ${selec?'#0056b3':'#ddd'};border-radius:10px;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;box-sizing:border-box;${vag?'opacity:0.5;':''}" ${vag?'disabled':''}>
                 <span style="font-weight:${selec?'bold':'normal'};color:${selec?'#0056b3':'#222'};">${v.nombre}${vag?' — AGOTADO':''}</span>
-                ${v.precio ? `<span style="color:#d32f2f;font-weight:bold;font-size:12px;">${v.precio} ${v.moneda||''}</span>` : ''}
+                ${v.precio ? `<span style="color:#d32f2f;font-weight:bold;font-size:12px;white-space:nowrap;margin-left:8px;">${v.precio} ${v.moneda||''}</span>` : ''}
             </button>`;
         }).join('');
 
-        // Posicionar cerca del botón tocado, dentro de la pantalla
+        // Posicionar: fixed respecto al viewport (NO sumar scrollY)
+        popup.style.display = 'block';
+        popup.style.left = '-9999px'; // invisible para medir
+        const popupH = popup.offsetHeight;
+        const popupW = popup.offsetWidth;
+        popup.style.left = '';
+
         const btn = document.getElementById('btn-var-nombre-' + padreId);
+        let left = 8, top = 100;
         if (btn) {
             const rect = btn.getBoundingClientRect();
-            const popupW = Math.min(260, window.innerWidth * 0.88);
-            let left = rect.left;
-            let top = rect.bottom + 6;
+            left = rect.left;
+            top = rect.bottom + 8;
+            // No salir por la derecha
             if (left + popupW > window.innerWidth - 8) left = window.innerWidth - popupW - 8;
             if (left < 8) left = 8;
             // Si se sale por abajo, mostrar arriba del botón
-            if (top + 200 > window.innerHeight) top = rect.top - 210;
-            popup.style.left = left + 'px';
-            popup.style.top = (top + window.scrollY) + 'px';
+            if (top + popupH > window.innerHeight - 10) top = rect.top - popupH - 8;
+            if (top < 8) top = 8;
         }
-
-        popup.style.display = 'block';
+        popup.style.left = left + 'px';
+        popup.style.top = top + 'px';
         overlay.style.display = 'block';
         popup._padreId = padreId;
     };
@@ -2676,39 +2685,33 @@
         const variante = tiendasData.find(t => t.id === varId);
         if (!padre || !variante) return;
 
-        // Actualizar fotos en el carrusel
+        // Actualizar fotos
         const fotosShow = (variante.fotos && variante.fotos.length > 0) ? variante.fotos : padre.fotos;
         const carousel = document.getElementById('carousel-' + padreId);
         if (carousel) {
             const feShow = encodeURIComponent(JSON.stringify(fotosShow));
+            const ag = variante.estado === 'agotado';
             carousel.innerHTML = fotosShow.map((f,i) =>
                 `<img src="${f}" class="carousel-img ${i===0?'active':''}" onclick="abrirLightbox('${feShow}',${i})">`
-            ).join('') + (fotosShow.length > 1 ? `<div class="foto-counter" id="counter-${padreId}">1/${fotosShow.length}</div>` : '');
+            ).join('') +
+            (fotosShow.length > 1 ? `<div class="foto-counter">1/${fotosShow.length}</div>` : '') +
+            (ag ? '<div class="badge-agotado">AGOTADO</div>' : '');
         }
 
-        // Actualizar precio
-        const precioEl = document.getElementById('precio-' + padreId);
-        const monedaEl = document.getElementById('moneda-' + padreId);
-        if (precioEl) precioEl.textContent = variante.precio || padre.precio;
-        if (monedaEl) monedaEl.textContent = variante.moneda || padre.moneda;
+        // Reconstruir precio-row completo con carrito
+        const precioRow = document.getElementById('precio-row-' + padreId);
+        if (precioRow) {
+            const ag = variante.estado === 'agotado';
+            precioRow.innerHTML = `
+                <span class="precio-tag" id="precio-${padreId}">${variante.precio || padre.precio}</span>
+                ${(variante.moneda || padre.moneda) ? `<span class="moneda-tag" id="moneda-${padreId}">${variante.moneda || padre.moneda}</span>` : ''}
+                ${!ag ? `<button onclick="agregarAlCarrito('${varId}')" id="carrito-btn-${padreId}" title="Agregar al carrito" style="margin-left:auto;background:#e8f4fd;border:none;cursor:pointer;font-size:16px;padding:5px 9px;border-radius:10px;line-height:1;display:flex;align-items:center;justify-content:center;">🛒</button>` : '<span style="margin-left:auto"></span>'}
+            `;
+        }
 
-        // Actualizar botón carrito (agrega la variante, no el padre)
-        const carritoBtn = document.getElementById('carrito-btn-' + padreId);
-        if (carritoBtn) carritoBtn.setAttribute('onclick', `agregarAlCarrito('${varId}')`);
-
-        // Actualizar estado agotado
+        // Actualizar opacidad de la card
         const card = document.getElementById('card-' + padreId);
         if (card) card.style.opacity = variante.estado === 'agotado' ? '0.65' : '1';
-
-        // Actualizar botones activos en la lista
-        const lista = document.getElementById('var-lista-' + padreId);
-        if (lista) {
-            lista.querySelectorAll('button').forEach(btn => {
-                const esActivo = btn.getAttribute('onclick')?.includes(varId);
-                btn.style.background = esActivo ? '#e8f4fd' : 'white';
-                btn.style.border = `1.5px solid ${esActivo ? '#0056b3' : '#ddd'}`;
-            });
-        }
     };
 
     window.cambiarFoto = function(id, d) {
