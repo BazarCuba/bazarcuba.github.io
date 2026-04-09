@@ -22,13 +22,19 @@
         #btn-vista-toggle.activo { background: #0056b3; color: white; }
 
         .grid-tiendas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 10px 20px; max-width: 1200px; margin: 0 auto; }
-        /* Scrollbar delgada arrastrable */
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; margin: 2px; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,86,179,0.45); border-radius: 10px; min-height: 50px; }
-        ::-webkit-scrollbar-thumb:active { background: rgba(0,86,179,0.8); }
-        * { scrollbar-width: thin; scrollbar-color: rgba(0,86,179,0.45) rgba(0,0,0,0.05); }
-        /* fin scrollbar */
+        /* Scrollbar solo en catálogo principal */
+        body::-webkit-scrollbar { width: 5px; }
+        body::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius:10px; margin:2px; }
+        body::-webkit-scrollbar-thumb { background: rgba(0,86,179,0.45); border-radius:10px; min-height:50px; }
+        body::-webkit-scrollbar-thumb:hover { background: rgba(0,86,179,0.8); }
+        /* Ocultar scrollbar nativa en paneles de tienda */
+        #edit-body::-webkit-scrollbar,#preview-body::-webkit-scrollbar,#admin-body::-webkit-scrollbar,#subprod-grid::-webkit-scrollbar { display:none; }
+        #edit-body,#preview-body,#admin-body,#subprod-grid { scrollbar-width:none; }
+        /* Scrollbar custom superpuesta */
+        .csb-track { position:absolute;right:2px;top:0;bottom:0;width:6px;z-index:100;pointer-events:none; }
+        .csb-thumb { position:absolute;right:0;width:6px;background:rgba(0,86,179,0.55);border-radius:10px;opacity:0;transition:opacity 0.3s;cursor:grab;pointer-events:all;min-height:44px; }
+        .csb-thumb.vis { opacity:1; }
+        .csb-thumb.drag { cursor:grabbing;opacity:1;background:rgba(0,86,179,0.85); }
 
         .card { background: white; border-radius: 14px; box-shadow: 0 3px 12px rgba(0,0,0,0.1); position: relative; overflow: visible; }
         .card .carousel-container { border-radius: 14px 14px 0 0; }
@@ -159,7 +165,7 @@
             border-bottom: 1px solid #30363d; flex-shrink: 0;
         }
         #admin-header h3 { margin: 0; font-size: 16px; flex: 1; color: #58a6ff; }
-        #admin-body { overflow-y: auto; flex: 1; padding: 14px; }
+        #admin-body { overflow-y: auto; flex: 1; padding: 14px; position: relative; }
         .admin-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
         .admin-card h4 { margin: 0 0 12px; color: #58a6ff; font-size: 14px; }
         .admin-vendedor { background: #0d1117; border: 1px solid #30363d; border-radius: 10px; padding: 12px; margin-bottom: 8px; }
@@ -187,7 +193,7 @@
         }
         #edit-header button.btn-back { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 20px; cursor: pointer; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink:0; }
         #edit-header h3 { margin: 0; font-size: 16px; flex: 1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        #edit-body { overflow-y: auto; flex: 1; padding: 14px; }
+        #edit-body { overflow-y: auto; flex: 1; padding: 14px; position: relative; }
         .edit-seccion { background: white; border-radius: 14px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
         .edit-seccion h4 { margin: 0 0 12px; color: #0056b3; font-size: 14px; border-bottom: 1.5px solid #e8f4fd; padding-bottom: 6px; }
         .edit-foto-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
@@ -222,7 +228,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.2); flex-shrink: 0;
         }
         #preview-header h3 { margin: 0; font-size: 16px; flex: 1; }
-        #preview-body { overflow-y: auto; flex: 1; padding: 10px; }
+        #preview-body { overflow-y: auto; flex: 1; padding: 10px; position: relative; }
         #preview-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
 
         #pantalla-subproductos {
@@ -239,7 +245,7 @@
         }
         #subprod-header button { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 20px; cursor: pointer; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
         #subprod-header h3 { margin: 0; font-size: 17px; flex: 1; }
-        #subprod-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; padding: 10px; overflow-y: auto; flex: 1; }
+        #subprod-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; padding: 10px; overflow-y: auto; flex: 1; position: relative; }
 
         /* CARRITO */
         #carrito-btn {
@@ -366,6 +372,7 @@
         <button onclick="cargarPanelAdmin()" style="background:#1d6fa4;border:none;color:white;font-size:12px;font-weight:bold;cursor:pointer;border-radius:20px;padding:5px 12px;">🔄 Actualizar</button>
     </div>
     <div id="admin-body">
+        <div class="csb-track"><div class="csb-thumb" id="csb-admin"></div></div>
         <p style="color:#8b949e;text-align:center;padding:40px;">Cargando...</p>
     </div>
 </div>
@@ -377,6 +384,7 @@
         <h3 id="edit-titulo">Editar producto</h3>
     </div>
     <div id="edit-body">
+        <div class="csb-track"><div class="csb-thumb" id="csb-edit"></div></div>
         <!-- contenido dinámico -->
     </div>
 </div>
@@ -388,6 +396,7 @@
         <h3>👁️ Vista previa de tu tienda</h3>
     </div>
     <div id="preview-body">
+        <div class="csb-track"><div class="csb-thumb" id="csb-preview"></div></div>
         <div id="preview-banner" style="background:linear-gradient(135deg,#0056b3,#003d82);color:white;padding:14px 16px;border-radius:14px;margin-bottom:12px;">
             <h2 id="preview-nombre" style="margin:0 0 4px;font-size:18px;"></h2>
             <p id="preview-info" style="margin:0;font-size:13px;opacity:0.85;"></p>
@@ -413,7 +422,8 @@
         </div>
         <div id="subprod-mapa" style="height:220px;width:100%;border:2px solid #0056b3;border-radius:12px;z-index:1;"></div>
     </div>
-    <div id="subprod-grid"></div>
+    <div id="subprod-grid">
+        <div class="csb-track" style="position:fixed;right:3px;top:0;bottom:0;"><div class="csb-thumb" id="csb-subprod"></div></div>
 </div>
 
 <!-- CARRITO FLOTANTE -->
@@ -674,9 +684,18 @@
                     <label>Descripción <span style="color:#aaa;font-weight:normal;">(opcional)</span>:</label>
                     <textarea id="col-desc" rows="2" placeholder="Describe la colección..."></textarea>
                 </div>
-                <div style="display:flex;gap:8px;">
+                <!-- PRODUCTOS DENTRO DE LA COLECCIÓN -->
+                <div style="margin-top:12px;border-top:2px dashed #0056b3;padding-top:12px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <span style="font-size:13px;font-weight:bold;color:#0056b3;">📦 Productos en la colección</span>
+                        <button type="button" onclick="agregarProductoColNueva()" style="background:#0056b3;color:white;border:none;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:bold;cursor:pointer;">+ Agregar</button>
+                    </div>
+                    <p style="margin:0 0 8px;font-size:11px;color:#888;">💡 Agrega al menos un producto. Puedes agregar más después.</p>
+                    <div id="col-productos-lista"></div>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:12px;">
                     <button class="btn-guardar" style="flex:1;" onclick="publicarColeccion()">📁 Crear Colección</button>
-                    <button onclick="document.getElementById('form-nueva-coleccion').style.display='none'" style="flex:1;padding:10px;background:#f0f0f0;color:#555;border:none;border-radius:10px;font-weight:bold;cursor:pointer;">Cancelar</button>
+                    <button onclick="cerrarFormColeccion()" style="flex:1;padding:10px;background:#f0f0f0;color:#555;border:none;border-radius:10px;font-weight:bold;cursor:pointer;">Cancelar</button>
                 </div>
             </div>
             <!-- BOTONES AL FINAL -->
@@ -1940,11 +1959,69 @@
     };
 
     let modoEdicionActivo = false;
+    window.cerrarFormColeccion = function() {
+        document.getElementById('form-nueva-coleccion').style.display = 'none';
+        document.getElementById('col-nombre').value = '';
+        document.getElementById('col-desc').value = '';
+        document.getElementById('col-preview-container').innerHTML = '';
+        document.getElementById('col-preview-text').style.display = 'block';
+        document.getElementById('col-productos-lista').innerHTML = '';
+        contadorProdCol = 0;
+    };
+
+    let contadorProdCol = 0;
+    window.agregarProductoColNueva = function() {
+        const n = contadorProdCol++;
+        const lista = document.getElementById('col-productos-lista');
+        const div = document.createElement('div');
+        div.id = 'prod-col-' + n;
+        div.style.cssText = 'background:white;border-radius:10px;padding:10px;margin-bottom:8px;border:1px solid #c3d8f0;';
+        div.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <span style="font-size:12px;font-weight:bold;color:#0056b3;">📦 Producto ${n+1}</span>
+                <button onclick="document.getElementById('prod-col-${n}').remove()" style="background:#fde8e8;border:none;color:red;cursor:pointer;border-radius:6px;padding:2px 8px;font-size:12px;">✕</button>
+            </div>
+            <div style="border:1px dashed #0056b3;padding:8px;text-align:center;border-radius:8px;cursor:pointer;margin-bottom:6px;background:#fafcff;" onclick="document.getElementById('pfc-${n}').click()">
+                <span id="pfct-${n}" style="font-size:12px;color:#888;">📸 Fotos *</span>
+                <div id="pfcp-${n}" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-top:4px;"></div>
+                <input type="file" id="pfc-${n}" accept="image/*" multiple style="display:none;" onchange="prevFotoProdCol(event,${n})">
+            </div>
+            <input type="text" id="pnc-${n}" placeholder="Nombre del producto *" style="width:100%;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px;margin-bottom:4px;box-sizing:border-box;">
+            <div style="display:flex;gap:6px;margin-bottom:4px;">
+                <input type="text" id="ppc-${n}" placeholder="Precio *" style="flex:1;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+                <select id="pmc-${n}" style="width:70px;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:12px;"><option value="CUP">CUP</option><option value="USD">USD</option></select>
+            </div>
+            <textarea id="pdc-${n}" placeholder="Descripción (opcional)" rows="2" style="width:100%;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:inherit;box-sizing:border-box;"></textarea>`;
+        lista.appendChild(div);
+        div.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.prevFotoProdCol = function(e, n) {
+        const c = document.getElementById('pfcp-' + n);
+        if (!c) return;
+        c.innerHTML = '';
+        Array.from(e.target.files).forEach(f => {
+            const r = new FileReader();
+            r.onload = ev => {
+                const img = document.createElement('img');
+                img.src = ev.target.result;
+                img.style.cssText = 'width:40px;height:40px;object-fit:cover;border-radius:6px;border:1.5px solid #0056b3;';
+                c.appendChild(img);
+            };
+            r.readAsDataURL(f);
+        });
+        document.getElementById('pfct-' + n).style.display = 'none';
+    };
+
     window.mostrarFormColeccion = function() {
         document.getElementById('form-nuevo-producto').style.display = 'none';
         const f = document.getElementById('form-nueva-coleccion');
         f.style.display = f.style.display === 'none' ? 'block' : 'none';
-        if (f.style.display === 'block') f.scrollIntoView({ behavior: 'smooth' });
+        if (f.style.display === 'block') {
+            // Agregar primer producto automáticamente
+            if (!document.getElementById('col-productos-lista').children.length) agregarProductoColNueva();
+            f.scrollIntoView({ behavior: 'smooth' });
+        }
     };
 
     window.previsualizarFotoCol = function(e) {
@@ -1961,13 +2038,19 @@
     window.publicarColeccion = async function() {
         const nombre = document.getElementById('col-nombre').value.trim();
         if (!nombre) { await showMsg('Escribe el nombre de la colección.', 'warning'); return; }
+
+        // Verificar que haya al menos un producto
+        const prodElems = [...document.getElementById('col-productos-lista').children];
+        if (!prodElems.length) { await showMsg('Agrega al menos un producto a la colección.', 'warning'); return; }
+
         showLoading();
         try {
             const mis = tiendasData.filter(t => t.uidVendedor === usuarioUID);
             const iT = mis[0] || {};
             const token = await getToken();
+
             // Subir foto de portada si hay
-            let fotoUrl = 'https://via.placeholder.com/300x200?text=Colección';
+            let fotoUrl = '';
             const inp = document.getElementById('input-fotos-col');
             if (inp && inp.files.length) {
                 const fd = new FormData(); fd.append('file', inp.files[0]); fd.append('upload_preset', 'bazar_present');
@@ -1975,12 +2058,14 @@
                 const di = await ri.json();
                 if (di.secure_url) fotoUrl = di.secure_url;
             }
-            const pay = { fields: {
+
+            // Crear la colección en Firestore
+            const colPay = { fields: {
                 uidVendedor: { stringValue: usuarioUID },
                 correo: { stringValue: fbAuth.currentUser.email },
                 nombre: { stringValue: nombre },
                 descripcion: { stringValue: document.getElementById('col-desc').value.trim() },
-                fotos: { arrayValue: { values: [{ stringValue: fotoUrl }] } },
+                fotos: { arrayValue: { values: fotoUrl ? [{ stringValue: fotoUrl }] : [] } },
                 esColeccion: { booleanValue: true },
                 esPrincipal: { booleanValue: false },
                 productoPadreId: { stringValue: '' },
@@ -1992,19 +2077,57 @@
                 lat: { doubleValue: iT.lat||latSel }, lng: { doubleValue: iT.lng||lngSel },
                 fecha: { timestampValue: new Date().toISOString() }
             }};
-            const r = await fetch(`${FS}/tiendas?key=${API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(pay) });
-            if (!r.ok) throw new Error(await r.text());
-            const doc = await r.json();
-            const nueva = { id: doc.name.split('/').pop(), uidVendedor: usuarioUID, nombre, descripcion: document.getElementById('col-desc').value.trim(), fotos: [fotoUrl], esColeccion: true, esPrincipal: false, productoPadreId: '', estado: 'disponible', nombreTienda: iT.nombreTienda||'', tel: iT.tel||'', direccion: iT.direccion||'', provincia: iT.provincia||'', lat: iT.lat||latSel, lng: iT.lng||lngSel };
+            const rCol = await fetch(`${FS}/tiendas?key=${API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(colPay) });
+            if (!rCol.ok) throw new Error(await rCol.text());
+            const docCol = await rCol.json();
+            const colId = docCol.name.split('/').pop();
+            const nueva = { id: colId, uidVendedor: usuarioUID, nombre, descripcion: document.getElementById('col-desc').value.trim(), fotos: fotoUrl ? [fotoUrl] : [], esColeccion: true, esPrincipal: false, productoPadreId: '', estado: 'disponible', nombreTienda: iT.nombreTienda||'', tel: iT.tel||'', direccion: iT.direccion||'', provincia: iT.provincia||'', lat: iT.lat||latSel, lng: iT.lng||lngSel };
             tiendasData.push(nueva);
-            document.getElementById('col-nombre').value = '';
-            document.getElementById('col-desc').value = '';
-            document.getElementById('col-preview-container').innerHTML = '';
-            document.getElementById('col-preview-text').style.display = 'block';
-            document.getElementById('form-nueva-coleccion').style.display = 'none';
+
+            // Publicar productos dentro de la colección
+            let prodOk = 0;
+            for (const el of prodElems) {
+                const n = el.id.replace('prod-col-', '');
+                const pNombre = document.getElementById('pnc-' + n)?.value?.trim();
+                const pPrecio = document.getElementById('ppc-' + n)?.value?.trim();
+                const pInp = document.getElementById('pfc-' + n);
+                if (!pNombre || !pPrecio || !pInp || !pInp.files.length) continue;
+                const pUrls = [];
+                for (const file of pInp.files) {
+                    const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', 'bazar_present');
+                    const ri = await fetch('https://api.cloudinary.com/v1_1/dmeczxbyh/image/upload', { method: 'POST', body: fd });
+                    const di = await ri.json();
+                    if (di.secure_url) pUrls.push(di.secure_url);
+                }
+                if (!pUrls.length) continue;
+                const pMoneda = document.getElementById('pmc-' + n)?.value || 'CUP';
+                const pDesc = document.getElementById('pdc-' + n)?.value?.trim() || '';
+                const prodPay = { fields: {
+                    uidVendedor: { stringValue: usuarioUID },
+                    correo: { stringValue: fbAuth.currentUser.email },
+                    productoPadreId: { stringValue: colId },
+                    esPrincipal: { booleanValue: false }, esVariante: { booleanValue: false }, esColeccion: { booleanValue: false },
+                    nombre: { stringValue: pNombre }, precio: { stringValue: pPrecio }, moneda: { stringValue: pMoneda },
+                    descripcion: { stringValue: pDesc },
+                    fotos: { arrayValue: { values: pUrls.map(u => ({ stringValue: u })) } },
+                    estado: { stringValue: 'disponible' },
+                    nombreTienda: { stringValue: iT.nombreTienda||'' }, tel: { stringValue: iT.tel||'' },
+                    direccion: { stringValue: iT.direccion||'' }, provincia: { stringValue: iT.provincia||'' },
+                    lat: { doubleValue: iT.lat||latSel }, lng: { doubleValue: iT.lng||lngSel },
+                    fecha: { timestampValue: new Date().toISOString() }
+                }};
+                const rP = await fetch(`${FS}/tiendas?key=${API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(prodPay) });
+                if (rP.ok) {
+                    const dP = await rP.json();
+                    tiendasData.push({ id: dP.name.split('/').pop(), uidVendedor: usuarioUID, productoPadreId: colId, esPrincipal: false, esVariante: false, esColeccion: false, nombre: pNombre, precio: pPrecio, moneda: pMoneda, descripcion: pDesc, fotos: pUrls, estado: 'disponible', nombreTienda: iT.nombreTienda||'', tel: iT.tel||'', direccion: iT.direccion||'', provincia: iT.provincia||'', lat: iT.lat||latSel, lng: iT.lng||lngSel });
+                    prodOk++;
+                }
+            }
+
+            cerrarFormColeccion();
             renderizarMisProductos(tiendasData.filter(t => t.uidVendedor === usuarioUID));
             hideLoading();
-            await showMsg('✅ Colección creada.\n\nAhora puedes agregar productos con el botón "Editar" de cada producto y asignarlo a esta colección.', 'ok');
+            await showMsg(`✅ Colección "${nombre}" creada con ${prodOk} producto${prodOk!==1?'s':''}.`, 'ok');
         } catch(e) { hideLoading(); await msgError(e); }
     };
 
@@ -3575,6 +3698,63 @@
         }
         return showMsg('❌ ' + tecnico, 'error', accion);
     }
+
+    // ============================================================
+    // SCROLLBAR CUSTOM SUPERPUESTA (solo pantallas de tienda)
+    // ============================================================
+    function initCustomScrollbar(containerId, thumbId) {
+        const el = document.getElementById(containerId);
+        const thumb = document.getElementById(thumbId);
+        if (!el || !thumb) return;
+        let hideTimer;
+        let isDragging = false;
+        let startY, startScrollTop;
+
+        function updateThumb() {
+            const ratio = el.clientHeight / el.scrollHeight;
+            if (ratio >= 1) { thumb.classList.remove('vis'); return; }
+            const thumbH = Math.max(44, el.clientHeight * ratio);
+            const maxScroll = el.scrollHeight - el.clientHeight;
+            const maxTop = el.clientHeight - thumbH;
+            const top = maxScroll > 0 ? (el.scrollTop / maxScroll) * maxTop : 0;
+            thumb.style.height = thumbH + 'px';
+            thumb.style.top = top + 'px';
+            thumb.classList.add('vis');
+            clearTimeout(hideTimer);
+            hideTimer = setTimeout(() => { if (!isDragging) thumb.classList.remove('vis'); }, 1200);
+        }
+
+        el.addEventListener('scroll', updateThumb, { passive: true });
+
+        // Drag
+        thumb.addEventListener('pointerdown', e => {
+            isDragging = true;
+            startY = e.clientY;
+            startScrollTop = el.scrollTop;
+            thumb.classList.add('drag');
+            e.preventDefault();
+        });
+        document.addEventListener('pointermove', e => {
+            if (!isDragging) return;
+            const ratio = el.scrollHeight / el.clientHeight;
+            el.scrollTop = startScrollTop + (e.clientY - startY) * ratio;
+            updateThumb();
+        });
+        document.addEventListener('pointerup', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            thumb.classList.remove('drag');
+            hideTimer = setTimeout(() => thumb.classList.remove('vis'), 1200);
+        });
+    }
+
+    // Inicializar scrollbars al cargar
+    setTimeout(() => {
+        initCustomScrollbar('edit-body', 'csb-edit');
+        initCustomScrollbar('preview-body', 'csb-preview');
+        initCustomScrollbar('admin-body', 'csb-admin');
+        initCustomScrollbar('subprod-grid', 'csb-subprod');
+    }, 500);
 
     detectarDirecto();
     cargarDatos().then(() => restaurarSesion());
