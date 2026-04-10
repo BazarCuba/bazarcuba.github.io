@@ -1325,6 +1325,8 @@
         const ag = t.estado === 'agotado';
         const esSub = !!t.productoPadreId;
         const esCol = !!t.esColeccion;
+        const esVariante = !!t.esVariante;
+        const esProdEnColeccion = esSub && !esVariante; // producto hijo de colección
         document.getElementById('edit-titulo').textContent = (esCol ? '📁 ' : '') + (t.nombre || 'Editar');
 
         const fotosHtml = (t.fotos||[]).map((f,i) => `
@@ -1376,7 +1378,7 @@
                     ? `<button onclick="habilitarProducto('${id}')" class="edit-btn-accion edit-btn-habilitar">✅ Habilitar producto</button>`
                     : `<button onclick="marcarAgotado('${id}')" class="edit-btn-accion edit-btn-agotado">🚫 Marcar como agotado</button>`
                 }
-                ${!esSub ? `
+                ${(!esSub || esProdEnColeccion) ? `
                 ${esCol
                     ? `<button onclick="toggleFormProductoEnColeccion('${id}')" class="edit-btn-accion edit-btn-sub" id="btn-toggle-prodcol-${id}">📦 Agregar producto a la colección</button>
                     <div id="form-prodcol-${id}" style="display:none;border-top:1px dashed #ddd;margin-top:10px;padding-top:10px;">
@@ -1423,6 +1425,7 @@
         `;
         document.getElementById('pantalla-edicion').classList.add('show');
         lockScroll();
+        activarScrollbar('edit-body');
     };
 
     window.cerrarEdicion = function() {
@@ -1849,6 +1852,7 @@
         if (!mis.length) grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888;padding:40px;">No tienes productos.</p>';
         document.getElementById('pantalla-preview').classList.add('show');
         lockScroll();
+        activarScrollbar('preview-body');
     };
 
     // Popup variantes para vista previa (reutiliza el mismo popup pero con id -prev-)
@@ -3434,7 +3438,7 @@
         }
         document.getElementById('pantalla-subproductos').classList.add('show');
         lockScroll();
-        actualizarBadge();
+        actualizarBadge(); activarScrollbar("subprod-grid");
     };
     window.cerrarSubproductos = function() {
         document.getElementById('pantalla-subproductos').classList.remove('show');
@@ -3475,7 +3479,7 @@
         }
         document.getElementById('pantalla-subproductos').classList.add('show');
         lockScroll();
-        actualizarBadge();
+        actualizarBadge(); activarScrollbar("subprod-grid");
     };
 
     window.filtrarPorProvincia = function() {
@@ -3524,6 +3528,7 @@
         toggleMenu();
         document.getElementById('pantalla-admin').classList.add('show');
         cargarPanelAdmin();
+        activarScrollbar('admin-body');
     };
     window.cerrarPanelAdmin = function() {
         document.getElementById('pantalla-admin').classList.remove('show');
@@ -3697,77 +3702,70 @@
 
     // ============================================================
     // SCROLLBAR CUSTOM SUPERPUESTA (solo pantallas de tienda)
-    // Thumb en body con position:fixed, se posiciona sobre el contenedor
     // ============================================================
+    const _csbThumbs = {};
+
     function initCustomScrollbar(containerId) {
         const el = document.getElementById(containerId);
         if (!el) return;
+        // Reusar thumb si ya existe
+        if (!_csbThumbs[containerId]) {
+            const thumb = document.createElement('div');
+            thumb.style.cssText = 'position:fixed;right:3px;width:5px;background:rgba(0,86,179,0.6);border-radius:10px;opacity:0;transition:opacity 0.25s;z-index:9999;cursor:grab;min-height:44px;touch-action:none;';
+            document.body.appendChild(thumb);
+            _csbThumbs[containerId] = { thumb, hideTimer: null, dragging: false, startY: 0, startScrollTop: 0 };
 
-        // Crear thumb en body para evitar problemas de layout
-        const thumb = document.createElement('div');
-        thumb.style.cssText = 'position:fixed;right:3px;width:5px;background:rgba(0,86,179,0.55);border-radius:10px;opacity:0;transition:opacity 0.25s;cursor:grab;z-index:9999;pointer-events:all;min-height:44px;display:none;';
-        document.body.appendChild(thumb);
-
-        let hideTimer, isDragging = false, startY, startScrollTop;
-
-        function getRect() { return el.getBoundingClientRect(); }
-
-        function updateThumb() {
-            const rect = getRect();
-            const ratio = el.clientHeight / el.scrollHeight;
-            if (ratio >= 1 || rect.height < 50) { thumb.style.opacity = '0'; return; }
-            const thumbH = Math.max(44, rect.height * ratio);
-            const maxScroll = el.scrollHeight - el.clientHeight;
-            const maxTop = rect.height - thumbH;
-            const top = maxScroll > 0 ? rect.top + (el.scrollTop / maxScroll) * maxTop : rect.top;
-            thumb.style.height = thumbH + 'px';
-            thumb.style.top = top + 'px';
-            thumb.style.display = 'block';
-            thumb.style.opacity = '1';
-            thumb.style.cursor = isDragging ? 'grabbing' : 'grab';
-            thumb.style.background = isDragging ? 'rgba(0,86,179,0.85)' : 'rgba(0,86,179,0.55)';
-            clearTimeout(hideTimer);
-            if (!isDragging) hideTimer = setTimeout(() => { thumb.style.opacity = '0'; }, 1400);
+            thumb.addEventListener('pointerdown', e => {
+                const s = _csbThumbs[containerId];
+                s.dragging = true; s.startY = e.clientY; s.startScrollTop = el.scrollTop;
+                thumb.style.cursor = 'grabbing'; thumb.style.background = 'rgba(0,86,179,0.9)';
+                thumb.setPointerCapture(e.pointerId); e.preventDefault();
+            });
+            thumb.addEventListener('pointermove', e => {
+                const s = _csbThumbs[containerId]; if (!s.dragging) return;
+                const rect = el.getBoundingClientRect();
+                const ratio = el.scrollHeight / rect.height;
+                el.scrollTop = s.startScrollTop + (e.clientY - s.startY) * ratio;
+                _updateThumb(containerId);
+            });
+            thumb.addEventListener('pointerup', () => {
+                const s = _csbThumbs[containerId]; s.dragging = false;
+                thumb.style.cursor = 'grab'; thumb.style.background = 'rgba(0,86,179,0.6)';
+                _scheduleHide(containerId);
+            });
         }
-
-        el.addEventListener('scroll', updateThumb, { passive: true });
-
-        thumb.addEventListener('pointerdown', e => {
-            isDragging = true;
-            startY = e.clientY;
-            startScrollTop = el.scrollTop;
-            thumb.setPointerCapture(e.pointerId);
-            e.preventDefault();
-            updateThumb();
-        });
-        thumb.addEventListener('pointermove', e => {
-            if (!isDragging) return;
-            const rect = getRect();
-            const ratio = el.scrollHeight / rect.height;
-            el.scrollTop = startScrollTop + (e.clientY - startY) * ratio;
-            updateThumb();
-        });
-        thumb.addEventListener('pointerup', () => {
-            isDragging = false;
-            updateThumb();
-            hideTimer = setTimeout(() => { thumb.style.opacity = '0'; }, 1400);
-        });
-
-        // Ocultar cuando el contenedor no está visible
-        const observer = new MutationObserver(() => {
-            const visible = el.offsetParent !== null && getRect().height > 0;
-            if (!visible) thumb.style.display = 'none';
-        });
-        observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class', 'style'] });
+        el.addEventListener('scroll', () => { _updateThumb(containerId); _scheduleHide(containerId); }, { passive: true });
     }
 
-    // Inicializar scrollbars al cargar
-    setTimeout(() => {
-        initCustomScrollbar('edit-body');
-        initCustomScrollbar('preview-body');
-        initCustomScrollbar('admin-body');
-        initCustomScrollbar('subprod-grid');
-    }, 800);
+    function _updateThumb(containerId) {
+        const el = document.getElementById(containerId);
+        const s = _csbThumbs[containerId];
+        if (!el || !s) return;
+        const rect = el.getBoundingClientRect();
+        const ratio = el.clientHeight / el.scrollHeight;
+        if (ratio >= 1 || rect.height < 50) { s.thumb.style.opacity = '0'; return; }
+        const thumbH = Math.max(44, rect.height * ratio);
+        const maxScroll = el.scrollHeight - el.clientHeight;
+        const pct = maxScroll > 0 ? el.scrollTop / maxScroll : 0;
+        const top = rect.top + pct * (rect.height - thumbH);
+        s.thumb.style.height = thumbH + 'px';
+        s.thumb.style.top = top + 'px';
+        s.thumb.style.opacity = '1';
+        clearTimeout(s.hideTimer);
+    }
+
+    function _scheduleHide(containerId) {
+        const s = _csbThumbs[containerId]; if (!s || s.dragging) return;
+        clearTimeout(s.hideTimer);
+        s.hideTimer = setTimeout(() => { s.thumb.style.opacity = '0'; }, 1400);
+    }
+
+    // Llamar al abrir cada panel (se hace desde las funciones correspondientes)
+    function activarScrollbar(containerId) {
+        initCustomScrollbar(containerId);
+        // Forzar update inicial con pequeño delay para que el panel esté visible
+        setTimeout(() => _updateThumb(containerId), 100);
+    }
 
     detectarDirecto();
     cargarDatos().then(() => restaurarSesion());
