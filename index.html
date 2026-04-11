@@ -623,10 +623,7 @@
                 </div>
             </div>
             <div id="controles-edicion" style="display:none;">
-                <div style="display:flex;gap:8px;margin-bottom:8px;">
-                    <button class="btn-secundario" style="flex:1;margin-bottom:0;" onclick="toggleFormProducto()">➕ Producto</button>
-                    <button onclick="mostrarFormColeccion()" style="flex:1;padding:10px;background:#e8f4fd;color:#0056b3;border:2px solid #0056b3;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer;">📁 Colección</button>
-                </div>
+                <button class="btn-secundario" style="width:100%;margin-bottom:8px;" onclick="toggleFormProducto()">➕ Agregar Producto</button>
             </div>
             <div id="lista-mis-productos"><p style="color:#888;text-align:center;font-size:13px;">Cargando...</p></div>
             <div id="controles-edicion-form" style="display:none;">
@@ -667,39 +664,9 @@
                 </div>
             </div>
             </div><!-- fin controles-edicion-form -->
-            <!-- FORM NUEVA COLECCIÓN -->
-            <div id="form-nueva-coleccion" style="display:none;margin-top:8px;background:#e8f4fd;border-radius:10px;padding:14px;border:1.5px solid #0056b3;">
-                <h4 style="margin:0 0 10px;color:#0056b3;font-size:14px;">📁 Nueva Colección</h4>
-                <div style="border:2px dashed #0056b3;padding:10px;text-align:center;border-radius:8px;cursor:pointer;margin-bottom:8px;background:white;" onclick="document.getElementById('input-fotos-col').click()">
-                    <p id="col-preview-text" style="margin:0 0 4px;color:#888;font-size:12px;">📸 Foto de portada (opcional)</p>
-                    <div id="col-preview-container" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;"></div>
-                    <input type="file" id="input-fotos-col" accept="image/*" style="display:none;" onchange="previsualizarFotoCol(event)">
-                </div>
-                <div class="form-group"><label>Nombre de la colección:</label><input type="text" id="col-nombre" placeholder="Ej: Ropa de verano, Zapatos, Accesorios..."></div>
-                <div class="form-group">
-                    <label>Descripción <span style="color:#aaa;font-weight:normal;">(opcional)</span>:</label>
-                    <textarea id="col-desc" rows="2" placeholder="Describe la colección..."></textarea>
-                </div>
-                <!-- PRODUCTOS DENTRO DE LA COLECCIÓN -->
-                <div style="margin-top:12px;border-top:2px dashed #0056b3;padding-top:12px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                        <span style="font-size:13px;font-weight:bold;color:#0056b3;">📦 Productos en la colección</span>
-                        <button type="button" onclick="agregarProductoColNueva()" style="background:#0056b3;color:white;border:none;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:bold;cursor:pointer;">+ Agregar</button>
-                    </div>
-                    <p style="margin:0 0 8px;font-size:11px;color:#888;">💡 Agrega al menos un producto. Puedes agregar más después.</p>
-                    <div id="col-productos-lista"></div>
-                </div>
-                <div style="display:flex;gap:8px;margin-top:12px;">
-                    <button class="btn-guardar" style="flex:1;" onclick="publicarColeccion()">📁 Crear Colección</button>
-                    <button onclick="cerrarFormColeccion()" style="flex:1;padding:10px;background:#f0f0f0;color:#555;border:none;border-radius:10px;font-weight:bold;cursor:pointer;">Cancelar</button>
-                </div>
-            </div>
             <!-- BOTONES AL FINAL -->
             <div id="controles-edicion-fin" style="display:none;margin-top:10px;">
-                <div style="display:flex;gap:8px;">
-                    <button class="btn-secundario" style="flex:1;margin-bottom:0;" onclick="toggleFormProducto()">➕ Producto</button>
-                    <button onclick="mostrarFormColeccion()" style="flex:1;padding:10px;background:#e8f4fd;color:#0056b3;border:2px solid #0056b3;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer;">📁 Colección</button>
-                </div>
+                <button class="btn-secundario" style="width:100%;margin-bottom:0;" onclick="toggleFormProducto()">➕ Agregar Producto</button>
             </div>
         </div>
     </div>
